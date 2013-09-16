@@ -133,8 +133,8 @@
      <Compile Include="Assets\Scripts\Control\CameraDrag.cs" />
      <Compile Include="Assets\Scripts\Control\IsoCameraFollow.cs" />
      <Compile Include="Assets\Scripts\Control\IsoCameraZoom.cs" />
-     <Compile Include="Assets\Scripts\Level\chuzzle.cs" />
-     <Compile Include="Assets\Scripts\Level\gamefield.cs" />
+     <Compile Include="Assets\Scripts\Level\Chuzzle.cs" />
+     <Compile Include="Assets\Scripts\Level\Gamefield.cs" />
      <Compile Include="Assets\Scripts\Map\CheckButtons.cs" />
      <Compile Include="Assets\Scripts\Map\LinkToLevel.cs" />
      <Compile Include="Assets\Scripts\Map\VerticalDrag.cs" />
