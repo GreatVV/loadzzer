@@ -6,6 +6,8 @@ using System.Linq.Expressions;
 
 public class Gamefield : MonoBehaviour {
 
+    //idea: сделать телепорты просто как указатель на какую клетку переходить при встрече нахождении на этой клетке
+
     public bool createNew = true;
 
     public GameObject[] ChuzzlePrefabs;   
@@ -674,10 +676,16 @@ public class Gamefield : MonoBehaviour {
     {
         foreach (var c in targetChuzzles)
         {
-
-            animatedChuzzles.Add(c);
             var targetPosition = new Vector3(c.moveToX * c.spriteScale.x, c.moveToY * c.spriteScale.y, 0);
-            iTween.MoveTo(c.gameObject, iTween.Hash("x", targetPosition.x, "y", targetPosition.y, "z", targetPosition.z, "time", 0.3f, "oncomplete", callbackOnComplete, "oncompletetarget", gameObject, "oncompleteparams", c));
+            if (Vector3.Distance(c.transform.localPosition, targetPosition) > 0.1f)
+            {
+                animatedChuzzles.Add(c);                                                                                  
+                iTween.MoveTo(c.gameObject, iTween.Hash("x", targetPosition.x, "y", targetPosition.y, "z", targetPosition.z, "time", 0.3f, "oncomplete", callbackOnComplete, "oncompletetarget", gameObject, "oncompleteparams", c));
+            }
+            else
+            {
+                c.transform.localPosition = targetPosition;
+            }
 
         }
     }
