@@ -167,14 +167,10 @@ public class Gamefield : MonoBehaviour {
         }                      
 
         // CHECK DRAG STATE (Mouse or Touch)
-        if (!Input.GetMouseButton(0) || Input.GetMouseButtonUp(0))
+        if ((!Input.GetMouseButton(0) || Input.GetMouseButtonUp(0)) && 0 == Input.touchCount)
         {
-            if (0 == Input.touchCount || Input.GetTouch(0).phase != TouchPhase.Moved)
-            {
-                //   Debug.Log("Drag dropped");                
-                DropDrag();                                    
-                return;
-            }
+            DropDrag();
+            return;
         }
 
         if (currentChuzzle == null)
