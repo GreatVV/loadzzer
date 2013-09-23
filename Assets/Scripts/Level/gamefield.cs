@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 
 public class Gamefield : MonoBehaviour {
 
-    //idea: сделать телепорты просто как указатель на какую клетку переходить при встрече нахождении на этой клетке
+    //idea: сделать телепорты просто как указатель на какую клетку переходить при встрече нахождении на этой клетке       
 
     public bool createNew = true;
 
@@ -35,6 +35,9 @@ public class Gamefield : MonoBehaviour {
     public GameObject portalPrefab;
     public List<Portal> portalsOnMap;
 
+    public Points pointSystem;
+    public GameMode gameMode;
+
     void Awake()
     {
       //  StartGame();
@@ -59,6 +62,9 @@ public class Gamefield : MonoBehaviour {
             Destroy(chuzzle.gameObject);
         }
         chuzzles.Clear();
+
+        pointSystem.Reset();
+        gameMode.Reset();
     }
 
     public void StartGame()
@@ -490,6 +496,8 @@ public class Gamefield : MonoBehaviour {
                 }
                 //destroy combination and add new chuzzles
                 RemoveCombinations(combinations);
+
+                gameMode.Action();
             }
             else
             {
@@ -564,6 +572,8 @@ public class Gamefield : MonoBehaviour {
         //remove combinations
         foreach (var combination in combinations)
         {
+            //count points
+            pointSystem.CountForCombinations(combination);
             foreach (var chuzzle in combination)
             {
                 //remove chuzzle from game logic
@@ -623,8 +633,17 @@ public class Gamefield : MonoBehaviour {
         }
 
         if (newTilesAnimationChuzzles.Count() == 0)
-        {               
-            RemoveCombinations(FindCombinations());
+        {
+            var combinations = FindCombinations();
+            if (combinations.Count > 0)
+            {
+                RemoveCombinations(combinations);
+            }
+            else
+            {
+                //check gameover or win
+                gameMode.Check();
+            }
         }        
     }
 

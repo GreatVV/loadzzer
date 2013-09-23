@@ -44,6 +44,7 @@
 	</Reference>
   </ItemGroup>
   <ItemGroup>
+     <Compile Include="Assets\GUI\Map\Scripts\GuiWinPanel.cs" />
      <Compile Include="Assets\NGUI\Scripts\Interaction\LanguageSelection.cs" />
      <Compile Include="Assets\NGUI\Scripts\Interaction\UIButton.cs" />
      <Compile Include="Assets\NGUI\Scripts\Interaction\UIButtonActivate.cs" />
@@ -134,8 +135,11 @@
      <Compile Include="Assets\Scripts\Control\IsoCameraFollow.cs" />
      <Compile Include="Assets\Scripts\Control\IsoCameraZoom.cs" />
      <Compile Include="Assets\Scripts\Level\Chuzzle.cs" />
+     <Compile Include="Assets\Scripts\Level\GameMode\GameMode.cs" />
      <Compile Include="Assets\Scripts\Level\Gamefield.cs" />
+     <Compile Include="Assets\Scripts\Level\Points.cs" />
      <Compile Include="Assets\Scripts\Level\Portal.cs" />
+     <Compile Include="Assets\Scripts\Level\TargetScoreGameMode.cs" />
      <Compile Include="Assets\Scripts\Level\TeleportableEntity.cs" />
      <Compile Include="Assets\Scripts\Level\UI.cs" />
      <Compile Include="Assets\Scripts\Map\CheckButtons.cs" />
@@ -256,6 +260,7 @@
      <None Include="Assets\TK2DROOT\tk2d\Shaders\CutoutVertexColor.shader" />
      <None Include="Assets\NGUI\Resources\Shaders\Unlit - Transparent Colored (Packed).shader" />
      <None Include="Assets\TK2DROOT\tk2d_demo\demobmfont\test.fnt" />
+     <None Include="Assets\GUI\Map\Fonts\batang.fnt" />
      <None Include="Assets\TK2DROOT\tk2dUI_demo\Assets\Font\OldSansBlack\OldSansBlack.fnt" />
      <None Include="Assets\TK2DROOT\tk2d\Shaders\LitBlendVertexColor.shader" />
      <None Include="Assets\TK2DROOT\tk2dUI_demo\Assets\Dark\Fonts\Nunito16.fnt" />
