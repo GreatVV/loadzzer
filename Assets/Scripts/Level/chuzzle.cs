@@ -11,6 +11,14 @@ public enum ChuzzleType
     White
 }
 
+public enum PowerType
+{
+    Usual,
+    VerticalLine,
+    HorizontalLine,
+    Bomb
+}
+
 public class Chuzzle : MonoBehaviour {
 
     public Cell Current;
@@ -25,6 +33,7 @@ public class Chuzzle : MonoBehaviour {
 
     public bool isCheckedForSearch;
 
+    public PowerType PowerType;
     
 
     public override string ToString()

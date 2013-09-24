@@ -43,8 +43,8 @@ public class Cell
 {
     public CellTypes type;
 
-    public int x;
-    public int y;
+    public int x { get; private set; }
+    public int y { get; private set; }
 
     public Cell Left;
     public Cell Right;

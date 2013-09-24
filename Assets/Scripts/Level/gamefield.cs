@@ -1,8 +1,6 @@
-﻿using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
+using UnityEngine;
 
 public class Gamefield : MonoBehaviour {
 
@@ -397,6 +395,9 @@ public class Gamefield : MonoBehaviour {
                 {
                     c.Current = c.Real;                    
                 }
+                //check can we make new specialTiles
+                CheckForSpecial(combinations);
+
                 //destroy combination and add new chuzzles
                 RemoveCombinations(combinations);
 
@@ -429,6 +430,75 @@ public class Gamefield : MonoBehaviour {
         {   
             RemoveCombinations(FindCombinations());
         }   
+    }
+
+    #endregion
+
+    #region Special Chuzzles
+
+    public void CheckForSpecial(List<List<Chuzzle>> combinations)
+    {
+        return;
+
+        foreach(var comb in combinations)
+        {
+            if (comb.Count == 4)
+            {
+                CreateLine(comb);
+            }
+            else
+            {
+                if (comb.Count >= 5)
+                {
+                    CreateBomb(comb);
+                }
+            }
+        }
+    }
+
+    private void CreateBomb(List<Chuzzle> comb)
+    {
+        //throw new System.NotImplementedException();
+    }
+
+    public List<Chuzzle> specialTilesAnimated;
+
+    private void CreateLine(List<Chuzzle> comb)
+    {
+        var cellForNew = comb.First().Current;
+        for (int i = 1; i<comb.Count; i++)
+        {
+            var chuzzle = comb[i];      
+            chuzzle.MoveTo = cellForNew;
+        }
+
+        foreach (var c in comb)
+        {
+            var targetPosition = new Vector3(c.MoveTo.x * c.spriteScale.x, c.MoveTo.y * c.spriteScale.y, 0);
+            if (Vector3.Distance(c.transform.localPosition, targetPosition) > 0.1f)
+            {
+                specialTilesAnimated.Add(c);
+                iTween.ShakeScale(c.gameObject, c.gameObject.transform.localScale, 0.3f);
+                iTween.MoveTo(c.gameObject, iTween.Hash("x", targetPosition.x, "y", targetPosition.y, "z", targetPosition.z, "time", 0.3f, "oncomplete", "OnCreateLineTweenComplete", "oncompletetarget", gameObject, "oncompleteparams", c));
+            }
+            else
+            {
+                c.transform.localPosition = targetPosition;
+            }
+
+        }        
+    }
+
+    private void OnCreateLineTweenComplete(Object chuzzleObject)
+    {
+        var chuzzle = chuzzleObject as Chuzzle;
+
+        specialTilesAnimated.Remove(chuzzle);
+
+        if (specialTilesAnimated.Count == 0)
+        {
+            //check combination again
+        }
     }
 
     #endregion
