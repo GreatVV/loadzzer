@@ -11,19 +11,29 @@ public enum ChuzzleType
     White
 }
 
-public class Chuzzle : MonoBehaviour {               
-   
-    public int x;
-    public int y;
+public class Chuzzle : MonoBehaviour {
 
+    public Chuzzle left;
+    public Chuzzle right;
+    public Chuzzle top;
+    public Chuzzle bottom;
 
-    //for animation of move
-    public int moveToX;
-    public int moveToY;
+    public Cell Current { get; set; }
 
-    //
-    public int realX;
-    public int realY;
+    public Cell MoveTo {get;set;}
+
+    public Cell Real { get; set; }
+
+    //public int x;
+    //public int y;        
+
+    ////for animation of move
+    //public int moveToX;
+    //public int moveToY;
+
+    ////
+    //public int realX;
+    //public int realY;
 
     public ChuzzleType Type;
 
@@ -31,8 +41,10 @@ public class Chuzzle : MonoBehaviour {
 
     public bool isCheckedForSearch;
 
+    
+
     public override string ToString()
     {
-        return ""+Type+" ("+x+","+y+")";
+        return ""+Type+" ("+Current.x+","+Current.y+")";
     }
 }

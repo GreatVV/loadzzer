@@ -40,6 +40,8 @@ public class Gamefield : MonoBehaviour {
     public Points pointSystem;
     public GameMode gameMode;
 
+    public List<Cell> cells;
+
     void Awake()
     {
       //  StartGame();
@@ -77,7 +79,7 @@ public class Gamefield : MonoBehaviour {
             for (int i = 0; i < Height; i++)
             {                   
                 for (int j = 0; j < Width; j++)
-                {
+                {                       
                     CreateRandomChuzzle(i, j);                    
                 }                        
 
@@ -114,10 +116,46 @@ public class Gamefield : MonoBehaviour {
 
                 this.portals.Add(upPortalBlock);
                 this.portals.Add(bottomPortalBlock);
-            }                      
-
-            RemoveCombinations(FindCombinations());
+            }                                  
+        } 
+        else
+        {
+            var level = new SerializedLevel();
+            level.Width = 5;
+            level.Height = 5;
+            level.TilesInColumn = new int[5] { 5, 5, 4, 5, 5 };
+            level.TilesInRow = new int[5] { 5, 5, 4, 5, 5 };
+            level.specialCells = new List<Cell>() {               
+                  new Cell(2,2,CellTypes.Block)                      
+            };
+            CreateLevelFrom(level);
         }
+
+        RemoveCombinations(FindCombinations());
+    }
+
+    public void CreateLevelFrom(SerializedLevel level)
+    {
+        //create cells
+        for (int i = 0; i < Height; i++)
+        {
+            for (int j = 0; j < Width; j++)
+            {
+                if (!level.specialCells.Any(c=>c.x == j && c.y == i))
+                {
+                    cells.Add(new Cell(j, i));
+                }
+            }
+        }
+
+        //add special
+        cells.AddRange(level.specialCells);
+
+        for(int i = 0; i<level.TilesInColumn.Length; i++)
+        {
+
+        }
+
     }
 
     private Chuzzle CreateRandomChuzzle(int i, int j)
@@ -126,14 +164,26 @@ public class Gamefield : MonoBehaviour {
         var gameObject = NGUITools.AddChild(this.gameObject, prefab);
         gameObject.layer = prefab.layer;
         var chuzzle = gameObject.GetComponent<Chuzzle>();
-        chuzzle.realX = chuzzle.moveToX = chuzzle.x = j;
-        chuzzle.realY = chuzzle.moveToY = chuzzle.y = i;
+        chuzzle.Real = chuzzle.MoveTo = chuzzle.Current = GetCellAt(j,i);
+        
         gameObject.transform.localPosition = new Vector3(j * gameObject.GetComponent<Chuzzle>().spriteScale.x, i * gameObject.GetComponent<Chuzzle>().spriteScale.y, 0);
 
         chuzzles.Add(chuzzle);
         return chuzzle;
     }    
                             
+    Cell GetCellAt(int x, int y)
+    {            
+        var cell = cells.FirstOrDefault(c => c.x == x && c.y == y);
+        if (cell == null)
+        {
+            var newCell = new Cell(x, y);
+            cells.Add(newCell);
+            return newCell;
+        }
+        return cell;
+    }
+
     void Update()
     {
         isMovingToPrevPosition = animatedChuzzles.Any() || deathAnimationChuzzles.Any() || newTilesAnimationChuzzles.Any();
@@ -202,13 +252,13 @@ public class Gamefield : MonoBehaviour {
                 if (Mathf.Abs(delta.x) < Mathf.Abs(delta.y))
                 {
                     //TODO: choose row
-                    selectedChuzzles = chuzzles.Where(x => x.x == currentChuzzle.x).ToList();
+                    selectedChuzzles = chuzzles.Where(x => x.Current.x == currentChuzzle.Current.x).ToList();
                     isVerticalDrag = true;
                 }
                 else
                 {
                     //TODO: choose column
-                    selectedChuzzles = chuzzles.Where(x => x.y == currentChuzzle.y).ToList();
+                    selectedChuzzles = chuzzles.Where(x => x.Current.y == currentChuzzle.Current.y).ToList();
                     isVerticalDrag = false;
                 }
 
@@ -272,24 +322,24 @@ public class Gamefield : MonoBehaviour {
 
     #region Control
 
-    public Vector2 ToRealCoordinates(Chuzzle chuzzle)
+    public IntVector2 ToRealCoordinates(Chuzzle chuzzle)
     {
-        return new Vector2(Mathf.RoundToInt(chuzzle.transform.localPosition.x / chuzzle.spriteScale.x), Mathf.RoundToInt(chuzzle.transform.localPosition.y / chuzzle.spriteScale.y));
+        return new IntVector2(Mathf.RoundToInt(chuzzle.transform.localPosition.x / chuzzle.spriteScale.x), Mathf.RoundToInt(chuzzle.transform.localPosition.y / chuzzle.spriteScale.y));
     }
 
     public void CalculateRealCoordinatesFor(Chuzzle chuzzle)
     {
-        chuzzle.realX = Mathf.RoundToInt(chuzzle.transform.localPosition.x / chuzzle.spriteScale.x);
-        chuzzle.realY = Mathf.RoundToInt(chuzzle.transform.localPosition.y / chuzzle.spriteScale.y);
+        chuzzle.Real.x = Mathf.RoundToInt(chuzzle.transform.localPosition.x / chuzzle.spriteScale.x);
+        chuzzle.Real.y = Mathf.RoundToInt(chuzzle.transform.localPosition.y / chuzzle.spriteScale.y);
 
-        if (IsPortal(chuzzle.realX, chuzzle.realY))
+        if (IsPortal(chuzzle.Real.x, chuzzle.Real.y))
         {
-            var difference = chuzzle.transform.localPosition - ConvertXYToPosition(chuzzle.realX, chuzzle.realY, chuzzle.spriteScale);
+            var difference = chuzzle.transform.localPosition - ConvertXYToPosition(chuzzle.Real.x, chuzzle.Real.y, chuzzle.spriteScale);
 
-            var portal = GetPortalAt(chuzzle.realX, chuzzle.realY);
+            var portal = GetPortalAt(chuzzle.Real.x, chuzzle.Real.y);
             chuzzle.transform.localPosition = ConvertXYToPosition(portal.toX, portal.toY, chuzzle.spriteScale) + difference;
-            chuzzle.realX = portal.toX;
-            chuzzle.realY = portal.toY;
+            chuzzle.Real.x = portal.toX;
+            chuzzle.Real.y = portal.toY;
         }            
     }
 
@@ -311,8 +361,7 @@ public class Gamefield : MonoBehaviour {
     {
         foreach (var c in selectedChuzzles)
         {
-            c.moveToX = c.realX;
-            c.moveToY = c.realY;
+            c.MoveTo = c.Real;            
         }
 
         MoveToTargetPosition(selectedChuzzles, "OnTweenMoveAfterDrag");    
@@ -335,8 +384,7 @@ public class Gamefield : MonoBehaviour {
             {
                 foreach (var c in chuzzles)
                 {
-                    c.x = c.realX;
-                    c.y = c.realY;
+                    c.Current = c.Real;                    
                 }
                 //destroy combination and add new chuzzles
                 RemoveCombinations(combinations);
@@ -347,9 +395,8 @@ public class Gamefield : MonoBehaviour {
             {
                 //if no new combination - move to prevposition       
                 foreach (var c in chuzzles)
-                {   
-                    c.moveToX = c.realX = c.x;
-                    c.moveToY = c.realY = c.y;                    
+                {
+                    c.MoveTo = c.Real = c.Current;                                        
                 }
 
                 MoveToTargetPosition(chuzzles, "OnCompleteBackToPreviousPositionTween");                
@@ -392,14 +439,14 @@ public class Gamefield : MonoBehaviour {
                 var upToChuzzle = GetTopFor(chuzzle);
                 while (upToChuzzle != null)
                 {
-                    upToChuzzle.moveToY--;
+                    upToChuzzle.MoveTo = GetCellAt(upToChuzzle.MoveTo.x, upToChuzzle.MoveTo.y - 1);                        
                     upToChuzzle = GetTopFor(upToChuzzle);
-                }
-
+                }      
+                       
                 // Debug.Log("c: " + chuzzle.x + ":" + chuzzle.y + ":" + newTilesInColumns[chuzzle.x]);
-                var newChuzzle = CreateRandomChuzzle(Height + newTilesInColumns[chuzzle.x], chuzzle.x);
-                newChuzzle.moveToY = newChuzzle.moveToY - newTilesInColumns[chuzzle.x] - 1;
-                newTilesInColumns[chuzzle.x]++;
+                var newChuzzle = CreateRandomChuzzle(Height + newTilesInColumns[chuzzle.Current.x], chuzzle.Current.x);
+                newChuzzle.MoveTo = GetCellAt(newChuzzle.Current.x, newChuzzle.MoveTo.y - newTilesInColumns[chuzzle.Current.x] - 1);                
+                newTilesInColumns[chuzzle.Current.x]++;
             }
         }
         /*
@@ -447,10 +494,10 @@ public class Gamefield : MonoBehaviour {
             //start tweens for new chuzzles
             foreach (var c in chuzzles)
             {
-                if (c.moveToY != c.y)
+                if (c.MoveTo.y != c.Current.y)
                 {                       
                     newTilesAnimationChuzzles.Add(c);
-                    var targetPosition = new Vector3(c.x * c.spriteScale.x, c.moveToY * c.spriteScale.y, 0);
+                    var targetPosition = new Vector3(c.Current.x * c.spriteScale.x, c.MoveTo.y * c.spriteScale.y, 0);
                     iTween.MoveTo(c.gameObject, iTween.Hash("x", targetPosition.x, "y", targetPosition.y, "z", targetPosition.z, "time", 0.3f, "oncomplete", "OnCompleteNewChuzzleTween", "oncompletetarget", gameObject, "oncompleteparams", c));
                 }
             }
@@ -467,8 +514,7 @@ public class Gamefield : MonoBehaviour {
     public void OnCompleteNewChuzzleTween(Object chuzzleObject)
     {
         var chuzzle = chuzzleObject as Chuzzle;
-        chuzzle.realY = chuzzle.y = chuzzle.moveToY;
-        chuzzle.realX = chuzzle.x = chuzzle.moveToX;
+        chuzzle.Real = chuzzle.Current = chuzzle.MoveTo;        
 
         if (newTilesAnimationChuzzles.Contains(chuzzle))
         {
@@ -509,14 +555,7 @@ public class Gamefield : MonoBehaviour {
                     combinations.Add(combination);
                 }
             }
-        }
-        /*
-        Debug.Log("Num of combs: " + combinations.Count());
-        foreach(var com in combinations)
-        {
-            Debug.Log("Num of tiles: " + com.Count());
-        }
-                             */
+        }                                   
 
         foreach (var c in chuzzles)
         {
@@ -528,14 +567,14 @@ public class Gamefield : MonoBehaviour {
 
     public Chuzzle At(int x, int y)
     {
-        return chuzzles.FirstOrDefault(c => c.x == x && c.y == y);
+        return chuzzles.FirstOrDefault(c => c.Current.x == x && c.Current.y == y);
     }
 
     public void MoveToTargetPosition(List<Chuzzle> targetChuzzles, string callbackOnComplete)
     {
         foreach (var c in targetChuzzles)
         {
-            var targetPosition = new Vector3(c.moveToX * c.spriteScale.x, c.moveToY * c.spriteScale.y, 0);
+            var targetPosition = new Vector3(c.MoveTo.x * c.spriteScale.x, c.MoveTo.y * c.spriteScale.y, 0);
             if (Vector3.Distance(c.transform.localPosition, targetPosition) > 0.1f)
             {
                 animatedChuzzles.Add(c);                                                                                  
@@ -551,22 +590,26 @@ public class Gamefield : MonoBehaviour {
 
     public Chuzzle GetLeftFor(Chuzzle c)
     {
-        return chuzzles.FirstOrDefault(x => x.realX == c.realX - 1 && x.realY == c.realY);
+        var leftCell = cells.LastOrDefault(cell => cell.type != CellTypes.Block && cell.y == c.Real.y && cell.x < c.Real.x);        
+        return chuzzles.FirstOrDefault(x=>x.Real == leftCell);
     }
 
     public Chuzzle GetRightFor(Chuzzle c)
     {
-        return chuzzles.FirstOrDefault(x => x.realX == c.realX + 1 && x.realY == c.realY);
+        var rightCell = cells.FirstOrDefault(cell => cell.type != CellTypes.Block && cell.y == c.Real.y && cell.x > c.Real.x);
+        return chuzzles.FirstOrDefault(x => x.Real == rightCell);
     }
 
     public Chuzzle GetTopFor(Chuzzle c)
     {
-        return chuzzles.FirstOrDefault(x => x.realX == c.realX && x.realY == c.realY + 1);      
+        var topCell = cells.FirstOrDefault(cell => cell.type != CellTypes.Block && cell.x == c.Real.x && cell.y > c.Real.y);
+        return chuzzles.FirstOrDefault(x => x.Real == topCell);
     }
 
     public Chuzzle GetBottomFor(Chuzzle c)
     {
-        return chuzzles.FirstOrDefault(x => x.realX == c.realX && x.realY == c.realY - 1);
+        var topCell = cells.LastOrDefault(cell => cell.type != CellTypes.Block && cell.x == c.Real.x && cell.y < c.Real.y);        
+        return chuzzles.FirstOrDefault(x => x.Real == topCell);
     }
 
     public List<Chuzzle> RecursiveFind(Chuzzle chuzzle, List<Chuzzle> combination)
