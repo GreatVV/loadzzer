@@ -135,26 +135,7 @@ public class Gamefield : MonoBehaviour {
     }
 
     public void CreateLevelFrom(SerializedLevel level)
-    {
-        //create cells
-        for (int i = 0; i < Height; i++)
-        {
-            for (int j = 0; j < Width; j++)
-            {
-                if (!level.specialCells.Any(c=>c.x == j && c.y == i))
-                {
-                    cells.Add(new Cell(j, i));
-                }
-            }
-        }
-
-        //add special
-        cells.AddRange(level.specialCells);
-
-        for(int i = 0; i<level.TilesInColumn.Length; i++)
-        {
-
-        }
+    {         
 
     }
 
@@ -179,6 +160,38 @@ public class Gamefield : MonoBehaviour {
         {
             var newCell = new Cell(x, y);
             cells.Add(newCell);
+            //set left
+            var left = cells.FirstOrDefault(c => c.x == x - 1 && c.y == y);
+            if (left != null)
+            {
+                newCell.Left = left;
+                left.Right = newCell;
+            }
+
+            //set right
+            var right = cells.FirstOrDefault(c => c.x == x + 1 && c.y == y);
+            if (right != null)
+            {
+                newCell.Right = right;
+                right.Left = newCell;
+            }
+
+            //set top
+            var top = cells.FirstOrDefault(c => c.x == x && c.y == y + 1);
+            if (top != null)
+            {
+                newCell.Top = top;
+                top.Bottom = newCell;
+            }
+
+            //set bottom
+            var bottom = cells.FirstOrDefault(c => c.x == x && c.y == y - 1);
+            if (bottom != null)
+            {
+                newCell.Bottom = bottom;
+                bottom.Top = newCell;
+            }
+
             return newCell;
         }
         return cell;
@@ -329,8 +342,7 @@ public class Gamefield : MonoBehaviour {
 
     public void CalculateRealCoordinatesFor(Chuzzle chuzzle)
     {
-        chuzzle.Real.x = Mathf.RoundToInt(chuzzle.transform.localPosition.x / chuzzle.spriteScale.x);
-        chuzzle.Real.y = Mathf.RoundToInt(chuzzle.transform.localPosition.y / chuzzle.spriteScale.y);
+        chuzzle.Real = GetCellAt(Mathf.RoundToInt(chuzzle.transform.localPosition.x / chuzzle.spriteScale.x),Mathf.RoundToInt(chuzzle.transform.localPosition.y / chuzzle.spriteScale.y));        
 
         if (IsPortal(chuzzle.Real.x, chuzzle.Real.y))
         {
@@ -338,8 +350,7 @@ public class Gamefield : MonoBehaviour {
 
             var portal = GetPortalAt(chuzzle.Real.x, chuzzle.Real.y);
             chuzzle.transform.localPosition = ConvertXYToPosition(portal.toX, portal.toY, chuzzle.spriteScale) + difference;
-            chuzzle.Real.x = portal.toX;
-            chuzzle.Real.y = portal.toY;
+            chuzzle.Real = GetCellAt(portal.toX, portal.toY);            
         }            
     }
 
@@ -590,26 +601,42 @@ public class Gamefield : MonoBehaviour {
 
     public Chuzzle GetLeftFor(Chuzzle c)
     {
-        var leftCell = cells.LastOrDefault(cell => cell.type != CellTypes.Block && cell.y == c.Real.y && cell.x < c.Real.x);        
+        var leftCell = c.Real.Left;
+        while (leftCell !=null && leftCell.type == CellTypes.Block)
+        {
+            leftCell = leftCell.Left;
+        }                                                             
         return chuzzles.FirstOrDefault(x=>x.Real == leftCell);
     }
 
     public Chuzzle GetRightFor(Chuzzle c)
     {
-        var rightCell = cells.FirstOrDefault(cell => cell.type != CellTypes.Block && cell.y == c.Real.y && cell.x > c.Real.x);
-        return chuzzles.FirstOrDefault(x => x.Real == rightCell);
+        var right = c.Real.Right;
+        while (right != null && right.type == CellTypes.Block)
+        {
+            right = right.Right;
+        }
+        return chuzzles.FirstOrDefault(x => x.Real == right);
     }
 
     public Chuzzle GetTopFor(Chuzzle c)
     {
-        var topCell = cells.FirstOrDefault(cell => cell.type != CellTypes.Block && cell.x == c.Real.x && cell.y > c.Real.y);
-        return chuzzles.FirstOrDefault(x => x.Real == topCell);
+        var top = c.Real.Top;
+        while (top != null && top.type == CellTypes.Block)
+        {
+            top = top.Top;
+        }
+        return chuzzles.FirstOrDefault(x => x.Real == top);
     }
 
     public Chuzzle GetBottomFor(Chuzzle c)
     {
-        var topCell = cells.LastOrDefault(cell => cell.type != CellTypes.Block && cell.x == c.Real.x && cell.y < c.Real.y);        
-        return chuzzles.FirstOrDefault(x => x.Real == topCell);
+        var bottom = c.Real.Bottom;
+        while (bottom != null && bottom.type == CellTypes.Block)
+        {
+            bottom = bottom.Bottom;
+        }
+        return chuzzles.FirstOrDefault(x => x.Real == bottom);
     }
 
     public List<Chuzzle> RecursiveFind(Chuzzle chuzzle, List<Chuzzle> combination)
