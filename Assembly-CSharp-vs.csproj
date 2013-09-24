@@ -139,6 +139,7 @@
      <Compile Include="Assets\Scripts\Level\Gamefield.cs" />
      <Compile Include="Assets\Scripts\Level\Points.cs" />
      <Compile Include="Assets\Scripts\Level\Portal.cs" />
+     <Compile Include="Assets\Scripts\Level\SerializedLevel.cs" />
      <Compile Include="Assets\Scripts\Level\TargetScoreGameMode.cs" />
      <Compile Include="Assets\Scripts\Level\TeleportableEntity.cs" />
      <Compile Include="Assets\Scripts\Level\UI.cs" />

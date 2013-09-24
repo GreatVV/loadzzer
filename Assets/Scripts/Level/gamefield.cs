@@ -30,6 +30,8 @@ public class Gamefield : MonoBehaviour {
     public List<Chuzzle> selectedChuzzles;
     public List<Chuzzle> animatedChuzzles;
 
+    public List<PortalBlock> portals = new List<PortalBlock>();
+
     public bool isMovingToPrevPosition;
 
     public GameObject portalPrefab;
@@ -100,6 +102,21 @@ public class Gamefield : MonoBehaviour {
 
                 leftPortal.transform.parent = portals.transform;
                 rightPortal.transform.parent = portals.transform;
+
+                var leftPortalBlock = new PortalBlock();
+                leftPortalBlock.x = -1;
+                leftPortalBlock.y = i;
+                leftPortalBlock.toX = Width-1;
+                leftPortalBlock.toY = i;
+
+                var rightPortalBlock = new PortalBlock();                
+                rightPortalBlock.x = Width;
+                rightPortalBlock.y = i;
+                rightPortalBlock.toX = 0;
+                rightPortalBlock.toY = i;
+
+                this.portals.Add(leftPortalBlock);
+                this.portals.Add(rightPortalBlock);
             }
 
 
@@ -121,7 +138,21 @@ public class Gamefield : MonoBehaviour {
                 upPortal.transform.parent = portals.transform;
                 bottomPortal.transform.parent = portals.transform;
 
-            }
+                var upPortalBlock = new PortalBlock();
+                upPortalBlock.x = j;
+                upPortalBlock.y = Height;
+                upPortalBlock.toX = j;
+                upPortalBlock.toY = 0;
+
+                var bottomPortalBlock = new PortalBlock();
+                bottomPortalBlock.toX = j;
+                bottomPortalBlock.toY = Height-1;
+                bottomPortalBlock.x = j;
+                bottomPortalBlock.y = -1;
+
+                this.portals.Add(upPortalBlock);
+                this.portals.Add(bottomPortalBlock);
+            }                      
 
             RemoveCombinations(FindCombinations());
         }
@@ -244,54 +275,82 @@ public class Gamefield : MonoBehaviour {
     {
         if (selectedChuzzles.Any() && directionChozen)
         {
-            if (isVerticalDrag)
+            foreach (var c in selectedChuzzles)
             {
-                foreach (var c in selectedChuzzles)
+                var real = ToRealCoordinates(c);
+                if (IsPortal((int)real.x, (int)real.y))
                 {
-                    var teleportable = c.GetComponent<TeleportableEntity>();
-                    var direction = teleportable.transform.localPosition - teleportable.prevPosition;
-                    if (direction.y > 0)
-                    {
-                        if (c.transform.localPosition.y > Height * c.spriteScale.y)
-                        {
-                          //  Debug.Log("y++" + c.transform.localPosition);
-                            c.transform.localPosition = new Vector3(c.transform.localPosition.x, c.transform.localPosition.y - Height * c.spriteScale.y, c.transform.localPosition.z);
-                        }
-                    }
-                    else
-                    {
-                        if (c.transform.localPosition.y < -c.spriteScale.y)
-                        {
-                          //  Debug.Log("y--" + c.transform.localPosition);
-                            c.transform.localPosition = new Vector3(c.transform.localPosition.x, c.spriteScale.y * Height + c.transform.localPosition.y, c.transform.localPosition.z);
-                        }
-                    }
+                    var difference = c.transform.localPosition - ConvertXYToPosition((int)real.x, (int)real.y, c.spriteScale);
+
+                    var portal = GetPortalAt((int)real.x, (int)real.y);
+                    c.transform.localPosition = ConvertXYToPosition(portal.toX, portal.toY, c.spriteScale) + difference;
                 }
             }
-            else
-            {
-                foreach (var c in selectedChuzzles)
-                {
-                    var teleportable = c.GetComponent<TeleportableEntity>();
-                    var direction = teleportable.transform.localPosition - teleportable.prevPosition;
-                    if (direction.x > 0)
-                    {
-                        if (c.transform.localPosition.x > Width * c.spriteScale.x)
-                        {
-                          //  Debug.Log("x++" + c.transform.localPosition);
-                            c.transform.localPosition = new Vector3(c.transform.localPosition.x - Width * c.spriteScale.x, c.transform.localPosition.y, c.transform.localPosition.z);
-                        }
-                    }
-                    else
-                    {
-                        if (c.transform.localPosition.x < -c.spriteScale.x)
-                        {
-                          //  Debug.Log("x--" + c.transform.localPosition);
-                            c.transform.localPosition = new Vector3(c.spriteScale.x * Width + c.transform.localPosition.x, c.transform.localPosition.y, c.transform.localPosition.z);
-                        }
-                    }
-                }
-            }
+
+            //if (isVerticalDrag)
+            //{
+            //    foreach (var c in selectedChuzzles)
+            //    {
+            //        var teleportable = c.GetComponent<TeleportableEntity>();
+            //        var direction = teleportable.transform.localPosition - teleportable.prevPosition;
+            //        if (direction.y > 0)
+            //        {
+            //            //округляем y в большую сторону
+            //            var nextY = Mathf.CeilToInt(c.transform.localPosition.y);
+            //            if (IsPortal(c.x, nextY))
+            //            {
+            //                var difference = c.transform.localPosition - ConvertXYToPosition(c.x, c.y, c.spriteScale);
+
+            //                var portal = GetPortalAt(c.x, nextY);
+            //                c.transform.localPosition = ConvertXYToPosition(portal.toX, portal.toY, c.spriteScale) + difference;
+            //            }
+            //            //if (c.transform.localPosition.y > Height * c.spriteScale.y)
+            //            //{
+            //            //  //  Debug.Log("y++" + c.transform.localPosition);
+            //            //    c.transform.localPosition = new Vector3(c.transform.localPosition.x, c.transform.localPosition.y - Height * c.spriteScale.y, c.transform.localPosition.z);
+            //            //}
+            //        }
+            //        else
+            //        {
+            //            //округляем y в МЕНЬШУЮ сторону
+            //            var nextY = Mathf.FloorToInt(c.transform.localPosition.y);
+            //            if (IsPortal(c.x, nextY))
+            //            {
+            //                var portal = GetPortalAt(c.x, nextY);
+            //                c.transform.localPosition = ConvertXYToPosition(portal.toX, portal.toY, c.spriteScale);
+            //            }
+            //            //if (c.transform.localPosition.y < -c.spriteScale.y)
+            //            //{
+            //            //  //  Debug.Log("y--" + c.transform.localPosition);
+            //            //    c.transform.localPosition = new Vector3(c.transform.localPosition.x, c.spriteScale.y * Height + c.transform.localPosition.y, c.transform.localPosition.z);
+            //            //}
+            //        }
+            //    }
+            //}
+            //else
+            //{
+            //    foreach (var c in selectedChuzzles)
+            //    {
+            //        var teleportable = c.GetComponent<TeleportableEntity>();
+            //        var direction = teleportable.transform.localPosition - teleportable.prevPosition;
+            //        if (direction.x > 0)
+            //        {
+            //            if (c.transform.localPosition.x > Width * c.spriteScale.x)
+            //            {
+            //              //  Debug.Log("x++" + c.transform.localPosition);
+            //                c.transform.localPosition = new Vector3(c.transform.localPosition.x - Width * c.spriteScale.x, c.transform.localPosition.y, c.transform.localPosition.z);
+            //            }
+            //        }
+            //        else
+            //        {
+            //            if (c.transform.localPosition.x < -c.spriteScale.x)
+            //            {
+            //              //  Debug.Log("x--" + c.transform.localPosition);
+            //                c.transform.localPosition = new Vector3(c.spriteScale.x * Width + c.transform.localPosition.x, c.transform.localPosition.y, c.transform.localPosition.z);
+            //            }
+            //        }
+            //    }
+            //}
         }
 
 
@@ -423,30 +482,65 @@ public class Gamefield : MonoBehaviour {
 
         #endregion
     }
+    
+    #region Block and Portals
+
+    public bool IsPortal(int x, int y)
+    {
+        return portals.Any(p => p.x == x && p.y == y);
+    }
+
+    public PortalBlock GetPortalAt(int x, int y)
+    {
+        return portals.First(p => p.x == x && p.y == y);
+    }
+
+    public Vector3 ConvertXYToPosition(int x, int y, Vector3 scale)
+    {
+        return new Vector3(x * scale.x, y * scale.y, 0);
+    }
+
+    #endregion
 
     #region Control
+
+    public Vector2 ToRealCoordinates(Chuzzle chuzzle)
+    {
+        return new Vector2(Mathf.RoundToInt(chuzzle.transform.localPosition.x / chuzzle.spriteScale.x), Mathf.RoundToInt(chuzzle.transform.localPosition.y / chuzzle.spriteScale.y));
+    }
 
     public void CalculateRealCoordinatesFor(Chuzzle chuzzle)
     {
         chuzzle.realX = Mathf.RoundToInt(chuzzle.transform.localPosition.x / chuzzle.spriteScale.x);
         chuzzle.realY = Mathf.RoundToInt(chuzzle.transform.localPosition.y / chuzzle.spriteScale.y);
-        if (chuzzle.realX < 0)
+
+        if (IsPortal(chuzzle.realX, chuzzle.realY))
         {
-            chuzzle.realX = Width + chuzzle.realX;
-        }
-        if (chuzzle.realX >= Width)
-        {
-            chuzzle.realX = Width - chuzzle.realX;
+            var difference = chuzzle.transform.localPosition - ConvertXYToPosition(chuzzle.realX, chuzzle.realY, chuzzle.spriteScale);
+
+            var portal = GetPortalAt(chuzzle.realX, chuzzle.realY);
+            chuzzle.transform.localPosition = ConvertXYToPosition(portal.toX, portal.toY, chuzzle.spriteScale) + difference;
+            chuzzle.realX = portal.toX;
+            chuzzle.realY = portal.toY;
         }
 
-        if (chuzzle.realY < 0)
-        {
-            chuzzle.realY = Height + chuzzle.realY;
-        }
-        if (chuzzle.realY >= Height)
-        {
-            chuzzle.realY = Height - chuzzle.realY;
-        }
+        //if (chuzzle.realX < 0)
+        //{
+        //    chuzzle.realX = Width + chuzzle.realX;
+        //}
+        //if (chuzzle.realX >= Width)
+        //{
+        //    chuzzle.realX = Width - chuzzle.realX;
+        //}
+
+        //if (chuzzle.realY < 0)
+        //{
+        //    chuzzle.realY = Height + chuzzle.realY;
+        //}
+        //if (chuzzle.realY >= Height)
+        //{
+        //    chuzzle.realY = Height - chuzzle.realY;
+        //}
     }
 
     private void DropDrag()
