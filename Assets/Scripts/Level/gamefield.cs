@@ -70,13 +70,7 @@ public class Gamefield : MonoBehaviour {
     }
 
     public void StartGame()
-    {
-        var portals = GameObject.Find("Portals");
-        if (portals == null)
-        {
-            portals = new GameObject("Portals");
-        }        
-
+    {              
         var size = ChuzzlePrefabs[Random.Range(0, ChuzzlePrefabs.Length)].GetComponent<Chuzzle>().spriteScale;              
         if (createNew)
         {
@@ -85,23 +79,7 @@ public class Gamefield : MonoBehaviour {
                 for (int j = 0; j < Width; j++)
                 {
                     CreateRandomChuzzle(i, j);                    
-                }
-
-                var leftPortal = (GameObject.Instantiate(portalPrefab) as GameObject).GetComponent<Portal>();
-                leftPortal.name = "left" + i;
-                leftPortal.thisPosition = leftPortal.transform.position = new Vector3(0, i * size.y, 0);
-                leftPortal.teleportToPosition = new Vector3(Width * size.x, i * size.y, 0);
-
-                var rightPortal = (GameObject.Instantiate(portalPrefab) as GameObject).GetComponent<Portal>();
-                rightPortal.name = "right" + i;
-                rightPortal.thisPosition = rightPortal.transform.position = leftPortal.teleportToPosition;
-                rightPortal.teleportToPosition = leftPortal.thisPosition;
-
-                portalsOnMap.Add(leftPortal);
-                portalsOnMap.Add(rightPortal);
-
-                leftPortal.transform.parent = portals.transform;
-                rightPortal.transform.parent = portals.transform;
+                }                        
 
                 var leftPortalBlock = new PortalBlock();
                 leftPortalBlock.x = -1;
@@ -121,23 +99,7 @@ public class Gamefield : MonoBehaviour {
 
 
             for (int j = 0; j < Width; j++)
-            {
-                var upPortal = (GameObject.Instantiate(portalPrefab) as GameObject).GetComponent<Portal>();
-                upPortal.name = "up" + j;
-                upPortal.thisPosition = upPortal.transform.position = new Vector3(j * size.x, Height * size.y, 0);
-                upPortal.teleportToPosition = new Vector3(j * size.x, 0 * size.y, 0);
-
-                var bottomPortal = (GameObject.Instantiate(portalPrefab) as GameObject).GetComponent<Portal>();
-                bottomPortal.name = "bottom" + j;
-                bottomPortal.thisPosition = bottomPortal.transform.position = upPortal.teleportToPosition;
-                bottomPortal.teleportToPosition = upPortal.thisPosition;
-
-                portalsOnMap.Add(upPortal);
-                portalsOnMap.Add(bottomPortal);
-
-                upPortal.transform.parent = portals.transform;
-                bottomPortal.transform.parent = portals.transform;
-
+            {    
                 var upPortalBlock = new PortalBlock();
                 upPortalBlock.x = j;
                 upPortalBlock.y = Height;
@@ -285,202 +247,8 @@ public class Gamefield : MonoBehaviour {
                     var portal = GetPortalAt((int)real.x, (int)real.y);
                     c.transform.localPosition = ConvertXYToPosition(portal.toX, portal.toY, c.spriteScale) + difference;
                 }
-            }
-
-            //if (isVerticalDrag)
-            //{
-            //    foreach (var c in selectedChuzzles)
-            //    {
-            //        var teleportable = c.GetComponent<TeleportableEntity>();
-            //        var direction = teleportable.transform.localPosition - teleportable.prevPosition;
-            //        if (direction.y > 0)
-            //        {
-            //            //округляем y в большую сторону
-            //            var nextY = Mathf.CeilToInt(c.transform.localPosition.y);
-            //            if (IsPortal(c.x, nextY))
-            //            {
-            //                var difference = c.transform.localPosition - ConvertXYToPosition(c.x, c.y, c.spriteScale);
-
-            //                var portal = GetPortalAt(c.x, nextY);
-            //                c.transform.localPosition = ConvertXYToPosition(portal.toX, portal.toY, c.spriteScale) + difference;
-            //            }
-            //            //if (c.transform.localPosition.y > Height * c.spriteScale.y)
-            //            //{
-            //            //  //  Debug.Log("y++" + c.transform.localPosition);
-            //            //    c.transform.localPosition = new Vector3(c.transform.localPosition.x, c.transform.localPosition.y - Height * c.spriteScale.y, c.transform.localPosition.z);
-            //            //}
-            //        }
-            //        else
-            //        {
-            //            //округляем y в МЕНЬШУЮ сторону
-            //            var nextY = Mathf.FloorToInt(c.transform.localPosition.y);
-            //            if (IsPortal(c.x, nextY))
-            //            {
-            //                var portal = GetPortalAt(c.x, nextY);
-            //                c.transform.localPosition = ConvertXYToPosition(portal.toX, portal.toY, c.spriteScale);
-            //            }
-            //            //if (c.transform.localPosition.y < -c.spriteScale.y)
-            //            //{
-            //            //  //  Debug.Log("y--" + c.transform.localPosition);
-            //            //    c.transform.localPosition = new Vector3(c.transform.localPosition.x, c.spriteScale.y * Height + c.transform.localPosition.y, c.transform.localPosition.z);
-            //            //}
-            //        }
-            //    }
-            //}
-            //else
-            //{
-            //    foreach (var c in selectedChuzzles)
-            //    {
-            //        var teleportable = c.GetComponent<TeleportableEntity>();
-            //        var direction = teleportable.transform.localPosition - teleportable.prevPosition;
-            //        if (direction.x > 0)
-            //        {
-            //            if (c.transform.localPosition.x > Width * c.spriteScale.x)
-            //            {
-            //              //  Debug.Log("x++" + c.transform.localPosition);
-            //                c.transform.localPosition = new Vector3(c.transform.localPosition.x - Width * c.spriteScale.x, c.transform.localPosition.y, c.transform.localPosition.z);
-            //            }
-            //        }
-            //        else
-            //        {
-            //            if (c.transform.localPosition.x < -c.spriteScale.x)
-            //            {
-            //              //  Debug.Log("x--" + c.transform.localPosition);
-            //                c.transform.localPosition = new Vector3(c.spriteScale.x * Width + c.transform.localPosition.x, c.transform.localPosition.y, c.transform.localPosition.z);
-            //            }
-            //        }
-            //    }
-            //}
-        }
-
-
-        return;
-        #region Portals        
-
-        foreach (var c in selectedChuzzles)
-        {                  
-            var teleportable = c.GetComponent<TeleportableEntity>();
-            
-            if (teleportable.prevPosition != teleportable.transform.localPosition)
-            {                             
-                var touchTeleport = false;
-                var direction = teleportable.transform.localPosition - teleportable.prevPosition;
-                foreach (var portal in portalsOnMap)
-                {
-                    if (direction.x == 0)
-                    {
-                        if (direction.y > 0)
-                        {
-                            if (c.collider.bounds.min.x == portal.thisPosition.x &&
-                             c.collider.bounds.min.y < portal.thisPosition.y && c.collider.bounds.max.y > portal.thisPosition.y &&
-                             Mathf.Abs(c.collider.bounds.min.y - portal.thisPosition.y) > 10 &&
-                             Vector3.Distance(teleportable.transform.position, portal.transform.position) < Vector3.Distance(teleportable.prevPosition, portal.transform.position))
-                            {
-                                //closer
-
-                                if (!teleportable.teleported)
-                                {
-                                    var diff = portal.thisPosition - c.transform.position;
-                                    c.transform.position = portal.teleportToPosition - diff;
-                                    teleportable.teleported = true;
-                                }
-                                touchTeleport = true;
-                            }
-                            else
-                            {
-                                //far
-                            }
-                        }
-                        else
-                        {
-                            if (c.collider.bounds.min.x == portal.thisPosition.x &&
-                           c.collider.bounds.min.y < portal.thisPosition.y && c.collider.bounds.max.y > portal.thisPosition.y &&
-                           Mathf.Abs(c.collider.bounds.min.y - portal.thisPosition.y) > 10 &&
-                           Vector3.Distance(teleportable.transform.position, portal.transform.position) > Vector3.Distance(teleportable.prevPosition, portal.transform.position))
-                            {
-                                //closer
-
-                                if (!teleportable.teleported)
-                                {
-                                    var diff = portal.thisPosition - c.transform.position;
-                                    c.transform.position = portal.teleportToPosition - diff;
-                                    teleportable.teleported = true;
-                                }
-                                touchTeleport = true;
-                            }
-                            else
-                            {
-                                //far
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (direction.x > 0)
-                        {
-
-                            if (c.collider.bounds.min.y == portal.thisPosition.y &&
-                                c.collider.bounds.min.x < portal.thisPosition.x && c.collider.bounds.max.x > portal.thisPosition.x &&
-                                Mathf.Abs(c.collider.bounds.min.x - portal.thisPosition.x) > 10 &&
-                                Vector3.Distance(teleportable.transform.position, portal.transform.position) < Vector3.Distance(teleportable.prevPosition, portal.transform.position))
-                            {
-                                //closer
-
-                                if (!teleportable.teleported)
-                                {
-                                    var diff = portal.thisPosition - c.transform.position;
-                                    c.transform.position = portal.teleportToPosition - diff;
-                                    teleportable.teleported = true;
-                                }
-                                touchTeleport = true;
-                            }
-                            else
-                            {
-                                //far
-                            }
-                        }
-                        else
-                        {
-                            if (c.collider.bounds.min.y == portal.thisPosition.y &&
-                               c.collider.bounds.min.x < portal.thisPosition.x && c.collider.bounds.max.x > portal.thisPosition.x &&
-                               Mathf.Abs(c.collider.bounds.min.x - portal.thisPosition.x) > 10 &&
-                               Vector3.Distance(teleportable.transform.position, portal.transform.position) > Vector3.Distance(teleportable.prevPosition, portal.transform.position))
-                            {
-                                //closer
-
-                                if (!teleportable.teleported)
-                                {
-                                    var diff = portal.thisPosition - c.transform.position;
-                                    c.transform.position = portal.teleportToPosition - diff;
-                                    teleportable.teleported = true;
-                                }
-                                touchTeleport = true;
-                            }
-                            else
-                            {
-                                //far
-                            }
-                        }   
-                    }
-                    //determine horizontal or vertical
-                    //teleport changing only this position
-
-
-                    //if intersects
-                    //create a copy
-                    //update copy according parent
-                    //if parent fully in teleport - remove copy and teleport to position
-
-                }
-
-                if (teleportable.teleported && !touchTeleport)
-                {
-                    teleportable.teleported = false;
-                }
-            }            
-        }
-
-        #endregion
+            }                                   
+        }                      
     }
     
     #region Block and Portals
@@ -522,25 +290,7 @@ public class Gamefield : MonoBehaviour {
             chuzzle.transform.localPosition = ConvertXYToPosition(portal.toX, portal.toY, chuzzle.spriteScale) + difference;
             chuzzle.realX = portal.toX;
             chuzzle.realY = portal.toY;
-        }
-
-        //if (chuzzle.realX < 0)
-        //{
-        //    chuzzle.realX = Width + chuzzle.realX;
-        //}
-        //if (chuzzle.realX >= Width)
-        //{
-        //    chuzzle.realX = Width - chuzzle.realX;
-        //}
-
-        //if (chuzzle.realY < 0)
-        //{
-        //    chuzzle.realY = Height + chuzzle.realY;
-        //}
-        //if (chuzzle.realY >= Height)
-        //{
-        //    chuzzle.realY = Height - chuzzle.realY;
-        //}
+        }            
     }
 
     private void DropDrag()
