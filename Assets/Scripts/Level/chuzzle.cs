@@ -8,7 +8,8 @@ public enum ChuzzleType
     Yellow,
     Black,
     Green,
-    White
+    White,
+    Finn
 }
 
 public enum PowerType
@@ -29,7 +30,7 @@ public class Chuzzle : MonoBehaviour {
 
     public ChuzzleType Type;
 
-    public Vector3 spriteScale;
+    public Vector3 Scale { get { return collider.bounds.size; } }
 
     public bool isCheckedForSearch;
 
