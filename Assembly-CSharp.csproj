@@ -139,6 +139,7 @@
      <Compile Include="Assets\Scripts\Level\Gamefield.cs" />
      <Compile Include="Assets\Scripts\Level\Points.cs" />
      <Compile Include="Assets\Scripts\Level\Portal.cs" />
+     <Compile Include="Assets\Scripts\Level\PowerUpBehaviour.cs" />
      <Compile Include="Assets\Scripts\Level\SerializedLevel.cs" />
      <Compile Include="Assets\Scripts\Level\TargetScoreGameMode.cs" />
      <Compile Include="Assets\Scripts\Level\TeleportableEntity.cs" />
@@ -147,6 +148,7 @@
      <Compile Include="Assets\Scripts\Map\LinkToLevel.cs" />
      <Compile Include="Assets\Scripts\Map\VerticalDrag.cs" />
      <Compile Include="Assets\Scripts\Menu\Handler.cs" />
+     <Compile Include="Assets\SimpleParticlePack\Scripts\ParticleTester.cs" />
      <Compile Include="Assets\TK2DROOT\tk2d\Code\Camera\tk2dCamera.cs" />
      <Compile Include="Assets\TK2DROOT\tk2d\Code\Camera\tk2dCameraAnchor.cs" />
      <Compile Include="Assets\TK2DROOT\tk2d\Code\Camera\tk2dCameraUtil.cs" />

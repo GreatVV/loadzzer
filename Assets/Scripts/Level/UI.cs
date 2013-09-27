@@ -67,4 +67,17 @@ public class UI : MonoBehaviour {
         OnGameOverRestartClick();
     }
     
+    //setup
+    public void OnWidthSubmit(string text)
+    {
+        Gamefield.Width = int.Parse(text);
+        OnRestartClick();
+    }
+
+    public void OnHeightSubmit(string text)
+    {
+        Gamefield.Height = int.Parse(text);
+        OnRestartClick();
+    }
+
 }
