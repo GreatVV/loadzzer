@@ -71,12 +71,14 @@ public class UI : MonoBehaviour {
     public void OnWidthSubmit(string text)
     {
         Gamefield.Width = int.Parse(text);
+        Gamefield.ChuzzleSize = new Vector3(480, 480, 0) / Gamefield.Width;
         OnRestartClick();
     }
 
     public void OnHeightSubmit(string text)
     {
         Gamefield.Height = int.Parse(text);
+        Gamefield.ChuzzleSize = new Vector3(480, 480, 0) / Gamefield.Width;
         OnRestartClick();
     }
 

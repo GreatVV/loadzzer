@@ -63,7 +63,7 @@ public class Gamefield : MonoBehaviour {
     public bool isMovingToPrevPosition;
 
     public GameObject portalPrefab;
-    public List<Portal> portalsOnMap;
+
 
     public Points pointSystem;
     public GameMode gameMode;
@@ -74,19 +74,15 @@ public class Gamefield : MonoBehaviour {
     {
       //  StartGame();
     }
-
+    
     public void Reset()
     {
         newTilesAnimationChuzzles.Clear();
         deathAnimationChuzzles.Clear();
         animatedChuzzles.Clear();
         selectedChuzzles.Clear();
-        currentChuzzle = null;        
-        foreach(var portal in portalsOnMap)
-        {
-            Destroy(portal.gameObject);
-        }
-        portalsOnMap.Clear();
+        currentChuzzle = null;
+        portals.Clear();        
         directionChozen = false;
         isVerticalDrag = false;
         foreach(var chuzzle in chuzzles)
@@ -549,8 +545,8 @@ public class Gamefield : MonoBehaviour {
         var color = GameObject.Instantiate(ChuzzlePrefabs.First(x => x.GetComponent<Chuzzle>().Type == firstTile.Type)) as GameObject;
         color.transform.parent = powerUpChuzzle.transform;
         color.transform.localPosition = Vector3.zero;
-        color.gameObject.GetComponent<Chuzzle>().enabled = false;
-        color.gameObject.GetComponent<BoxCollider>().enabled = false;
+        Destroy(color.gameObject.GetComponent<Chuzzle>());
+        Destroy(color.gameObject.GetComponent<BoxCollider>());
         color.GetComponent<tk2dSprite>().SortingOrder = -1;
 
         Destroy(firstTile.gameObject);
@@ -600,8 +596,8 @@ public class Gamefield : MonoBehaviour {
         var color = GameObject.Instantiate(ChuzzlePrefabs.First(x => x.GetComponent<Chuzzle>().Type == firstTile.Type)) as GameObject;                
         color.transform.parent = powerUpChuzzle.transform;
         color.transform.localPosition = Vector3.zero;
-        color.gameObject.GetComponent<Chuzzle>().enabled = false;
-        color.gameObject.GetComponent<BoxCollider>().enabled = false;
+        Destroy(color.gameObject.GetComponent<Chuzzle>());
+        Destroy(color.gameObject.GetComponent<BoxCollider>());
         color.GetComponent<tk2dSprite>().SortingOrder = -1;
 
         Destroy(firstTile.gameObject);
@@ -644,7 +640,7 @@ public class Gamefield : MonoBehaviour {
                  }
              }
         }          
-        RemoveTiles(tilesToKill, false);
+        RemoveTiles(tilesToKill, true);
 
         return tilesToKill.Any();
     }
