@@ -9,7 +9,8 @@ public enum ChuzzleType
     Black,
     Green,
     White,
-    Finn
+    Blue,
+    Pink
 }
 
 public enum PowerType

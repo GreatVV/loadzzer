@@ -82,4 +82,16 @@ public class UI : MonoBehaviour {
         OnRestartClick();
     }
 
+    public void OnSetTS(string text)
+    {
+        (Gamefield.gameMode as TargetScoreGameMode).TargetScore = int.Parse(text);        
+        OnRestartClick();
+    }
+
+    public void OnSetTST(string text)
+    {
+        (Gamefield.gameMode as TargetScoreGameMode).StartTurns = int.Parse(text);
+        OnRestartClick();
+    }
+
 }

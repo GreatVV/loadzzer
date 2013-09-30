@@ -570,8 +570,8 @@ public class Gamefield : MonoBehaviour {
         var targetPosition = new Vector3(c.MoveTo.x * c.Scale.x, c.MoveTo.y * c.Scale.y, 0);
         
         specialTilesAnimated.Add(c);
-        iTween.ScaleTo(c.gameObject, Vector3.zero, 1f);
-        iTween.MoveTo(c.gameObject, iTween.Hash("x", targetPosition.x, "y", targetPosition.y, "z", targetPosition.z, "time", 1f, "easetype", iTween.EaseType.linear, "oncomplete", "OnCreateLineTweenComplete", "oncompletetarget", gameObject, "oncompleteparams", c));
+       // iTween.ScaleTo(c.gameObject, Vector3.zero, 1f);
+        iTween.MoveTo(c.gameObject, iTween.Hash("x", targetPosition.x, "y", targetPosition.y, "z", targetPosition.z, "time", 0.3f, "easetype", iTween.EaseType.easeInOutQuad, "oncomplete", "OnCreateLineTweenComplete", "oncompletetarget", gameObject, "oncompleteparams", c));
 
     }
 
@@ -758,6 +758,8 @@ public class Gamefield : MonoBehaviour {
 
     }
 
+    public GameObject Explosion;
+
     private void RemoveTiles(List<Chuzzle> combination, bool needCountPoints)
     {
         if (needCountPoints)
@@ -768,9 +770,11 @@ public class Gamefield : MonoBehaviour {
         foreach (var chuzzle in combination)
         {
             //remove chuzzle from game logic
-            RemoveChuzzle(chuzzle);             
+            RemoveChuzzle(chuzzle);            
 
-            iTween.MoveTo(chuzzle.gameObject, iTween.Hash("x", 0, "y", 0, "z", 0, "time", 0.3f));
+            var explosion = GameObject.Instantiate(Explosion, chuzzle.transform.position, Quaternion.identity);
+            Destroy(explosion, 1f);
+            //iTween.MoveTo(chuzzle.gameObject, iTween.Hash("x", 0, "y", 0, "z", 0, "time", 0.3f));
             iTween.ScaleTo(chuzzle.gameObject, iTween.Hash("x", 0, "y", 0, "z", 0, "time", 0.3f, "oncomplete", "OnCompleteDeath", "oncompletetarget", gameObject, "oncompleteparams", chuzzle));
 
             deathAnimationChuzzles.Add(chuzzle);
