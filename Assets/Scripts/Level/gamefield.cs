@@ -33,6 +33,8 @@ public class Level
 {
     public int Width = 6;
     public int Height = 6;
+
+    public int NumberOfColors = -1;
                                                                
     public List<PortalBlock> portals = new List<PortalBlock>();
     public List<Cell> cells = new List<Cell>();           
@@ -97,12 +99,14 @@ public class Level
         Width = level.Width;
         Height = level.Height;
         cells.AddRange(level.specialCells);
+        NumberOfColors = level.NumberOfColors;
         InitRandom();
     }
 
     public Chuzzle CreateRandomChuzzle(int x, int y)
     {
-        var prefab = ChuzzlePrefabs[Random.Range(0, ChuzzlePrefabs.Length)];
+        var colorsNumber = NumberOfColors == -1 ? ChuzzlePrefabs.Length : NumberOfColors;
+        var prefab = ChuzzlePrefabs[Random.Range(0, colorsNumber)];
         return CreateChuzzle(x, y, prefab);
     }
 
@@ -206,8 +210,7 @@ public class Gamefield : MonoBehaviour {
         ToBottom
     };
 
-    public Direction currentDirection;
-
+    public Direction currentDirection;   
 
     public bool createNew = true;
 
@@ -262,9 +265,11 @@ public class Gamefield : MonoBehaviour {
         {
             var level = new SerializedLevel();
             level.Width = 5;
-            level.Height = 5;                                 
+            level.Height = 5;
+            level.NumberOfColors = 5;                 
             level.specialCells = new List<Cell>() {               
-                  new Cell(2,2,CellTypes.Block)                      
+                  new Cell(2,2,CellTypes.Block),
+                  new Cell(1,1,CellTypes.Block),
             };            
             Level.InitFromFile(level);
         }
@@ -343,34 +348,46 @@ public class Gamefield : MonoBehaviour {
                     //TODO: choose row
                     selectedChuzzles = Level.chuzzles.Where(x => x.Current.x == currentChuzzle.Current.x).ToList();
                     isVerticalDrag = true;
-                    if (delta.y > 0)
-                    {
-                        currentDirection = Direction.ToTop;
-                    } 
-                    else
-                    {
-                        currentDirection = Direction.ToBottom;
-                    }
+                   
                 }
                 else
                 {
                     //TODO: choose column
                     selectedChuzzles = Level.chuzzles.Where(x => x.Current.y == currentChuzzle.Current.y).ToList();
                     isVerticalDrag = false;
-                    if (delta.x > 0)
-                    {
-                        currentDirection = Direction.ToLeft;
-                    }
-                    else
-                    {
-                        currentDirection = Direction.ToRight;
-                    }
+                    
                 }
 
                 directionChozen = true;
               //  Debug.Log("Direction chozen. Vertical: "+isVerticalDrag);
             }           
         }        
+
+        if (directionChozen)
+        {
+            if (isVerticalDrag)
+            {
+                if (delta.y > 0)
+                {
+                    currentDirection = Direction.ToTop;
+                }
+                else
+                {
+                    currentDirection = Direction.ToBottom;
+                }
+            }
+            else
+            {
+                if (delta.x > 0)
+                {
+                    currentDirection = Direction.ToLeft;
+                }
+                else
+                {
+                    currentDirection = Direction.ToRight;
+                }
+            }
+        }
 
         // RESET START POINT
         dragOrigin = Input.mousePosition;              
@@ -926,6 +943,8 @@ public class Gamefield : MonoBehaviour {
 
     public Chuzzle GetLeftFor(Chuzzle c)
     {
+        return Level.chuzzles.FirstOrDefault(x => x.Real == c.Real.Left);
+
         var leftCell = c.Real.Left;
         while (leftCell !=null && leftCell.type == CellTypes.Block)
         {
@@ -936,6 +955,8 @@ public class Gamefield : MonoBehaviour {
 
     public Chuzzle GetRightFor(Chuzzle c)
     {
+        return Level.chuzzles.FirstOrDefault(x => x.Real == c.Real.Right);
+
         var right = c.Real.Right;
         while (right != null && right.type == CellTypes.Block)
         {
@@ -946,6 +967,8 @@ public class Gamefield : MonoBehaviour {
 
     public Chuzzle GetTopFor(Chuzzle c)
     {
+        return Level.chuzzles.FirstOrDefault(x => x.Real == c.Real.Top);
+
         var top = c.Real.Top;
         while (top != null && top.type == CellTypes.Block)
         {
@@ -956,6 +979,8 @@ public class Gamefield : MonoBehaviour {
 
     public Chuzzle GetBottomFor(Chuzzle c)
     {
+        return Level.chuzzles.FirstOrDefault(x => x.Real == c.Real.Bottom);
+
         var bottom = c.Real.Bottom;
         while (bottom != null && bottom.type == CellTypes.Block)
         {

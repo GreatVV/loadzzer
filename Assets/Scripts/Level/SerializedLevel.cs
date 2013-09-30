@@ -82,7 +82,9 @@ public class Cell
 public class SerializedLevel {
 
     public int Width;
-    public int Height;     
-   
+    public int Height;
+
+    public int NumberOfColors = -1;
+
     public List<Cell> specialCells;
 }
