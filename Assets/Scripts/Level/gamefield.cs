@@ -28,150 +28,87 @@ public class Pair
     public GameObject prefab;
 }
 
-public class Gamefield : MonoBehaviour {
-
-    //idea: сделать телепорты просто как указатель на какую клетку переходить при встрече нахождении на этой клетке       
-
-    public bool createNew = true;
-    
-    public Vector3 ChuzzleSize = new Vector3(80, 80);
-
-    public List<Pair> PowerTypePrefabs;
-
-    public GameObject[] ChuzzlePrefabs;   
-
-    public int Width = 7;
-    public int Height = 10;    
-
-    public List<Chuzzle> chuzzles;
-
-    public LayerMask chuzzleMask;       
-   
-    Chuzzle draggable;
-    Vector3 dragOrigin;
-    Vector3 delta;
-    Vector3 deltaTouch;
-    bool directionChozen;
-    bool isVerticalDrag;
-
-    public Chuzzle currentChuzzle;
-    public List<Chuzzle> selectedChuzzles;
-    public List<Chuzzle> animatedChuzzles;
-
+[Serializable]
+public class Level
+{
+    public int Width = 6;
+    public int Height = 6;
+                                                               
     public List<PortalBlock> portals = new List<PortalBlock>();
+    public List<Cell> cells = new List<Cell>();           
 
-    public bool isMovingToPrevPosition;
+    public Vector3 ChuzzleSize = new Vector3(80, 80);
+    public GameObject[] ChuzzlePrefabs;
 
-    public GameObject portalPrefab;
+    public List<Chuzzle> chuzzles = new List<Chuzzle>();
 
+    public GameObject Gamefield;
 
-    public Points pointSystem;
-    public GameMode gameMode;
-
-    public List<Cell> cells;
-
-    void Awake()
+    public void InitRandom()
     {
-      //  StartGame();
-    }
-    
-    public void Reset()
-    {
-        newTilesAnimationChuzzles.Clear();
-        deathAnimationChuzzles.Clear();
-        animatedChuzzles.Clear();
-        selectedChuzzles.Clear();
-        currentChuzzle = null;
-        portals.Clear();        
-        directionChozen = false;
-        isVerticalDrag = false;
-        foreach(var chuzzle in chuzzles)
+        for (int y = 0; y < Height; y++)
         {
-            Destroy(chuzzle.gameObject);
-        }
-        chuzzles.Clear();
-
-        pointSystem.Reset();
-        gameMode.Reset();
-    }
-
-    public void StartGame()
-    {                 
-        if (createNew)
-        {
-            newTilesInColumns = new int[Width];
-            for (int i = 0; i < Height; i++)
-            {                   
-                for (int j = 0; j < Width; j++)
-                {                       
-                    CreateRandomChuzzle(j, i);                    
-                }                        
-
-                var leftPortalBlock = new PortalBlock();
-                leftPortalBlock.x = -1;
-                leftPortalBlock.y = i;
-                leftPortalBlock.toX = Width-1;
-                leftPortalBlock.toY = i;
-
-                var rightPortalBlock = new PortalBlock();                
-                rightPortalBlock.x = Width;
-                rightPortalBlock.y = i;
-                rightPortalBlock.toX = 0;
-                rightPortalBlock.toY = i;
-
-                this.portals.Add(leftPortalBlock);
-                this.portals.Add(rightPortalBlock);
+            for (int x = 0; x < Width; x++)
+            {
+                if (GetCellAt(x, y).type == CellTypes.Usual)
+                {
+                    CreateRandomChuzzle(x, y);
+                }
             }
 
+            var leftPortalBlock = new PortalBlock();
+            leftPortalBlock.x = -1;
+            leftPortalBlock.y = y;
+            leftPortalBlock.toX = Width - 1;
+            leftPortalBlock.toY = y;
 
-            for (int j = 0; j < Width; j++)
-            {    
-                var upPortalBlock = new PortalBlock();
-                upPortalBlock.x = j;
-                upPortalBlock.y = Height;
-                upPortalBlock.toX = j;
-                upPortalBlock.toY = 0;
+            var rightPortalBlock = new PortalBlock();
+            rightPortalBlock.x = Width;
+            rightPortalBlock.y = y;
+            rightPortalBlock.toX = 0;
+            rightPortalBlock.toY = y;
 
-                var bottomPortalBlock = new PortalBlock();
-                bottomPortalBlock.toX = j;
-                bottomPortalBlock.toY = Height-1;
-                bottomPortalBlock.x = j;
-                bottomPortalBlock.y = -1;
-
-                this.portals.Add(upPortalBlock);
-                this.portals.Add(bottomPortalBlock);
-            }                                  
-        } 
-        else
-        {
-            var level = new SerializedLevel();
-            level.Width = 5;
-            level.Height = 5;
-            level.TilesInColumn = new int[5] { 5, 5, 4, 5, 5 };
-            level.TilesInRow = new int[5] { 5, 5, 4, 5, 5 };
-            level.specialCells = new List<Cell>() {               
-                  new Cell(2,2,CellTypes.Block)                      
-            };
-            CreateLevelFrom(level);
+            this.portals.Add(leftPortalBlock);
+            this.portals.Add(rightPortalBlock);
         }
 
-        AnalyzeField(false);
+
+        for (int j = 0; j < Width; j++)
+        {
+            var upPortalBlock = new PortalBlock();
+            upPortalBlock.x = j;
+            upPortalBlock.y = Height;
+            upPortalBlock.toX = j;
+            upPortalBlock.toY = 0;
+
+            var bottomPortalBlock = new PortalBlock();
+            bottomPortalBlock.toX = j;
+            bottomPortalBlock.toY = Height - 1;
+            bottomPortalBlock.x = j;
+            bottomPortalBlock.y = -1;
+
+            this.portals.Add(upPortalBlock);
+            this.portals.Add(bottomPortalBlock);
+        }       
     }
 
-    public void CreateLevelFrom(SerializedLevel level)
-    {         
-
+    public void InitFromFile(SerializedLevel level)
+    {
+        Width = level.Width;
+        Height = level.Height;
+        cells.AddRange(level.specialCells);
+        InitRandom();
     }
 
-    private Chuzzle CreateRandomChuzzle(int x, int y)
+    public Chuzzle CreateRandomChuzzle(int x, int y)
     {
         var prefab = ChuzzlePrefabs[Random.Range(0, ChuzzlePrefabs.Length)];
         return CreateChuzzle(x, y, prefab);
-    }    
+    }
 
-    private Chuzzle CreateChuzzle(int x, int y, GameObject prefab)
+    public Chuzzle CreateChuzzle(int x, int y, GameObject prefab)
     {
-        var gameObject = NGUITools.AddChild(this.gameObject, prefab);
+        var gameObject = NGUITools.AddChild(Gamefield.gameObject, prefab);
         gameObject.layer = prefab.layer;
         (gameObject.collider as BoxCollider).size = ChuzzleSize;
         (gameObject.collider as BoxCollider).center = ChuzzleSize / 2;
@@ -183,9 +120,9 @@ public class Gamefield : MonoBehaviour {
         chuzzles.Add(chuzzle);
         return chuzzle;
     }
-                            
-    Cell GetCellAt(int x, int y)
-    {            
+
+    public Cell GetCellAt(int x, int y)
+    {
         var cell = cells.FirstOrDefault(c => c.x == x && c.y == y);
         if (cell == null)
         {
@@ -228,6 +165,114 @@ public class Gamefield : MonoBehaviour {
         return cell;
     }
 
+    #region Block and Portals
+
+    public bool IsPortal(int x, int y)
+    {
+        return portals.Any(p => p.x == x && p.y == y);
+    }
+
+    public PortalBlock GetPortalAt(int x, int y)
+    {
+        return portals.First(p => p.x == x && p.y == y);
+    }
+
+    public Vector3 ConvertXYToPosition(int x, int y, Vector3 scale)
+    {
+        return new Vector3(x * scale.x, y * scale.y, 0);
+    }
+
+    #endregion
+
+    public void Reset()
+    {
+        portals.Clear();
+        foreach (var chuzzle in chuzzles)
+        {
+            GameObject.Destroy(chuzzle.gameObject);
+        }
+        chuzzles.Clear();
+    }
+
+}
+
+public class Gamefield : MonoBehaviour {
+
+    public enum Direction
+    {
+        ToLeft,
+        ToRight,
+        ToTop,
+        ToBottom
+    };
+
+    public Direction currentDirection;
+
+
+    public bool createNew = true;
+
+    public List<Pair> PowerTypePrefabs;    
+
+    public Level Level;               
+
+    public LayerMask chuzzleMask;       
+   
+    Chuzzle draggable;
+    Vector3 dragOrigin;
+    Vector3 delta;
+    Vector3 deltaTouch;
+    bool directionChozen;
+    bool isVerticalDrag;
+
+    public Chuzzle currentChuzzle;
+    public List<Chuzzle> selectedChuzzles;
+    public List<Chuzzle> animatedChuzzles;              
+
+    public bool isMovingToPrevPosition;
+
+    public GameObject portalPrefab;                            
+
+    public Points pointSystem;
+
+    public GameMode gameMode;          
+    
+    public void Reset()
+    {
+        newTilesAnimationChuzzles.Clear();
+        deathAnimationChuzzles.Clear();
+        animatedChuzzles.Clear();
+        selectedChuzzles.Clear();
+        currentChuzzle = null;
+              
+        directionChozen = false;
+        isVerticalDrag = false;
+        
+
+        pointSystem.Reset();
+        gameMode.Reset();
+    }
+
+    public void StartGame()
+    {                                           
+        if (createNew)
+        {                                                    
+            Level.InitRandom();                                        
+        } 
+        else
+        {
+            var level = new SerializedLevel();
+            level.Width = 5;
+            level.Height = 5;                                 
+            level.specialCells = new List<Cell>() {               
+                  new Cell(2,2,CellTypes.Block)                      
+            };            
+            Level.InitFromFile(level);
+        }
+        newTilesInColumns = new int[Level.Width];
+        AnalyzeField(false);
+    }
+    
+                                                    
     void Update()
     {
         isMovingToPrevPosition = animatedChuzzles.Any() || deathAnimationChuzzles.Any() || newTilesAnimationChuzzles.Any() || specialTilesAnimated.Any();
@@ -296,29 +341,36 @@ public class Gamefield : MonoBehaviour {
                 if (Mathf.Abs(delta.x) < Mathf.Abs(delta.y))
                 {
                     //TODO: choose row
-                    selectedChuzzles = chuzzles.Where(x => x.Current.x == currentChuzzle.Current.x).ToList();
+                    selectedChuzzles = Level.chuzzles.Where(x => x.Current.x == currentChuzzle.Current.x).ToList();
                     isVerticalDrag = true;
+                    if (delta.y > 0)
+                    {
+                        currentDirection = Direction.ToTop;
+                    } 
+                    else
+                    {
+                        currentDirection = Direction.ToBottom;
+                    }
                 }
                 else
                 {
                     //TODO: choose column
-                    selectedChuzzles = chuzzles.Where(x => x.Current.y == currentChuzzle.Current.y).ToList();
+                    selectedChuzzles = Level.chuzzles.Where(x => x.Current.y == currentChuzzle.Current.y).ToList();
                     isVerticalDrag = false;
+                    if (delta.x > 0)
+                    {
+                        currentDirection = Direction.ToLeft;
+                    }
+                    else
+                    {
+                        currentDirection = Direction.ToRight;
+                    }
                 }
 
                 directionChozen = true;
               //  Debug.Log("Direction chozen. Vertical: "+isVerticalDrag);
             }           
-        }
-        else
-        {             
-
-            foreach (var c in selectedChuzzles)
-            {                    
-                c.GetComponent<TeleportableEntity>().prevPosition = c.transform.localPosition;
-                c.transform.localPosition += isVerticalDrag ? new Vector3(0, delta.y, 0) : new Vector3(delta.x, 0, 0);
-            }
-        }
+        }        
 
         // RESET START POINT
         dragOrigin = Input.mousePosition;              
@@ -331,38 +383,53 @@ public class Gamefield : MonoBehaviour {
     {
         if (selectedChuzzles.Any() && directionChozen)
         {
+
             foreach (var c in selectedChuzzles)
             {
+                c.GetComponent<TeleportableEntity>().prevPosition = c.transform.localPosition;
+                c.transform.localPosition += isVerticalDrag ? new Vector3(0, delta.y, 0) : new Vector3(delta.x, 0, 0);
+
                 var real = ToRealCoordinates(c);
-                if (IsPortal((int)real.x, (int)real.y))
+                if (Level.IsPortal((int)real.x, (int)real.y))
                 {
-                    var difference = c.transform.localPosition - ConvertXYToPosition((int)real.x, (int)real.y, c.Scale);
+                    var difference = c.transform.localPosition - Level.ConvertXYToPosition((int)real.x, (int)real.y, c.Scale);
 
-                    var portal = GetPortalAt((int)real.x, (int)real.y);
-                    c.transform.localPosition = ConvertXYToPosition(portal.toX, portal.toY, c.Scale) + difference;
+                    var portal = Level.GetPortalAt((int)real.x, (int)real.y);
+                    c.transform.localPosition = Level.ConvertXYToPosition(portal.toX, portal.toY, c.Scale) + difference;
                 }
-            }                                   
-        }                      
-    }
-    
-    #region Block and Portals
+                else
+                {                       
+                    if ( Level.GetCellAt(real.x, real.y).type == CellTypes.Block )
+                    {
+                        var currentCell = Level.GetCellAt(real.x, real.y);
+                        Debug.Log("Teleport from " + currentCell);
+                        Cell targetCell = null;
+                        switch (currentDirection)
+                        {                                     
+                            case Direction.ToRight:
+                                targetCell = currentCell.Left;
+                                break;
+                            case Direction.ToLeft:
+                                targetCell = currentCell.Right;
+                                break;
+                            case Direction.ToTop:
+                                targetCell = currentCell.Top;
+                                break;
+                            case Direction.ToBottom:
+                                targetCell = currentCell.Bottom;
+                                break;
+                        }
+                        Debug.Log("Teleport to " + targetCell.ToString());
 
-    public bool IsPortal(int x, int y)
-    {
-        return portals.Any(p => p.x == x && p.y == y);
-    }
+                        var difference = c.transform.localPosition - Level.ConvertXYToPosition((int)real.x, (int)real.y, c.Scale); 
+                        c.transform.localPosition = Level.ConvertXYToPosition(targetCell.x, targetCell.y, c.Scale) + difference;
+                    }
+                }
+            }
 
-    public PortalBlock GetPortalAt(int x, int y)
-    {
-        return portals.First(p => p.x == x && p.y == y);
-    }
+        }
 
-    public Vector3 ConvertXYToPosition(int x, int y, Vector3 scale)
-    {
-        return new Vector3(x * scale.x, y * scale.y, 0);
-    }
-
-    #endregion
+    }              
 
     private void AnalyzeField(bool isHumanAction)
     {
@@ -376,7 +443,7 @@ public class Gamefield : MonoBehaviour {
         var combinations = FindCombinations();
         if (combinations.Count() > 0)
         {  
-            foreach (var c in chuzzles)
+            foreach (var c in Level.chuzzles)
             {
                 c.Current = c.Real;
             }
@@ -404,12 +471,12 @@ public class Gamefield : MonoBehaviour {
         else
         {
             //if no new combination - move to prevposition       
-            foreach (var c in chuzzles)
+            foreach (var c in Level.chuzzles)
             {
                 c.MoveTo = c.Real = c.Current;
             }
 
-            MoveToTargetPosition(chuzzles, "OnCompleteBackToPreviousPositionTween");
+            MoveToTargetPosition(Level.chuzzles, "OnCompleteBackToPreviousPositionTween");
         }
     }
 
@@ -422,15 +489,15 @@ public class Gamefield : MonoBehaviour {
 
     public void CalculateRealCoordinatesFor(Chuzzle chuzzle)
     {
-        chuzzle.Real = GetCellAt(Mathf.RoundToInt(chuzzle.transform.localPosition.x / chuzzle.Scale.x),Mathf.RoundToInt(chuzzle.transform.localPosition.y / chuzzle.Scale.y));        
+        chuzzle.Real = Level.GetCellAt(Mathf.RoundToInt(chuzzle.transform.localPosition.x / chuzzle.Scale.x), Mathf.RoundToInt(chuzzle.transform.localPosition.y / chuzzle.Scale.y));        
 
-        if (IsPortal(chuzzle.Real.x, chuzzle.Real.y))
+        if (Level.IsPortal(chuzzle.Real.x, chuzzle.Real.y))
         {
-            var difference = chuzzle.transform.localPosition - ConvertXYToPosition(chuzzle.Real.x, chuzzle.Real.y, chuzzle.Scale);
+            var difference = chuzzle.transform.localPosition - Level.ConvertXYToPosition(chuzzle.Real.x, chuzzle.Real.y, chuzzle.Scale);
 
-            var portal = GetPortalAt(chuzzle.Real.x, chuzzle.Real.y);
-            chuzzle.transform.localPosition = ConvertXYToPosition(portal.toX, portal.toY, chuzzle.Scale) + difference;
-            chuzzle.Real = GetCellAt(portal.toX, portal.toY);            
+            var portal = Level.GetPortalAt(chuzzle.Real.x, chuzzle.Real.y);
+            chuzzle.transform.localPosition = Level.ConvertXYToPosition(portal.toX, portal.toY, chuzzle.Scale) + difference;
+            chuzzle.Real = Level.GetCellAt(portal.toX, portal.toY);            
         }            
     }
 
@@ -538,11 +605,11 @@ public class Gamefield : MonoBehaviour {
         }
 
         var powerUp = PowerTypePrefabs.First(x => x.type == PowerType.Bomb).prefab;
-        var powerUpChuzzle = CreateChuzzle(firstTile.Current.x, firstTile.Current.y, powerUp);
+        var powerUpChuzzle = Level.CreateChuzzle(firstTile.Current.x, firstTile.Current.y, powerUp);
         powerUpChuzzle.Type = firstTile.Type;
         powerUpChuzzle.PowerType = PowerType.Bomb;
 
-        var color = GameObject.Instantiate(ChuzzlePrefabs.First(x => x.GetComponent<Chuzzle>().Type == firstTile.Type)) as GameObject;
+        var color = GameObject.Instantiate(Level.ChuzzlePrefabs.First(x => x.GetComponent<Chuzzle>().Type == firstTile.Type)) as GameObject;
         color.transform.parent = powerUpChuzzle.transform;
         color.transform.localPosition = Vector3.zero;
         Destroy(color.gameObject.GetComponent<Chuzzle>());
@@ -550,7 +617,7 @@ public class Gamefield : MonoBehaviour {
         color.GetComponent<tk2dSprite>().SortingOrder = -1;
 
         Destroy(firstTile.gameObject);
-        chuzzles.Remove(firstTile);
+        Level.chuzzles.Remove(firstTile);
         ordered.Remove(firstTile);
 
 
@@ -589,11 +656,11 @@ public class Gamefield : MonoBehaviour {
         var targetType = Random.Range(0, 100) > 50 ? PowerType.HorizontalLine : PowerType.VerticalLine;
 
         var powerUp = PowerTypePrefabs.First(x => x.type == targetType).prefab;
-        var powerUpChuzzle = CreateChuzzle(firstTile.Current.x, firstTile.Current.y, powerUp);
+        var powerUpChuzzle = Level.CreateChuzzle(firstTile.Current.x, firstTile.Current.y, powerUp);
         powerUpChuzzle.Type = firstTile.Type;
         powerUpChuzzle.PowerType = targetType;
 
-        var color = GameObject.Instantiate(ChuzzlePrefabs.First(x => x.GetComponent<Chuzzle>().Type == firstTile.Type)) as GameObject;                
+        var color = GameObject.Instantiate(Level.ChuzzlePrefabs.First(x => x.GetComponent<Chuzzle>().Type == firstTile.Type)) as GameObject;                
         color.transform.parent = powerUpChuzzle.transform;
         color.transform.localPosition = Vector3.zero;
         Destroy(color.gameObject.GetComponent<Chuzzle>());
@@ -601,7 +668,7 @@ public class Gamefield : MonoBehaviour {
         color.GetComponent<tk2dSprite>().SortingOrder = -1;
 
         Destroy(firstTile.gameObject);
-        chuzzles.Remove(firstTile);
+        Level.chuzzles.Remove(firstTile);
         ordered.Remove(firstTile);
 
         foreach (var c in ordered)
@@ -666,7 +733,7 @@ public class Gamefield : MonoBehaviour {
                 for (int j = 0; j < newInColumn; j++)
                 {
                     //create new tiles
-                    CreateRandomChuzzle(x, Height + j);
+                    Level.CreateRandomChuzzle(x, Level.Height + j);
                 }
             }
         }
@@ -677,17 +744,18 @@ public class Gamefield : MonoBehaviour {
             var newInColumn = newTilesInColumns[x];
             if (newInColumn > 0)
             {
-                for (var y = 0; y < Height; y++)
+                for (var y = 0; y < Level.Height; y++)
                 {
-                    if (At(x,y) == null)
-                    {
-                        var cell = GetCellAt(x, y);                        
+                    var cell = Level.GetCellAt(x, y);                        
+                    if (At(x,y) == null && cell.type != CellTypes.Block)
+                    {                                                                                
                         while (cell != null)
                         {   
                             var chuzzle = At(cell.x, cell.y);
                             if (chuzzle != null)
                             {
-                                chuzzle.MoveTo = GetCellAt(chuzzle.MoveTo.x, chuzzle.MoveTo.y - 1);                                
+                                chuzzle.MoveTo = chuzzle.MoveTo.GetBottomWithType();
+                                    //Level.GetCellAt(chuzzle.MoveTo.x, chuzzle.MoveTo.y - 1);                                
                             }
                             cell = cell.Top;
                         }
@@ -697,7 +765,7 @@ public class Gamefield : MonoBehaviour {
             }
         }
 
-        newTilesInColumns = new int[Width];
+        newTilesInColumns = new int[Level.Width];
 
         MoveTilesWhoNeedMoves();                   
         return hasNew;
@@ -705,7 +773,7 @@ public class Gamefield : MonoBehaviour {
 
     private void MoveTilesWhoNeedMoves()
     {
-        foreach (var c in chuzzles)
+        foreach (var c in Level.chuzzles)
         {
             if (c.MoveTo.y != c.Current.y)
             {
@@ -808,7 +876,7 @@ public class Gamefield : MonoBehaviour {
         var combinations = new List<List<Chuzzle>>();
 
         //find combination
-        foreach (var c in chuzzles)
+        foreach (var c in Level.chuzzles)
         {
             if (!c.isCheckedForSearch)
             {                   
@@ -819,9 +887,9 @@ public class Gamefield : MonoBehaviour {
                     combinations.Add(combination);
                 }
             }
-        }                                   
+        }
 
-        foreach (var c in chuzzles)
+        foreach (var c in Level.chuzzles)
         {
             c.isCheckedForSearch = false;
         }
@@ -831,7 +899,7 @@ public class Gamefield : MonoBehaviour {
 
     public Chuzzle At(int x, int y)
     {
-        return chuzzles.FirstOrDefault(c => c.Current.x == x && c.Current.y == y);
+        return Level.chuzzles.FirstOrDefault(c => c.Current.x == x && c.Current.y == y);
     }         
 
     public bool MoveToTargetPosition(List<Chuzzle> targetChuzzles, string callbackOnComplete)
@@ -862,8 +930,8 @@ public class Gamefield : MonoBehaviour {
         while (leftCell !=null && leftCell.type == CellTypes.Block)
         {
             leftCell = leftCell.Left;
-        }                                                             
-        return chuzzles.FirstOrDefault(x=>x.Real == leftCell);
+        }
+        return Level.chuzzles.FirstOrDefault(x => x.Real == leftCell);
     }
 
     public Chuzzle GetRightFor(Chuzzle c)
@@ -873,7 +941,7 @@ public class Gamefield : MonoBehaviour {
         {
             right = right.Right;
         }
-        return chuzzles.FirstOrDefault(x => x.Real == right);
+        return Level.chuzzles.FirstOrDefault(x => x.Real == right);
     }
 
     public Chuzzle GetTopFor(Chuzzle c)
@@ -883,7 +951,7 @@ public class Gamefield : MonoBehaviour {
         {
             top = top.Top;
         }
-        return chuzzles.FirstOrDefault(x => x.Real == top);
+        return Level.chuzzles.FirstOrDefault(x => x.Real == top);
     }
 
     public Chuzzle GetBottomFor(Chuzzle c)
@@ -893,7 +961,7 @@ public class Gamefield : MonoBehaviour {
         {
             bottom = bottom.Bottom;
         }
-        return chuzzles.FirstOrDefault(x => x.Real == bottom);
+        return Level.chuzzles.FirstOrDefault(x => x.Real == bottom);
     }
 
     public List<Chuzzle> RecursiveFind(Chuzzle chuzzle, List<Chuzzle> combination)
@@ -966,7 +1034,7 @@ public class Gamefield : MonoBehaviour {
     /// <param name="chuzzle"></param>
     public void RemoveChuzzle(Chuzzle chuzzle)
     {
-        chuzzles.Remove(chuzzle);
+        Level.chuzzles.Remove(chuzzle);
         newTilesInColumns[chuzzle.Current.x]++;
     }
 }

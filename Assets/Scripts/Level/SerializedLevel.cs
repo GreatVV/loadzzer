@@ -56,17 +56,33 @@ public class Cell
         this.x = x;
         this.y = y;
         this.type = type;             
-    }                                          
+    }
+
+    public Cell GetBottomWithType(CellTypes type = CellTypes.Usual)
+    {
+        var bottom = Bottom;
+        while (bottom != null)
+        {
+            if (bottom.type == type)
+            {
+                return bottom;
+            }
+            bottom = bottom.Bottom;
+        }
+        return null;
+    }
+
+    public override string ToString()
+    {
+        return string.Format("({0},{1}):{2}", x,y, type);
+    }                        
 }
 
 [Serializable]
 public class SerializedLevel {
 
     public int Width;
-    public int Height;
-
-    public int[] TilesInColumn;
-    public int[] TilesInRow;
-
+    public int Height;     
+   
     public List<Cell> specialCells;
 }
