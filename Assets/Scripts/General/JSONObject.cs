@@ -188,8 +188,7 @@ public class JSONObject : Nullable
                                                             case ',':
                                                                 inProp = false;
                                                                 list.Add(
-                                                                    new JSONObject(str.Substring(tokenTmp + 1,
-                                                                                                 i - tokenTmp - 1)));
+                                                                    new JSONObject(str.Substring(tokenTmp + 1,i - tokenTmp - 1)));
                                                                 tokenTmp = i;
                                                                 break;
                                                             case '}':
@@ -205,8 +204,8 @@ public class JSONObject : Nullable
                                                         inProp = true;
                                                         try
                                                         {
-                                                            string propName = str.Substring(tokenTmp + 2,
-                                                                                            i - tokenTmp - 3);
+                                                            //string propName = str.Substring(tokenTmp + 2,i - tokenTmp - 3);
+                                                            string propName = str.Substring(tokenTmp + 1, i - tokenTmp - 1);
                                                             if (propName.StartsWith("\""))
                                                             {
                                                                 propName = propName.Replace("\"", "");

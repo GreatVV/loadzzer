@@ -72,6 +72,49 @@ public class Cell
         return null;
     }
 
+    public Cell GetLeftWithType(CellTypes type = CellTypes.Usual)
+    {
+        var left = Left;
+        while (left != null)
+        {
+            if (left.type == type)
+            {
+                return left;
+            }
+            left = left.Left;
+        }
+        return null;
+    }
+
+    public Cell GetRightWithType(CellTypes type = CellTypes.Usual)
+    {
+        var right = Right;
+        while (right != null)
+        {
+            Debug.Log("Right" + right.ToString());
+            if (right.type == type)
+            {
+                return right;
+            }
+            right = right.Right;
+        }
+        return null;
+    }
+
+    public Cell GetTopWithType(CellTypes type = CellTypes.Usual)
+    {
+        var top = Top;
+        while (top != null)
+        {
+            if (top.type == type)
+            {
+                return top;
+            }
+            top = top.Top;
+        }
+        return null;
+    }
+
     public override string ToString()
     {
         return string.Format("({0},{1}):{2}", x,y, type);
@@ -81,23 +124,35 @@ public class Cell
 [Serializable]
 public class SerializedLevel {
 
+    public GameMode gameMode;
+
     public int Width;
     public int Height;
+    public string Name;
 
     public int NumberOfColors = -1;
 
-    public List<Cell> specialCells;
+    public List<Cell> specialCells = new List<Cell>();
 
-    public static SerializedLevel FromJson(string json)
-    {
-        var jsonObject = new JSONObject(json);
+    public static SerializedLevel FromJson(JSONObject jsonObject)
+    {           
+        Debug.Log("Print: \n" + jsonObject.ToString());
         var serializedLevel = new SerializedLevel();
-        serializedLevel.Width = (int)jsonObject.GetField("Width").n;
-        serializedLevel.Height = (int)jsonObject.GetField("Height").n;
-        serializedLevel.NumberOfColors = (int)jsonObject.GetField("NumberOfColors").n;
+        serializedLevel.Name = jsonObject.GetField("name").str;
+        serializedLevel.Width = (int)jsonObject.GetField("width").n;
+        serializedLevel.Height = (int)jsonObject.GetField("height").n;
+        serializedLevel.NumberOfColors = jsonObject.HasField("NumberOfColor")? (int)jsonObject.GetField("NumberOfColors").n : 8;
 
-
-
+        var array = jsonObject.GetField("map").list;
+        foreach(var tile in array)
+        {
+            if (tile.n != 0)
+            {
+                var x = array.IndexOf(tile)%serializedLevel.Width;
+                var y = serializedLevel.Height - (array.IndexOf(tile) / serializedLevel.Width) - 1 ;
+                serializedLevel.specialCells.Add(new Cell(x, y, CellTypes.Block));
+            }
+        }   
         return serializedLevel;
     }
 }

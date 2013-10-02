@@ -96,10 +96,17 @@ public class Level
 
     public void InitFromFile(SerializedLevel level)
     {
+        cells.Clear();
+        portals.Clear();
+
         Width = level.Width;
-        Height = level.Height;
-        cells.AddRange(level.specialCells);
+        Height = level.Height;        
+        foreach(var newCell in level.specialCells)
+        {
+            AddCell(newCell.x, newCell.y, newCell);
+        }
         NumberOfColors = level.NumberOfColors;
+        ChuzzleSize = new Vector3(480, 480, 0) / Width;
         InitRandom();
     }
 
@@ -119,6 +126,7 @@ public class Level
         var chuzzle = gameObject.GetComponent<Chuzzle>();
         chuzzle.Real = chuzzle.MoveTo = chuzzle.Current = GetCellAt(x, y);
 
+        gameObject.transform.parent = Gamefield.transform;
         gameObject.transform.localPosition = new Vector3(x * gameObject.GetComponent<Chuzzle>().Scale.x, y * gameObject.GetComponent<Chuzzle>().Scale.y, 0);
 
         chuzzles.Add(chuzzle);
@@ -130,43 +138,48 @@ public class Level
         var cell = cells.FirstOrDefault(c => c.x == x && c.y == y);
         if (cell == null)
         {
-            var newCell = new Cell(x, y);
-            cells.Add(newCell);
-            //set left
-            var left = cells.FirstOrDefault(c => c.x == x - 1 && c.y == y);
-            if (left != null)
-            {
-                newCell.Left = left;
-                left.Right = newCell;
-            }
-
-            //set right
-            var right = cells.FirstOrDefault(c => c.x == x + 1 && c.y == y);
-            if (right != null)
-            {
-                newCell.Right = right;
-                right.Left = newCell;
-            }
-
-            //set top
-            var top = cells.FirstOrDefault(c => c.x == x && c.y == y + 1);
-            if (top != null)
-            {
-                newCell.Top = top;
-                top.Bottom = newCell;
-            }
-
-            //set bottom
-            var bottom = cells.FirstOrDefault(c => c.x == x && c.y == y - 1);
-            if (bottom != null)
-            {
-                newCell.Bottom = bottom;
-                bottom.Top = newCell;
-            }
+            var newCell = new Cell(x, y);            
+            AddCell(x, y, newCell);
 
             return newCell;
         }
         return cell;
+    }
+
+    private void AddCell(int x, int y, Cell newCell)
+    {
+        cells.Add(newCell);
+        //set left
+        var left = cells.FirstOrDefault(c => c.x == x - 1 && c.y == y);
+        if (left != null)
+        {
+            newCell.Left = left;
+            left.Right = newCell;
+        }
+
+        //set right
+        var right = cells.FirstOrDefault(c => c.x == x + 1 && c.y == y);
+        if (right != null)
+        {
+            newCell.Right = right;
+            right.Left = newCell;
+        }
+
+        //set top
+        var top = cells.FirstOrDefault(c => c.x == x && c.y == y + 1);
+        if (top != null)
+        {
+            newCell.Top = top;
+            top.Bottom = newCell;
+        }
+
+        //set bottom
+        var bottom = cells.FirstOrDefault(c => c.x == x && c.y == y - 1);
+        if (bottom != null)
+        {
+            newCell.Bottom = bottom;
+            bottom.Top = newCell;
+        }
     }
 
     #region Block and Portals
@@ -210,9 +223,7 @@ public class Gamefield : MonoBehaviour {
         ToBottom
     };
 
-    public Direction currentDirection;   
-
-    public bool createNew = true;
+    public Direction currentDirection;       
 
     public List<Pair> PowerTypePrefabs;    
 
@@ -258,29 +269,22 @@ public class Gamefield : MonoBehaviour {
         currentChuzzle = null;
               
         directionChozen = false;
-        isVerticalDrag = false;
-        
+        isVerticalDrag = false;       
 
         pointSystem.Reset();
         gameMode.Reset();
+        Level.Reset();
     }
 
-    public void StartGame()
-    {                                           
-        if (createNew)
+    public void StartGame(SerializedLevel level = null)
+    {
+        Reset();
+        if (level == null)
         {                                                    
             Level.InitRandom();                                        
         } 
         else
-        {
-            var level = new SerializedLevel();
-            level.Width = 5;
-            level.Height = 5;
-            level.NumberOfColors = 5;                 
-            level.specialCells = new List<Cell>() {               
-                  new Cell(2,2,CellTypes.Block),
-                  new Cell(1,1,CellTypes.Block),
-            };            
+        {               
             Level.InitFromFile(level);
         }
         newTilesInColumns = new int[Level.Width];
@@ -433,17 +437,53 @@ public class Gamefield : MonoBehaviour {
                         switch (currentDirection)
                         {                                     
                             case Direction.ToRight:
-                                targetCell = currentCell.Left;
+                                targetCell = currentCell.GetLeftWithType();
+                                Debug.Log("To Right");
+                                if (targetCell == null)
+                                {
+                                    targetCell = Level.GetCellAt(Level.Width-1, currentCell.y);
+                                    if (targetCell.type == CellTypes.Block)
+                                    {
+                                        targetCell = targetCell.GetLeftWithType();
+                                    }
+                                }
                                 break;
                             case Direction.ToLeft:
-                                targetCell = currentCell.Right;
+                                targetCell = currentCell.GetRightWithType();
+                                Debug.Log("To Left");
+                                if (targetCell == null)
+                                {                                       
+                                    targetCell = Level.GetCellAt(0, currentCell.y);
+                                    if (targetCell.type == CellTypes.Block)
+                                    {
+                                        targetCell = targetCell.GetRightWithType();
+                                    }
+                                }
                                 break;
                             case Direction.ToTop:
-                                targetCell = currentCell.Top;
+                                targetCell = currentCell.GetTopWithType();
+                                if (targetCell == null)
+                                {
+                                    targetCell = Level.GetCellAt(currentCell.x, 0);
+                                    if (targetCell.type == CellTypes.Block)
+                                    {
+                                        targetCell = targetCell.GetTopWithType();
+                                    }
+                                }
                                 break;
                             case Direction.ToBottom:
-                                targetCell = currentCell.Bottom;
+                                targetCell = currentCell.GetBottomWithType();
+                                if (targetCell == null)
+                                {
+                                    targetCell = Level.GetCellAt(currentCell.x, Level.Height-1);
+                                    if (targetCell.type == CellTypes.Block)
+                                    {
+                                        targetCell = targetCell.GetBottomWithType();
+                                    }
+                                }
                                 break;
+                            default:
+                                throw new ArgumentOutOfRangeException("Current direction can not be shit");
                         }
                         Debug.Log("Teleport to " + targetCell.ToString());
 
