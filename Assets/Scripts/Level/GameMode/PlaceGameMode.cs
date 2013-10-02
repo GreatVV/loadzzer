@@ -1,56 +1,47 @@
-﻿using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
-using System;
+﻿using System.Collections.Generic;
 using System.Linq;
 
-public class PlaceGameMode : GameMode 
+public class PlaceGameMode : GameMode
 {
+    public List<IntVector2> CurrentPlaceCoordinates;
+    public List<IntVector2> PlaceCoordinates;
     public Gamefield gamefield;
 
-    public List<IntVector2> PlaceCoordinates;
-
-    public List<IntVector2> CurrentPlaceCoordinates;
-
-    void Awake()
+    private void Awake()
     {
-        gamefield.TilesDestroyed += OnTileDestroyed;
+        gamefield.TileDestroyed += OnTileDestroyed;
         OnReset();
     }
 
-    void OnDestroy()
+    private void OnDestroy()
     {
-        gamefield.TilesDestroyed -= OnTileDestroyed;
+        gamefield.TileDestroyed -= OnTileDestroyed;
     }
 
-    void OnTileDestroyed(List<Chuzzle> destroyedChuzzles)
+    private void OnTileDestroyed(Chuzzle destroyedChuzzle)
     {
-         foreach(var destroyed in destroyedChuzzles)
-         {
-             var place = CurrentPlaceCoordinates.FirstOrDefault(x => x.x == destroyed.Current.x && x.y == destroyed.Current.y);
-             if (place != null)
-             {
-                 CurrentPlaceCoordinates.Remove(place);
-             }                                 
-         }
+        var place =
+            CurrentPlaceCoordinates.FirstOrDefault(
+                x => x.x == destroyedChuzzle.Current.x && x.y == destroyedChuzzle.Current.y);
+        if (place != null)
+        {
+            CurrentPlaceCoordinates.Remove(place);
+        }                                
 
-         Turns--;
-         
         if (CurrentPlaceCoordinates.Count == 0)
-         {
-             InvokeWin();
-         }
-         else
-         {
-             if (Turns == 0)
-             {
-                 InvokeGameOver();
-             }
-         }
+        {
+            InvokeWin();
+        }     
     }
 
     public override void Action()
-    {           
+    {
+        SpendTurn();
+
+        if (Turns == 0)
+        {
+            InvokeGameOver();
+        }
     }
 
     public override void OnReset()
@@ -58,6 +49,4 @@ public class PlaceGameMode : GameMode
         CurrentPlaceCoordinates.Clear();
         CurrentPlaceCoordinates.AddRange(PlaceCoordinates);
     }
-
-
 }

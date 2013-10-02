@@ -1,17 +1,10 @@
-﻿using UnityEngine;
-using System.Collections;
-using System;
-
-public class TargetScoreGameMode : GameMode {
-
-    
+﻿public class TargetScoreGameMode : GameMode
+{
+    public int TargetScore;
+    public Points pointSystem;
     public UILabel targetScore;
 
-    public Points pointSystem;
-    
-    public int TargetScore;                     
-
-    void Awake()
+    private void Awake()
     {
         Turns = StartTurns;
         pointSystem.PointChanged += OnPointChanged;
@@ -29,7 +22,7 @@ public class TargetScoreGameMode : GameMode {
 
     public override void OnReset()
     {
-        TurnsChanged(); 
+        TurnsChanged();
         targetScore.text = string.Format("Target score: {0}", TargetScore);
     }
 

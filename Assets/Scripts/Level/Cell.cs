@@ -1,0 +1,85 @@
+﻿using System;
+using UnityEngine;
+
+[Serializable]
+public class Cell
+{
+    public CellTypes type;
+
+    public int x;
+    public int y;
+
+    public Cell Left;
+    public Cell Right;
+    public Cell Top;
+    public Cell Bottom;   
+
+    public Cell(int x, int y, CellTypes type = CellTypes.Usual)
+    {
+        this.x = x;
+        this.y = y;
+        this.type = type;             
+    }
+
+    public Cell GetBottomWithType(CellTypes type = CellTypes.Usual)
+    {
+        var bottom = Bottom;
+        while (bottom != null)
+        {
+            if (bottom.type == type)
+            {
+                return bottom;
+            }
+            bottom = bottom.Bottom;
+        }
+        return null;
+    }
+
+    public Cell GetLeftWithType(CellTypes type = CellTypes.Usual)
+    {
+        var left = Left;
+        while (left != null)
+        {
+            if (left.type == type)
+            {
+                return left;
+            }
+            left = left.Left;
+        }
+        return null;
+    }
+
+    public Cell GetRightWithType(CellTypes type = CellTypes.Usual)
+    {
+        var right = Right;
+        while (right != null)
+        {
+            Debug.Log("Right" + right.ToString());
+            if (right.type == type)
+            {
+                return right;
+            }
+            right = right.Right;
+        }
+        return null;
+    }
+
+    public Cell GetTopWithType(CellTypes type = CellTypes.Usual)
+    {
+        var top = Top;
+        while (top != null)
+        {
+            if (top.type == type)
+            {
+                return top;
+            }
+            top = top.Top;
+        }
+        return null;
+    }
+
+    public override string ToString()
+    {
+        return string.Format("({0},{1}):{2}", x,y, type);
+    }                        
+}

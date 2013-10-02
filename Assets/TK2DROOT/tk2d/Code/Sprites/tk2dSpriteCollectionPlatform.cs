@@ -1,0 +1,12 @@
+[System.Serializable]
+public class tk2dSpriteCollectionPlatform
+{
+    public string name = "";
+    public tk2dSpriteCollection spriteCollection = null;
+    public bool Valid { get { return name.Length > 0 && spriteCollection != null; } }
+    public void CopyFrom(tk2dSpriteCollectionPlatform source)
+    {
+        name = source.name;
+        spriteCollection = source.spriteCollection;
+    }
+}

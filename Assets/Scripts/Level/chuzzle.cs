@@ -1,26 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public enum ChuzzleType
-{
-    Red,
-    Orange,
-    Yellow,
-    Black,
-    Green,
-    White,
-    Blue,
-    Pink
-}
-
-public enum PowerType
-{
-    Usual,
-    VerticalLine,
-    HorizontalLine,
-    Bomb
-}
-
 public class Chuzzle : MonoBehaviour {
 
     public Cell Current;

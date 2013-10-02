@@ -15,38 +15,38 @@ public class TargetChuzzleGameMode : GameMode
 
     void Awake()
     {
-        gamefield.TilesDestroyed += OnTileDestroyed;
+        gamefield.CombinationDestroyed += OnCombinationDestroyed;
         OnReset();
     }
 
     void OnDestroy()
     {
-        gamefield.TilesDestroyed -= OnTileDestroyed;
+        gamefield.CombinationDestroyed -= OnCombinationDestroyed;
     }
 
-    void OnTileDestroyed(List<Chuzzle> destroyedChuzzles)
+    void OnCombinationDestroyed(List<Chuzzle> destroyedChuzzles)
     {
+
         if (destroyedChuzzles.Contains(targetChuzzle))
         {
             TargetTurns -= destroyedChuzzles.Count;
         }
-        Turns--;
+        
 
         if (TargetTurns <= 0)
         {
             InvokeWin();
         }
-        else
-        {
-            if (Turns == 0)
-            {
-                InvokeGameOver();
-            }
-        }
+    
     }
 
     public override void Action()
     {
+        SpendTurn();
+        if (Turns == 0)
+        {
+            InvokeGameOver();
+        }
     }
 
     public override void OnReset()
