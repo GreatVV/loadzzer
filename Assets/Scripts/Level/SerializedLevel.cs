@@ -87,4 +87,17 @@ public class SerializedLevel {
     public int NumberOfColors = -1;
 
     public List<Cell> specialCells;
+
+    public static SerializedLevel FromJson(string json)
+    {
+        var jsonObject = new JSONObject(json);
+        var serializedLevel = new SerializedLevel();
+        serializedLevel.Width = (int)jsonObject.GetField("Width").n;
+        serializedLevel.Height = (int)jsonObject.GetField("Height").n;
+        serializedLevel.NumberOfColors = (int)jsonObject.GetField("NumberOfColors").n;
+
+
+
+        return serializedLevel;
+    }
 }

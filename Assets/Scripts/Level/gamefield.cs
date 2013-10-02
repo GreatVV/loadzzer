@@ -227,6 +227,16 @@ public class Gamefield : MonoBehaviour {
     bool directionChozen;
     bool isVerticalDrag;
 
+    public event Action<List<Chuzzle>> TilesDestroyed;
+
+    void InvokeTilesDestroyed(List<Chuzzle> destroyedChuzzles)
+    {
+        if (TilesDestroyed != null)
+        {
+            TilesDestroyed(destroyedChuzzles);
+        }
+    }
+
     public Chuzzle currentChuzzle;
     public List<Chuzzle> selectedChuzzles;
     public List<Chuzzle> animatedChuzzles;              
@@ -275,8 +285,7 @@ public class Gamefield : MonoBehaviour {
         }
         newTilesInColumns = new int[Level.Width];
         AnalyzeField(false);
-    }
-    
+    }          
                                                     
     void Update()
     {
@@ -943,50 +952,22 @@ public class Gamefield : MonoBehaviour {
 
     public Chuzzle GetLeftFor(Chuzzle c)
     {
-        return Level.chuzzles.FirstOrDefault(x => x.Real == c.Real.Left);
-
-        var leftCell = c.Real.Left;
-        while (leftCell !=null && leftCell.type == CellTypes.Block)
-        {
-            leftCell = leftCell.Left;
-        }
-        return Level.chuzzles.FirstOrDefault(x => x.Real == leftCell);
+        return Level.chuzzles.FirstOrDefault(x => x.Real == c.Real.Left);     
     }
 
     public Chuzzle GetRightFor(Chuzzle c)
     {
-        return Level.chuzzles.FirstOrDefault(x => x.Real == c.Real.Right);
-
-        var right = c.Real.Right;
-        while (right != null && right.type == CellTypes.Block)
-        {
-            right = right.Right;
-        }
-        return Level.chuzzles.FirstOrDefault(x => x.Real == right);
+        return Level.chuzzles.FirstOrDefault(x => x.Real == c.Real.Right);           
     }
 
     public Chuzzle GetTopFor(Chuzzle c)
     {
-        return Level.chuzzles.FirstOrDefault(x => x.Real == c.Real.Top);
-
-        var top = c.Real.Top;
-        while (top != null && top.type == CellTypes.Block)
-        {
-            top = top.Top;
-        }
-        return Level.chuzzles.FirstOrDefault(x => x.Real == top);
+        return Level.chuzzles.FirstOrDefault(x => x.Real == c.Real.Top);            
     }
 
     public Chuzzle GetBottomFor(Chuzzle c)
     {
-        return Level.chuzzles.FirstOrDefault(x => x.Real == c.Real.Bottom);
-
-        var bottom = c.Real.Bottom;
-        while (bottom != null && bottom.type == CellTypes.Block)
-        {
-            bottom = bottom.Bottom;
-        }
-        return Level.chuzzles.FirstOrDefault(x => x.Real == bottom);
+        return Level.chuzzles.FirstOrDefault(x => x.Real == c.Real.Bottom);            
     }
 
     public List<Chuzzle> RecursiveFind(Chuzzle chuzzle, List<Chuzzle> combination)

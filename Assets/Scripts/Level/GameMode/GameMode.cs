@@ -22,10 +22,12 @@ public abstract class GameMode : MonoBehaviour
     }
 
     public abstract void OnReset();
-    
+
+    public UILabel turnsLabel;
 
     public event Action GameOver;
     public event Action Win;
+    public event Action NoTurns;
 
     public void InvokeWin()
     {
@@ -54,5 +56,24 @@ public abstract class GameMode : MonoBehaviour
         {
             InvokeWin();
         }
+    }
+
+    public void SpendTurn()
+    {
+        Turns--;
+        TurnsChanged();
+        if (Turns == 0)
+        {
+            if (NoTurns != null)
+            {
+                NoTurns();
+            }
+            isGameOver = true;
+        }
+    }
+
+    public void TurnsChanged()
+    {
+        turnsLabel.text = string.Format("Turns: {0}", Turns);
     }
 }
