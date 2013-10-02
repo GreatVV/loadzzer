@@ -2,7 +2,7 @@
 using System.Collections;
 using System;
 
-public abstract class GameMode : MonoBehaviour
+public abstract class GameMode
 {
     public int Turns;
     public bool isGameOver;
@@ -70,6 +70,11 @@ public abstract class GameMode : MonoBehaviour
             }
             isGameOver = true;
         }
+    }
+
+    public virtual void OnDestroy()
+    {
+        
     }
 
     public void TurnsChanged()

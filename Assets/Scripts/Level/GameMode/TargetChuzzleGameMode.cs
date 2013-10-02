@@ -13,13 +13,14 @@ public class TargetChuzzleGameMode : GameMode
     public int StartTargetTurns;
     public int TargetTurns;
 
-    void Awake()
+    public TargetChuzzleGameMode(Gamefield gamefield)
     {
+        this.gamefield = gamefield;
         gamefield.CombinationDestroyed += OnCombinationDestroyed;
         OnReset();
     }
 
-    void OnDestroy()
+    public override void OnDestroy()
     {
         gamefield.CombinationDestroyed -= OnCombinationDestroyed;
     }

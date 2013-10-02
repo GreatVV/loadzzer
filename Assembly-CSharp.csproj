@@ -146,8 +146,8 @@
      <Compile Include="Assets\Scripts\Level\ChuzzleType.cs" />
      <Compile Include="Assets\Scripts\Level\Extensions.cs" />
      <Compile Include="Assets\Scripts\Level\GameMode\GameMode.cs" />
-     <Compile Include="Assets\Scripts\Level\GameMode\PlaceGameMode.cs" />
      <Compile Include="Assets\Scripts\Level\GameMode\TargetChuzzleGameMode.cs" />
+     <Compile Include="Assets\Scripts\Level\GameMode\TargetPlaceGameMode.cs" />
      <Compile Include="Assets\Scripts\Level\GameMode\TargetScoreGameMode.cs" />
      <Compile Include="Assets\Scripts\Level\Gamefield.cs" />
      <Compile Include="Assets\Scripts\Level\IntVector2.cs" />

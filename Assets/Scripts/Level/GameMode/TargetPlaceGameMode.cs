@@ -1,19 +1,20 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-public class PlaceGameMode : GameMode
+public class TargetPlaceGameMode : GameMode
 {
     public List<IntVector2> CurrentPlaceCoordinates;
     public List<IntVector2> PlaceCoordinates;
     public Gamefield gamefield;
 
-    private void Awake()
+    public TargetPlaceGameMode(Gamefield gamefield)
     {
-        gamefield.TileDestroyed += OnTileDestroyed;
+        this.gamefield = gamefield;
+        
         OnReset();
     }
 
-    private void OnDestroy()
+    public override void OnDestroy()
     {
         gamefield.TileDestroyed -= OnTileDestroyed;
     }
@@ -46,6 +47,7 @@ public class PlaceGameMode : GameMode
 
     public override void OnReset()
     {
+        gamefield.TileDestroyed += OnTileDestroyed;
         CurrentPlaceCoordinates.Clear();
         CurrentPlaceCoordinates.AddRange(PlaceCoordinates);
     }

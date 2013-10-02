@@ -88,14 +88,17 @@ public class Level
         cellSprites.Add(cellSprite);
         cellSprite.transform.localPosition = ConvertXYToPosition(cell.x, cell.y, ChuzzleSize);
         var sprite = cellSprite.GetComponent<tk2dSprite>();
-        
-        sprite.scale = new Vector3(ChuzzleSize.x / sprite.CurrentSprite.regionW, ChuzzleSize.y / sprite.CurrentSprite.regionH, 1);     
+        ScaleSprite(sprite);
     }
 
     public void InitFromFile(SerializedLevel level)
     {
         cells.Clear();
         portals.Clear();
+        if (level.gameMode != null)
+        {
+            level.gameMode.OnDestroy();
+        }
 
         Width = level.Width;
         Height = level.Height;
@@ -139,6 +142,7 @@ public class Level
 
     public void ScaleSprite(tk2dBaseSprite sprite)
     {
+        //BUG can contain bug when sprite is single texture and there is no box collider attached to it
         if (sprite.CurrentSprite.regionW != 0)
         {
             sprite.scale = new Vector3(ChuzzleSize.x/sprite.CurrentSprite.regionW,

@@ -224,13 +224,13 @@ public class Gamefield : MonoBehaviour
                     if (Level.GetCellAt(real.x, real.y).type == CellTypes.Block)
                     {
                         var currentCell = Level.GetCellAt(real.x, real.y);
-                        Debug.Log("Teleport from " + currentCell);
+                       // Debug.Log("Teleport from " + currentCell);
                         Cell targetCell = null;
                         switch (currentDirection)
                         {
                             case Direction.ToRight:
                                 targetCell = currentCell.GetLeftWithType();
-                                Debug.Log("To Right");
+                           //     Debug.Log("To Right");
                                 if (targetCell == null)
                                 {
                                     targetCell = Level.GetCellAt(Level.Width - 1, currentCell.y);
@@ -242,7 +242,7 @@ public class Gamefield : MonoBehaviour
                                 break;
                             case Direction.ToLeft:
                                 targetCell = currentCell.GetRightWithType();
-                                Debug.Log("To Left");
+                             //   Debug.Log("To Left");
                                 if (targetCell == null)
                                 {
                                     targetCell = Level.GetCellAt(0, currentCell.y);
@@ -277,7 +277,7 @@ public class Gamefield : MonoBehaviour
                             default:
                                 throw new ArgumentOutOfRangeException("Current direction can not be shit");
                         }
-                        Debug.Log("Teleport to " + targetCell);
+                      //  Debug.Log("Teleport to " + targetCell);
 
                         var difference = c.transform.localPosition - Level.ConvertXYToPosition(real.x, real.y, c.Scale);
                         c.transform.localPosition = Level.ConvertXYToPosition(targetCell.x, targetCell.y, c.Scale) +
