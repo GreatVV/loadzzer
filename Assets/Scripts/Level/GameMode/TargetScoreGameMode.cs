@@ -1,41 +1,38 @@
-﻿public class TargetScoreGameMode : GameMode
+﻿
+public class TargetScoreGameMode : GameMode
 {
-    public int TargetScore;
-    public Points pointSystem;
-    public UILabel targetScore;
+    public int TargetScore;         
 
-    public Gamefield gamefield;
-
-    public TargetScoreGameMode(Gamefield gamefield)
+    public TargetScoreGameMode(GameModeDescription description) : base(description)
     {
-        this.gamefield = gamefield;
-        pointSystem = gamefield.pointSystem;
-        Turns = StartTurns;
-        pointSystem.PointChanged += OnPointChanged;
-        TurnsChanged();
-        targetScore.text = string.Format("Target score: {0}", TargetScore);
-    }
+        TargetScore = description.TargetScore;
+    }                                 
 
     public override void OnDestroy()
     {
-        pointSystem.PointChanged -= OnPointChanged;
+        PointSystem.PointChanged -= OnPointChanged;
     }
 
     public void OnPointChanged(int points)
     {
         if (points >= TargetScore)
         {
-            isWin = true;
+            IsWin = true;
         }
+    }
+
+    protected override void OnInit()
+    {
+        PointSystem = Gamefield.pointSystem;
+        PointSystem.PointChanged += OnPointChanged;
     }
 
     public override void OnReset()
     {
-        TurnsChanged();
-        targetScore.text = string.Format("Target score: {0}", TargetScore);
+        Turns = StartTurns;
     }
 
-    public override void Action()
+    public override void HumanTurn()
     {
         SpendTurn();
     }

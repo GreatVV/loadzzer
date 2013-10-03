@@ -5,18 +5,14 @@ public class TargetPlaceGameMode : GameMode
 {
     public List<IntVector2> CurrentPlaceCoordinates;
     public List<IntVector2> PlaceCoordinates;
-    public Gamefield gamefield;
 
-    public TargetPlaceGameMode(Gamefield gamefield)
+    public TargetPlaceGameMode(GameModeDescription description) : base(description)
     {
-        this.gamefield = gamefield;
-        
-        OnReset();
     }
 
     public override void OnDestroy()
     {
-        gamefield.TileDestroyed -= OnTileDestroyed;
+        Gamefield.TileDestroyed -= OnTileDestroyed;
     }
 
     private void OnTileDestroyed(Chuzzle destroyedChuzzle)
@@ -27,27 +23,33 @@ public class TargetPlaceGameMode : GameMode
         if (place != null)
         {
             CurrentPlaceCoordinates.Remove(place);
-        }                                
+        }
 
         if (CurrentPlaceCoordinates.Count == 0)
         {
-            InvokeWin();
-        }     
+            IsWin = true;
+        }
     }
 
-    public override void Action()
+    public override void HumanTurn()
     {
         SpendTurn();
+    }
 
-        if (Turns == 0)
+    protected override void OnInit()
+    {
+        Gamefield.TileDestroyed += OnTileDestroyed;
+
+        PlaceCoordinates.Clear();
+        var placeCell = Gamefield.Level.cells.Where(x => x.HasPlace);
+        foreach (var cell in placeCell)
         {
-            InvokeGameOver();
+            PlaceCoordinates.Add(new IntVector2(cell.x, cell.y));
         }
     }
 
     public override void OnReset()
     {
-        gamefield.TileDestroyed += OnTileDestroyed;
         CurrentPlaceCoordinates.Clear();
         CurrentPlaceCoordinates.AddRange(PlaceCoordinates);
     }

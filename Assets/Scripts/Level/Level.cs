@@ -39,7 +39,7 @@ public class Level
         {
             for (int x = 0; x < Width; x++)
             {
-                if (GetCellAt(x, y).type == CellTypes.Usual)
+                if (GetCellAt(x, y).Type == CellTypes.Usual)
                 {
                     CreateRandomChuzzle(x, y);
                 }
@@ -83,7 +83,7 @@ public class Level
 
     private void CreateTileSprite(Cell cell)
     {
-        var prefab = cellPrefabs.First(x => x.type == cell.type).cellPrefab;
+        var prefab = cellPrefabs.First(x => x.type == cell.Type).cellPrefab;
         var cellSprite = NGUITools.AddChild(Gamefield, prefab);
         cellSprites.Add(cellSprite);
         cellSprite.transform.localPosition = ConvertXYToPosition(cell.x, cell.y, ChuzzleSize);
@@ -95,10 +95,7 @@ public class Level
     {
         cells.Clear();
         portals.Clear();
-        if (level.gameMode != null)
-        {
-            level.gameMode.OnDestroy();
-        }
+        
 
         Width = level.Width;
         Height = level.Height;
@@ -110,6 +107,10 @@ public class Level
         NumberOfColors = level.NumberOfColors;
         
         InitRandom();
+
+        Gamefield.GetComponent<Gamefield>().gameMode = GameModeFactory.CreateGameMode(level.gameMode);
+        Gamefield.GetComponent<Gamefield>().gameMode.Init(Gamefield.GetComponent<Gamefield>());
+
     }
 
     public Chuzzle CreateRandomChuzzle(int x, int y)

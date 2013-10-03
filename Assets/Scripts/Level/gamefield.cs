@@ -37,6 +37,14 @@ public class Gamefield : MonoBehaviour
 
     public event Action<List<Chuzzle>> CombinationDestroyed;
 
+    public event Action GameStarted;
+
+    protected virtual void InvokeGameStarted()
+    {
+        Action handler = GameStarted;
+        if (handler != null) handler();
+    }
+
     protected virtual void InvokeCombinationDestroyed(List<Chuzzle> obj)
     {
         var handler = CombinationDestroyed;
@@ -53,8 +61,13 @@ public class Gamefield : MonoBehaviour
         }
     }
 
-    public void Reset()
+    public SerializedLevel LastSerializedLevel;
+
+    public void StartGame(SerializedLevel level = null)
     {
+        LastSerializedLevel = level;
+
+        newTilesInColumns = new int[Level.Width];
         newTilesAnimationChuzzles.Clear();
         deathAnimationChuzzles.Clear();
         animatedChuzzles.Clear();
@@ -63,24 +76,23 @@ public class Gamefield : MonoBehaviour
 
         directionChozen = false;
         isVerticalDrag = false;
-
         pointSystem.Reset();
-        gameMode.Reset();
-        Level.Reset();
-    }
 
-    public void StartGame(SerializedLevel level = null)
-    {
-        Reset();
+        Level.Reset();
+
         if (level == null)
         {
             Level.InitRandom();
+            gameMode = GameModeFactory.CreateGameMode( GameModeDescription.CreateFromJson(null));
         }
         else
         {
             Level.InitFromFile(level);
         }
-        newTilesInColumns = new int[Level.Width];
+        gameMode.Init(this);
+
+        InvokeGameStarted();
+        
         AnalyzeField(false);
     }
 
@@ -221,7 +233,7 @@ public class Gamefield : MonoBehaviour
                 }
                 else
                 {
-                    if (Level.GetCellAt(real.x, real.y).type == CellTypes.Block)
+                    if (Level.GetCellAt(real.x, real.y).Type == CellTypes.Block)
                     {
                         var currentCell = Level.GetCellAt(real.x, real.y);
                        // Debug.Log("Teleport from " + currentCell);
@@ -234,7 +246,7 @@ public class Gamefield : MonoBehaviour
                                 if (targetCell == null)
                                 {
                                     targetCell = Level.GetCellAt(Level.Width - 1, currentCell.y);
-                                    if (targetCell.type == CellTypes.Block)
+                                    if (targetCell.Type == CellTypes.Block)
                                     {
                                         targetCell = targetCell.GetLeftWithType();
                                     }
@@ -246,7 +258,7 @@ public class Gamefield : MonoBehaviour
                                 if (targetCell == null)
                                 {
                                     targetCell = Level.GetCellAt(0, currentCell.y);
-                                    if (targetCell.type == CellTypes.Block)
+                                    if (targetCell.Type == CellTypes.Block)
                                     {
                                         targetCell = targetCell.GetRightWithType();
                                     }
@@ -257,7 +269,7 @@ public class Gamefield : MonoBehaviour
                                 if (targetCell == null)
                                 {
                                     targetCell = Level.GetCellAt(currentCell.x, 0);
-                                    if (targetCell.type == CellTypes.Block)
+                                    if (targetCell.Type == CellTypes.Block)
                                     {
                                         targetCell = targetCell.GetTopWithType();
                                     }
@@ -268,7 +280,7 @@ public class Gamefield : MonoBehaviour
                                 if (targetCell == null)
                                 {
                                     targetCell = Level.GetCellAt(currentCell.x, Level.Height - 1);
-                                    if (targetCell.type == CellTypes.Block)
+                                    if (targetCell.Type == CellTypes.Block)
                                     {
                                         targetCell = targetCell.GetBottomWithType();
                                     }
@@ -322,7 +334,7 @@ public class Gamefield : MonoBehaviour
 
             if (isHumanAction)
             {
-                gameMode.Action();
+                gameMode.HumanTurn();
             }
         }
         else
@@ -767,7 +779,7 @@ public class Gamefield : MonoBehaviour
                 for (var y = 0; y < Level.Height; y++)
                 {
                     var cell = Level.GetCellAt(x, y);
-                    if (At(x, y) == null && cell.type != CellTypes.Block)
+                    if (At(x, y) == null && cell.Type != CellTypes.Block)
                     {
                         while (cell != null)
                         {

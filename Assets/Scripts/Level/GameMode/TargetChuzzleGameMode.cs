@@ -1,58 +1,50 @@
-﻿using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
-using System;
-using System.Linq;         
+﻿using System.Collections.Generic;
 
 public class TargetChuzzleGameMode : GameMode
 {
-
-    public Gamefield gamefield;
-
+    public int TargetAmount;
+    public int Amount;
     public Chuzzle targetChuzzle;
-    public int StartTargetTurns;
-    public int TargetTurns;
 
-    public TargetChuzzleGameMode(Gamefield gamefield)
+    public TargetChuzzleGameMode(GameModeDescription description) : base(description)
     {
-        this.gamefield = gamefield;
-        gamefield.CombinationDestroyed += OnCombinationDestroyed;
-        OnReset();
+        TargetAmount = description.Amount;
     }
+
+    protected override void OnInit()
+    {
+        Gamefield.CombinationDestroyed += OnCombinationDestroyed;
+        //TODO find chuzzle (it's special type)
+    }
+
 
     public override void OnDestroy()
     {
-        gamefield.CombinationDestroyed -= OnCombinationDestroyed;
+        Gamefield.CombinationDestroyed -= OnCombinationDestroyed;
     }
 
-    void OnCombinationDestroyed(List<Chuzzle> destroyedChuzzles)
+    private void OnCombinationDestroyed(List<Chuzzle> destroyedChuzzles)
     {
-
         if (destroyedChuzzles.Contains(targetChuzzle))
         {
-            TargetTurns -= destroyedChuzzles.Count;
+            Amount -= destroyedChuzzles.Count;
         }
-        
 
-        if (TargetTurns <= 0)
+
+        if (Amount <= 0)
         {
-            InvokeWin();
+            IsWin = true;
         }
-    
     }
 
-    public override void Action()
+    public override void HumanTurn()
     {
-        SpendTurn();
-        if (Turns == 0)
-        {
-            InvokeGameOver();
-        }
+        SpendTurn();     
     }
 
     public override void OnReset()
     {
-        StartTargetTurns = Turns;
+        TargetAmount = Turns;
         //TODO find target chuzzle
     }
 }

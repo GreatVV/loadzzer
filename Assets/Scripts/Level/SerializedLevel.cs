@@ -9,7 +9,7 @@ public class SerializedLevel
 
     public int NumberOfColors = -1;
     public int Width;
-    public GameMode gameMode;
+    public GameModeDescription gameMode;
 
     public List<Cell> specialCells = new List<Cell>();
 
@@ -24,23 +24,21 @@ public class SerializedLevel
             ? (int) jsonObject.GetField("NumberOfColors").n
             : 8;
 
-        serializedLevel.gameMode =
-            CreateGameModeFromString(jsonObject.HasField("GameMode")
-                ? jsonObject.GetStringField("GameMode")
-                : "TargetScore");
-
+        serializedLevel.gameMode = GameModeDescription.CreateFromJson(jsonObject.GetField("GameMode"));
 
         var array = jsonObject.GetField("map").list;
         foreach (var tile in array)
         {
+            if (tile.n == 0)
+                continue;
+            
             var x = array.IndexOf(tile) % serializedLevel.Width;
             var y = serializedLevel.Height - (array.IndexOf(tile) / serializedLevel.Width) - 1;
             // 2 - place for target delete
             //else - block
             if (tile.n == 2)
             {
-                var targetPlaceGameMode = serializedLevel.gameMode as TargetPlaceGameMode;
-                targetPlaceGameMode.PlaceCoordinates.Add(new IntVector2(x,y));
+                serializedLevel.specialCells.Add(new Cell(x,y) {HasPlace = true});
             }
             else
             {        
@@ -48,20 +46,5 @@ public class SerializedLevel
             }
         }
         return serializedLevel;
-    }
-
-    public static GameMode CreateGameModeFromString(string gameMode)
-    {
-        switch (gameMode)
-        {
-            case ("TargetScore"):
-                return new TargetScoreGameMode();
-            case ("TargetPlace"):
-                return new TargetPlaceGameMode();
-            case ("TargetChuzzle"):
-                return new TargetChuzzleGameMode();
-            default:
-                throw new ArgumentOutOfRangeException("Not correct gammode" + gameMode);
-        }
-    }
+    }     
 }

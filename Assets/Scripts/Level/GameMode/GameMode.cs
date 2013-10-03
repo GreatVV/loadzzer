@@ -1,33 +1,41 @@
-﻿using UnityEngine;
+﻿using System.Security.Cryptography;
+using UnityEngine;
 using System.Collections;
 using System;
 
 public abstract class GameMode
 {
     public int Turns;
-    public bool isGameOver;
-    public bool isWin;
-    public Points PointSystem;    
-    
+    public bool IsGameOver;
+    public bool IsWin;
+    public Points PointSystem;
+
+    public GameModeDescription Description;
+
+    protected GameMode(GameModeDescription description)
+    {
+        Description = description;
+        Turns = StartTurns = description.Turns;
+    }
+
     public int StartTurns;
 
-    public abstract void Action();                              
+    public abstract void HumanTurn();                              
 
     public virtual void Reset()
     {
         Turns = StartTurns;
-        isGameOver = false;
-        isWin = false;
+        IsGameOver = false;
+        IsWin = false;
         OnReset();
     }
 
     public abstract void OnReset();
 
-    public UILabel turnsLabel;
-
     public event Action GameOver;
     public event Action Win;
     public event Action NoTurns;
+    public event Action TurnsChanged;
 
     public void InvokeWin()
     {
@@ -47,12 +55,12 @@ public abstract class GameMode
 
     public void Check()
     {
-        if (isGameOver)
+        if (IsGameOver)
         {
             InvokeGameOver();
         }
 
-        if (isWin)
+        if (IsWin)
         {
             InvokeWin();
         }
@@ -61,14 +69,15 @@ public abstract class GameMode
     public void SpendTurn()
     {
         Turns--;
-        TurnsChanged();
+        InvokeTurnsChanged();
         if (Turns == 0)
         {
             if (NoTurns != null)
             {
                 NoTurns();
             }
-            isGameOver = true;
+            
+            IsGameOver = true;
         }
     }
 
@@ -77,8 +86,25 @@ public abstract class GameMode
         
     }
 
-    public void TurnsChanged()
+    public void InvokeTurnsChanged()
     {
-        turnsLabel.text = string.Format("Turns: {0}", Turns);
+        if (TurnsChanged != null)
+        {
+            TurnsChanged();
+        }
     }
+    
+    public Gamefield Gamefield;
+
+    public void Init(Gamefield gamefield)
+    {   
+        this.Gamefield = gamefield;
+        PointSystem = Gamefield.pointSystem;
+        Reset();
+        OnDestroy();
+        OnInit();
+        InvokeTurnsChanged();
+    }
+
+    protected abstract void OnInit();
 }

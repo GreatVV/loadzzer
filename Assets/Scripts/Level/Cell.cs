@@ -3,8 +3,10 @@ using UnityEngine;
 
 [Serializable]
 public class Cell
-{
-    public CellTypes type;
+{   
+    public CellTypes Type;
+
+    public bool HasPlace;
 
     public int x;
     public int y;
@@ -18,7 +20,7 @@ public class Cell
     {
         this.x = x;
         this.y = y;
-        this.type = type;             
+        this.Type = type;             
     }
 
     public Cell GetBottomWithType(CellTypes type = CellTypes.Usual)
@@ -26,7 +28,7 @@ public class Cell
         var bottom = Bottom;
         while (bottom != null)
         {
-            if (bottom.type == type)
+            if (bottom.Type == type)
             {
                 return bottom;
             }
@@ -40,7 +42,7 @@ public class Cell
         var left = Left;
         while (left != null)
         {
-            if (left.type == type)
+            if (left.Type == type)
             {
                 return left;
             }
@@ -54,8 +56,8 @@ public class Cell
         var right = Right;
         while (right != null)
         {
-            Debug.Log("Right" + right.ToString());
-            if (right.type == type)
+            //Debug.Log("Right" + right.ToString());
+            if (right.Type == type)
             {
                 return right;
             }
@@ -69,7 +71,7 @@ public class Cell
         var top = Top;
         while (top != null)
         {
-            if (top.type == type)
+            if (top.Type == type)
             {
                 return top;
             }
@@ -80,6 +82,6 @@ public class Cell
 
     public override string ToString()
     {
-        return string.Format("({0},{1}):{2}", x,y, type);
+        return string.Format("({0},{1}):{2}", x,y, Type);
     }                        
 }
