@@ -134,9 +134,6 @@
      <Compile Include="Assets\NGUI\Scripts\UI\UITiledSprite.cs" />
      <Compile Include="Assets\NGUI\Scripts\UI\UITooltip.cs" />
      <Compile Include="Assets\NGUI\Scripts\UI\UIViewport.cs" />
-     <Compile Include="Assets\Scripts\Control\CameraDrag.cs" />
-     <Compile Include="Assets\Scripts\Control\IsoCameraFollow.cs" />
-     <Compile Include="Assets\Scripts\Control\IsoCameraZoom.cs" />
      <Compile Include="Assets\Scripts\General\JSONObject.cs" />
      <Compile Include="Assets\Scripts\General\Nullable.cs" />
      <Compile Include="Assets\Scripts\Level\AutoBackgroundChanger.cs" />
@@ -162,10 +159,7 @@
      <Compile Include="Assets\Scripts\Level\SerializedLevel.cs" />
      <Compile Include="Assets\Scripts\Level\TeleportableEntity.cs" />
      <Compile Include="Assets\Scripts\Level\UI.cs" />
-     <Compile Include="Assets\Scripts\Map\CheckButtons.cs" />
-     <Compile Include="Assets\Scripts\Map\LinkToLevel.cs" />
-     <Compile Include="Assets\Scripts\Map\VerticalDrag.cs" />
-     <Compile Include="Assets\Scripts\Menu\Handler.cs" />
+     <Compile Include="Assets\Scripts\Map\LevelList.cs" />
      <Compile Include="Assets\TK2DROOT\tk2d\Code\Camera\tk2dCamera.cs" />
      <Compile Include="Assets\TK2DROOT\tk2d\Code\Camera\tk2dCameraAnchor.cs" />
      <Compile Include="Assets\TK2DROOT\tk2d\Code\Camera\tk2dCameraResolutionOverride.cs" />

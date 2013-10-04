@@ -5,11 +5,7 @@ using System.Linq;
 
 public class UI : MonoBehaviour {
 
-    public string LevelUrl = "https://docs.google.com/document/d/1OHM3FcW7deuroI5D4MlI2dUpx5GoC2KkfF30brHLFsg/export?format=txt&id=1OHM3FcW7deuroI5D4MlI2dUpx5GoC2KkfF30brHLFsg&token=AC4w5Vgnw1hxB08A5gw__1fDBqOwZ2RB7Q%3A1380704843812";
-    public JSONObject levels;
-    public List<SerializedLevel> loadedLevels;
-    public GameObject Grid;
-    public GameObject LevelLabelPrefab;
+   
 
 
     public Gamefield Gamefield;
@@ -23,22 +19,13 @@ public class UI : MonoBehaviour {
     public UILabel TargetScoreLabel;
     public UILabel PointsLabel;
 
+    public LevelList LevelList;
+
     public void Awake()
     {
         Gamefield.GameStarted += OnGameStarted;
         Gamefield.pointSystem.PointChanged += OnPointsChanged;
-        /*
-#if UNITY_ANDROID
-        var jsonObject = new JSONObject("{name : \"New Project\", tileSize : 64, tileSetTileCount : 256, tileSetImageUrl : \"images/tile-game-1.png\", brushTile : 1, airTile : 0, paletteShortcuts : [0, 25, 50, 75, 100, 125, 150, 175, 200, 225, 250], levelArray : [{name : \"Level 1\", width : 7, height : 6, map : [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}, {name : \"Level 2\", width : 6, height : 6, map : [1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1]}, {name : \"Level 3\", width : 6, height : 7, map : [0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0]}, {name : \"Level 4\", width : 7, height : 7, map : [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]}]}");
-        var levelArray = jsonObject.GetField("levelArray").list;
-        foreach (var level in levelArray)
-        {
-            loadedLevels.Add(SerializedLevel.FromJson(level));
-        }
-        PopulateToGrid();
-#else               */
-        StartCoroutine(DownloadLevel(LevelUrl, levels, loadedLevels));
-//#endif
+      
     }
 
     private void OnPointsChanged(int obj)
@@ -52,44 +39,14 @@ public class UI : MonoBehaviour {
         Gamefield.pointSystem.PointChanged -= OnPointsChanged;
     }
 
-    public IEnumerator DownloadLevel(string url, JSONObject jsonObject, List<SerializedLevel> levels)
-    {         
-        WWW www = new WWW(url); 
-            yield return www;
-            if (www.isDone && www.text != "")
-            {                   
-                jsonObject = new JSONObject(www.text);
-
-                var levelArray = jsonObject.GetField("levelArray").list;
-                foreach(var level in levelArray)
-                {
-                    levels.Add(SerializedLevel.FromJson(level));
-                }
-                PopulateToGrid();
-            }
-
-            Debug.Log("Levels Loaded:" + jsonObject);
-    }
+   
     
-    public void PopulateToGrid()
-    {
-        NGUITools.ClearChildren(Grid);
-        foreach(var level in loadedLevels)
-        {
-            var child = NGUITools.AddChild(Grid, LevelLabelPrefab);
-            child.name = level.Name;
-            child.GetComponent<UILabel>().text = level.Name;            
-            child.GetComponent<UIButtonMessage>().target = gameObject;
-            child.transform.localScale = new Vector3(40, 40, 0);
-            child.GetComponent<UIDragPanelContents>().draggablePanel = Grid.transform.parent.gameObject.GetComponent<UIDraggablePanel>();
-        }
-        Grid.GetComponent<UIGrid>().Reposition();
-    }
+   
 
     public void LoadLevel(GameObject gameObject)
     {
         Debug.Log("Load Level: "+gameObject.name);
-        var levelToLoad = loadedLevels.FirstOrDefault(x => x.Name == gameObject.name);
+        var levelToLoad = LevelList.loadedLevels.FirstOrDefault(x => x.Name == gameObject.name);
         Gamefield.StartGame(levelToLoad);
         DisableAllPanels();
         inGamePanel.SetActive(true);
@@ -110,7 +67,7 @@ public class UI : MonoBehaviour {
     public void ChoseLevel()
     {
         DisableAllPanels();
-        Grid.transform.parent.gameObject.SetActive(true);
+        LevelList.Grid.transform.parent.gameObject.SetActive(true);
     }
 
     public void OnGameOverRestartClick()
@@ -161,7 +118,7 @@ public class UI : MonoBehaviour {
 
     private void DisableAllPanels()
     {
-        Grid.transform.parent.gameObject.SetActive(false);
+        LevelList.Grid.transform.parent.gameObject.SetActive(false);
         startGamePanel.SetActive(false);
         inGamePanel.SetActive(false);
         gameOverPanel.SetActive(false);
