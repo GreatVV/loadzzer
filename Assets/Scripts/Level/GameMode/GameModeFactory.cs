@@ -16,10 +16,15 @@ public class GameModeDescription
         if (jsonObject == null)
             return new GameModeDescription()
             {
-                Mode = "TargetScore",
-                TargetScore = 3000,
-                Turns = 40
+                Mode = "TargetPlace",
+                Turns = 30
             };
+            //return new GameModeDescription()
+            //{
+            //    Mode = "TargetScore",
+            //    TargetScore = 3000,
+            //    Turns = 40
+            //};
 
         var desc = new GameModeDescription();
         desc.Mode = jsonObject.GetField("Mode").str;

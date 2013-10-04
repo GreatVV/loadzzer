@@ -5,7 +5,7 @@ using System.Collections;
 public class LevelList : MonoBehaviour
 {
 
-    public string LevelUrl = "https://dl.dropboxusercontent.com/u/70507866/loadzerbalance.txt";
+    public string LevelUrl = "https://www.dropbox.com/s/h2ejykp67vdb784/loadzerbalance.txt?dl=1";
     public JSONObject levels;
     public List<SerializedLevel> loadedLevels;
     public GameObject Grid;

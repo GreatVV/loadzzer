@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
+[Serializable]
 public class TargetPlaceGameMode : GameMode
 {
-    public List<IntVector2> CurrentPlaceCoordinates;
-    public List<IntVector2> PlaceCoordinates;
+    public List<IntVector2> CurrentPlaceCoordinates = new List<IntVector2>();
+    public List<IntVector2> PlaceCoordinates = new List<IntVector2>();
 
     public TargetPlaceGameMode(GameModeDescription description) : base(description)
     {
@@ -17,11 +19,17 @@ public class TargetPlaceGameMode : GameMode
 
     private void OnTileDestroyed(Chuzzle destroyedChuzzle)
     {
+        if (PlaceCoordinates.Count == 0)
+        {
+            return;
+        }
+
         var place =
             CurrentPlaceCoordinates.FirstOrDefault(
                 x => x.x == destroyedChuzzle.Current.x && x.y == destroyedChuzzle.Current.y);
         if (place != null)
         {
+            NGUITools.ClearChildren(destroyedChuzzle.Current.GameObject);
             CurrentPlaceCoordinates.Remove(place);
         }
 

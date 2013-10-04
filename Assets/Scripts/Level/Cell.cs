@@ -6,6 +6,8 @@ public class Cell
 {   
     public CellTypes Type;
 
+    public GameObject GameObject;
+
     public bool HasPlace;
 
     public int x;

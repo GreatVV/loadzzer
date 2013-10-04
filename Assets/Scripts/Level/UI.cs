@@ -39,10 +39,6 @@ public class UI : MonoBehaviour {
         Gamefield.pointSystem.PointChanged -= OnPointsChanged;
     }
 
-   
-    
-   
-
     public void LoadLevel(GameObject gameObject)
     {
         Debug.Log("Load Level: "+gameObject.name);
@@ -54,9 +50,9 @@ public class UI : MonoBehaviour {
 
     public void OnStartClick()
     {
-        Gamefield.StartGame();
         DisableAllPanels();
         inGamePanel.SetActive(true);
+        Gamefield.StartGame();
     }
 
     public void OnRestartClick()
@@ -74,8 +70,8 @@ public class UI : MonoBehaviour {
     {
         DisableAllPanels();
         inGamePanel.SetActive(true);
-        
-        Gamefield.StartGame();
+
+        OnRestartClick();
     }
     
     public void OnGameOver()

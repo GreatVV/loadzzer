@@ -33,6 +33,8 @@ public class Level
 
     public List<GameObject> cellSprites;
 
+    public GameObject PlacePrefab;
+
     public void InitRandom()
     {
         for (int y = 0; y < Height; y++)
@@ -89,6 +91,16 @@ public class Level
         cellSprite.transform.localPosition = ConvertXYToPosition(cell.x, cell.y, ChuzzleSize);
         var sprite = cellSprite.GetComponent<tk2dSprite>();
         ScaleSprite(sprite);
+        cell.GameObject = cellSprite;
+        if (cell.HasPlace)
+        {
+            var place = NGUITools.AddChild(cellSprite, PlacePrefab);
+            place.transform.localPosition = Vector3.zero;
+
+            var placesprite = place.GetComponent<tk2dSprite>();
+            ScaleSprite(placesprite);
+        }
+
     }
 
     public void InitFromFile(SerializedLevel level)
@@ -100,7 +112,7 @@ public class Level
         Width = level.Width;
         Height = level.Height;
         ChuzzleSize = new Vector3(480, 480, 0) / Width;
-        foreach(var newCell in level.specialCells)
+        foreach(var newCell in level.SpecialCells)
         {
             AddCell(newCell.x, newCell.y, newCell);
         }
@@ -108,7 +120,7 @@ public class Level
         
         InitRandom();
 
-        Gamefield.GetComponent<Gamefield>().gameMode = GameModeFactory.CreateGameMode(level.gameMode);
+        Gamefield.GetComponent<Gamefield>().gameMode = GameModeFactory.CreateGameMode(level.GameMode);
         Gamefield.GetComponent<Gamefield>().gameMode.Init(Gamefield.GetComponent<Gamefield>());
 
     }

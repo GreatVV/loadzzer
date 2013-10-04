@@ -61,13 +61,11 @@ public class Gamefield : MonoBehaviour
         }
     }
 
-    public SerializedLevel LastSerializedLevel;
+    public SerializedLevel LastSerializedLevel = null;
 
     public void StartGame(SerializedLevel level = null)
     {
         LastSerializedLevel = level;
-
-        newTilesInColumns = new int[Level.Width];
         newTilesAnimationChuzzles.Clear();
         deathAnimationChuzzles.Clear();
         animatedChuzzles.Clear();
@@ -89,6 +87,7 @@ public class Gamefield : MonoBehaviour
         {
             Level.InitFromFile(level);
         }
+        newTilesInColumns = new int[Level.Width];
         gameMode.Init(this);
 
         InvokeGameStarted();
@@ -850,7 +849,7 @@ public class Gamefield : MonoBehaviour
     public GameObject Explosion;
     public List<Chuzzle> deathAnimationChuzzles = new List<Chuzzle>();
     public List<Chuzzle> newTilesAnimationChuzzles = new List<Chuzzle>();
-    private int[] newTilesInColumns = new int[0];
+    public int[] newTilesInColumns = new int[0];
 
     public void RemoveCombinations(List<List<Chuzzle>> combinations)
     {

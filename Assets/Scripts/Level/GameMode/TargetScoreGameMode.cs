@@ -1,4 +1,7 @@
 ﻿
+using System;
+
+[Serializable]
 public class TargetScoreGameMode : GameMode
 {
     public int TargetScore;         
