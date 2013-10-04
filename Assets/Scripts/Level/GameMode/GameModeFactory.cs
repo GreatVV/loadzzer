@@ -1,6 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
+[Serializable]
 public class GameModeDescription
 {
     public string Mode; // TargetScore | TargetPlace | TargetChuzzle
@@ -8,7 +9,7 @@ public class GameModeDescription
     public int Turns;
     public int TargetScore;
     public int Amount;
-    
+
 
     public static GameModeDescription CreateFromJson(JSONObject jsonObject)
     {
@@ -29,7 +30,7 @@ public class GameModeDescription
     }
 }
 
-class GameModeFactory
+public class GameModeFactory
 {
     public static GameMode CreateGameMode(GameModeDescription description)
     {

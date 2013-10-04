@@ -4,9 +4,7 @@ using UnityEngine;
 
 public class Points : MonoBehaviour
 {
-    public int CurrentPoints;
-    public UILabel pointsLabel;
-
+    public int CurrentPoints;              
     public event Action<int> PointChanged;
 
     public void Reset()
@@ -24,7 +22,7 @@ public class Points : MonoBehaviour
 
     public void InvokePointChanged()
     {
-        pointsLabel.text = string.Format("Points: {0}", CurrentPoints);
+        
         if (PointChanged != null)
         {
             PointChanged(CurrentPoints);
