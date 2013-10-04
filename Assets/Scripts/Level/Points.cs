@@ -1,11 +1,10 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
-using System;
+using UnityEngine;
 
-public class Points : MonoBehaviour {
-
-    public int CurrentPoints;  
+public class Points : MonoBehaviour
+{
+    public int CurrentPoints;
     public UILabel pointsLabel;
 
     public event Action<int> PointChanged;
@@ -22,6 +21,7 @@ public class Points : MonoBehaviour {
         InvokePointChanged();
     }
 
+
     public void InvokePointChanged()
     {
         pointsLabel.text = string.Format("Points: {0}", CurrentPoints);
@@ -31,9 +31,9 @@ public class Points : MonoBehaviour {
         }
     }
 
-	public void CountForCombinations(List<Chuzzle> combination)
+    public void CountForCombinations(List<Chuzzle> combination)
     {
-        var newPoints = combination.Count * 10;
-        AddPoints(newPoints);          
+        var newPoints = combination.Count*10;
+        AddPoints(newPoints);
     }
 }

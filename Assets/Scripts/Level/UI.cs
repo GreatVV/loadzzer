@@ -25,10 +25,20 @@ public class UI : MonoBehaviour {
     public void Awake()
     {
         Gamefield.GameStarted += OnGameStarted;
-        StartCoroutine(LoadLevels());
+#if UNITY_ANDROID
+        var jsonObject = new JSONObject("{name : \"New Project\", tileSize : 64, tileSetTileCount : 256, tileSetImageUrl : \"images/tile-game-1.png\", brushTile : 1, airTile : 0, paletteShortcuts : [0, 25, 50, 75, 100, 125, 150, 175, 200, 225, 250], levelArray : [{name : \"Level 1\", width : 7, height : 6, map : [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}, {name : \"Level 2\", width : 6, height : 6, map : [1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1]}, {name : \"Level 3\", width : 6, height : 7, map : [0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0]}, {name : \"Level 4\", width : 7, height : 7, map : [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]}]}");
+        var levelArray = jsonObject.GetField("levelArray").list;
+        foreach (var level in levelArray)
+        {
+            loadedLevels.Add(SerializedLevel.FromJson(level));
+        }
+        PopulateToGrid();
+#else
+        StartCoroutine(DownloadLevel(LevelUrl, levels, loadedLevels));
+#endif
     }
 
-    public static IEnumerator DownloadLevel(string url, JSONObject jsonObject, List<SerializedLevel> levels)
+    public IEnumerator DownloadLevel(string url, JSONObject jsonObject, List<SerializedLevel> levels)
     {         
         WWW www = new WWW(url); 
             yield return www;
@@ -40,18 +50,13 @@ public class UI : MonoBehaviour {
                 foreach(var level in levelArray)
                 {
                     levels.Add(SerializedLevel.FromJson(level));
-                }                
+                }
+                PopulateToGrid();
             }
 
             Debug.Log("Levels Loaded:" + jsonObject);
     }
-
-    public IEnumerator LoadLevels()
-    {
-        yield return StartCoroutine(DownloadLevel(LevelUrl, levels, loadedLevels));
-        PopulateToGrid();
-    }
-
+    
     public void PopulateToGrid()
     {
         NGUITools.ClearChildren(Grid);
