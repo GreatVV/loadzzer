@@ -17,6 +17,7 @@ public class Chuzzle : MonoBehaviour {
 
     public PowerType PowerType;
     
+    public int Counter;
 
     public override string ToString()
     {

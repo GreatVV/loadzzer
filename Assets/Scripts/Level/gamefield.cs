@@ -45,10 +45,10 @@ public class Gamefield : MonoBehaviour
         if (handler != null) handler();
     }
 
-    protected virtual void InvokeCombinationDestroyed(List<Chuzzle> obj)
+    protected virtual void InvokeCombinationDestroyed(List<Chuzzle> combination)
     {
         var handler = CombinationDestroyed;
-        if (handler != null) handler(obj);
+        if (handler != null) handler(combination);
     }
 
     public event Action<Chuzzle> TileDestroyed;
@@ -66,8 +66,8 @@ public class Gamefield : MonoBehaviour
     public void StartGame(SerializedLevel level = null)
     {
         LastSerializedLevel = level;
-        newTilesAnimationChuzzles.Clear();
-        deathAnimationChuzzles.Clear();
+        NewTilesAnimationChuzzles.Clear();
+        DeathAnimationChuzzles.Clear();
         animatedChuzzles.Clear();
         selectedChuzzles.Clear();
         currentChuzzle = null;
@@ -87,7 +87,7 @@ public class Gamefield : MonoBehaviour
         {
             Level.InitFromFile(level);
         }
-        newTilesInColumns = new int[Level.Width];
+        NewTilesInColumns = new int[Level.Width];
         gameMode.Init(this);
 
         InvokeGameStarted();
@@ -97,8 +97,8 @@ public class Gamefield : MonoBehaviour
 
     private void Update()
     {
-        isMovingToPrevPosition = animatedChuzzles.Any() || deathAnimationChuzzles.Any() ||
-                                 newTilesAnimationChuzzles.Any() || specialTilesAnimated.Any();
+        isMovingToPrevPosition = animatedChuzzles.Any() || DeathAnimationChuzzles.Any() ||
+                                 NewTilesAnimationChuzzles.Any() || SpecialTilesAnimated.Any();
         if (isMovingToPrevPosition)
         {
             return;
@@ -166,13 +166,13 @@ public class Gamefield : MonoBehaviour
                 if (Mathf.Abs(delta.x) < Mathf.Abs(delta.y))
                 {
                     //TODO: choose row
-                    selectedChuzzles = Level.chuzzles.Where(x => x.Current.x == currentChuzzle.Current.x).ToList();
+                    selectedChuzzles = Level.Chuzzles.Where(x => x.Current.x == currentChuzzle.Current.x).ToList();
                     isVerticalDrag = true;
                 }
                 else
                 {
                     //TODO: choose column
-                    selectedChuzzles = Level.chuzzles.Where(x => x.Current.y == currentChuzzle.Current.y).ToList();
+                    selectedChuzzles = Level.Chuzzles.Where(x => x.Current.y == currentChuzzle.Current.y).ToList();
                     isVerticalDrag = false;
                 }
 
@@ -309,9 +309,9 @@ public class Gamefield : MonoBehaviour
 
         //check new combination
         var combinations = FindCombinations();
-        if (combinations.Count() > 0)
+        if (combinations.Any())
         {
-            foreach (var c in Level.chuzzles)
+            foreach (var c in Level.Chuzzles)
             {
                 c.Current = c.Real;
             }
@@ -339,12 +339,12 @@ public class Gamefield : MonoBehaviour
         else
         {
             //if no new combination - move to prevposition       
-            foreach (var c in Level.chuzzles)
+            foreach (var c in Level.Chuzzles)
             {
                 c.MoveTo = c.Real = c.Current;
             }
 
-            MoveToTargetPosition(Level.chuzzles, "OnCompleteBackToPreviousPositionTween");
+            MoveToTargetPosition(Level.Chuzzles, "OnCompleteBackToPreviousPositionTween");
         }
     }
 
@@ -353,7 +353,7 @@ public class Gamefield : MonoBehaviour
         var combinations = new List<List<Chuzzle>>();
 
         //find combination
-        foreach (var c in Level.chuzzles)
+        foreach (var c in Level.Chuzzles)
         {
             if (!c.isCheckedForSearch)
             {
@@ -366,7 +366,7 @@ public class Gamefield : MonoBehaviour
             }
         }
 
-        foreach (var c in Level.chuzzles)
+        foreach (var c in Level.Chuzzles)
         {
             c.isCheckedForSearch = false;
         }
@@ -376,7 +376,7 @@ public class Gamefield : MonoBehaviour
 
     public Chuzzle At(int x, int y)
     {
-        return Level.chuzzles.FirstOrDefault(c => c.Current.x == x && c.Current.y == y);
+        return Level.Chuzzles.FirstOrDefault(c => c.Current.x == x && c.Current.y == y);
     }
 
     public bool MoveToTargetPosition(List<Chuzzle> targetChuzzles, string callbackOnComplete)
@@ -404,22 +404,22 @@ public class Gamefield : MonoBehaviour
 
     public Chuzzle GetLeftFor(Chuzzle c)
     {
-        return Level.chuzzles.FirstOrDefault(x => x.Real == c.Real.Left);
+        return Level.Chuzzles.FirstOrDefault(x => x.Real == c.Real.Left);
     }
 
     public Chuzzle GetRightFor(Chuzzle c)
     {
-        return Level.chuzzles.FirstOrDefault(x => x.Real == c.Real.Right);
+        return Level.Chuzzles.FirstOrDefault(x => x.Real == c.Real.Right);
     }
 
     public Chuzzle GetTopFor(Chuzzle c)
     {
-        return Level.chuzzles.FirstOrDefault(x => x.Real == c.Real.Top);
+        return Level.Chuzzles.FirstOrDefault(x => x.Real == c.Real.Top);
     }
 
     public Chuzzle GetBottomFor(Chuzzle c)
     {
-        return Level.chuzzles.FirstOrDefault(x => x.Real == c.Real.Bottom);
+        return Level.Chuzzles.FirstOrDefault(x => x.Real == c.Real.Bottom);
     }
 
     public List<Chuzzle> RecursiveFind(Chuzzle chuzzle, List<Chuzzle> combination)
@@ -493,8 +493,8 @@ public class Gamefield : MonoBehaviour
     /// <param name="invokeEvent">Need to invoke event or not</param>
     public void RemoveChuzzle(Chuzzle chuzzle, bool invokeEvent = true)
     {
-        Level.chuzzles.Remove(chuzzle);
-        newTilesInColumns[chuzzle.Current.x]++;
+        Level.Chuzzles.Remove(chuzzle);
+        NewTilesInColumns[chuzzle.Current.x]++;
         if (invokeEvent)
         {
             InvokeTileDestroyed(chuzzle);
@@ -585,7 +585,7 @@ public class Gamefield : MonoBehaviour
 
     #region Special Chuzzles
 
-    public List<Chuzzle> specialTilesAnimated;
+    public List<Chuzzle> SpecialTilesAnimated;
 
     public bool CheckForSpecial(List<List<Chuzzle>> combinations)
     {
@@ -595,22 +595,23 @@ public class Gamefield : MonoBehaviour
         {
             var comb = combinations[i];
             //if any tile is powerup - then don't check for new bonuses
-            if (comb.Any(x => x.PowerType != PowerType.Usual))
+            //or any tile has counter
+            if (comb.Any(x => x.PowerType != PowerType.Usual) || comb.Any(x=>x.Counter != 0))
             {
                 continue;
             }
 
             if (comb.Count == 4)
             {
-                CreateLine(comb);
-                isNewSpecial = true;
+                isNewSpecial = CreateLine(comb);
+                 
             }
             else
             {
                 if (comb.Count >= 5)
                 {
-                    CreateBomb(comb);
-                    isNewSpecial = true;
+                    isNewSpecial = CreateBomb(comb);
+                    
                 }
             }
         }
@@ -618,43 +619,9 @@ public class Gamefield : MonoBehaviour
         return isNewSpecial;
     }
 
-    private void CreateBomb(List<Chuzzle> comb)
+    private bool CreateBomb(List<Chuzzle> comb)
     {
-        var ordered = comb.OrderBy(x => x.Current.y).ToList();
-        var firstTile = ordered.First();
-        var cellForNew = ordered.First().Current;
-        for (var i = 1; i < ordered.Count; i++)
-        {
-            var chuzzle = ordered[i];
-            chuzzle.MoveTo = cellForNew;
-        }
-
-        var powerUp = PowerTypePrefabs.First(x => x.type == PowerType.Bomb).prefab;
-        var powerUpChuzzle = Level.CreateChuzzle(firstTile.Current.x, firstTile.Current.y, powerUp);
-        powerUpChuzzle.Type = firstTile.Type;
-        powerUpChuzzle.PowerType = PowerType.Bomb;
-
-        var color =
-            Object.Instantiate(Level.ChuzzlePrefabs.First(x => x.GetComponent<Chuzzle>().Type == firstTile.Type)) as
-                GameObject;
-        color.transform.parent = powerUpChuzzle.transform;
-        color.transform.localPosition = Vector3.zero;
-        Destroy(color.gameObject.GetComponent<Chuzzle>());
-        Destroy(color.gameObject.GetComponent<BoxCollider>());
-        color.GetComponent<tk2dSprite>().SortingOrder = -1;
-
-        Destroy(firstTile.gameObject);
-        Level.chuzzles.Remove(firstTile);
-        ordered.Remove(firstTile);
-
-
-        foreach (var c in ordered)
-        {
-            if (c.PowerType == PowerType.Usual)
-            {
-                MoveToSpecialTween(c);
-            }
-        }
+        return CreateSpecialWithType(comb, PowerType.Bomb);
     }
 
     private void MoveToSpecialTween(Chuzzle c)
@@ -663,7 +630,7 @@ public class Gamefield : MonoBehaviour
 
         var targetPosition = new Vector3(c.MoveTo.x*c.Scale.x, c.MoveTo.y*c.Scale.y, 0);
 
-        specialTilesAnimated.Add(c);
+        SpecialTilesAnimated.Add(c);
         // iTween.ScaleTo(c.gameObject, Vector3.zero, 1f);
         iTween.MoveTo(c.gameObject,
             iTween.Hash("x", targetPosition.x, "y", targetPosition.y, "z", targetPosition.z, "time", 0.3f, "easetype",
@@ -671,10 +638,10 @@ public class Gamefield : MonoBehaviour
                 "oncompleteparams", c));
     }
 
-    private void CreateLine(List<Chuzzle> comb)
+    public bool CreateSpecialWithType(List<Chuzzle> comb,PowerType powerType)
     {
         var ordered = comb.OrderBy(x => x.Current.y).ToList();
-        var firstTile = ordered.First();
+        var targetTile = ordered.First();
         var cellForNew = ordered.First().Current;
         for (var i = 1; i < ordered.Count; i++)
         {
@@ -682,15 +649,13 @@ public class Gamefield : MonoBehaviour
             chuzzle.MoveTo = cellForNew;
         }
 
-        var targetType = Random.Range(0, 100) > 50 ? PowerType.HorizontalLine : PowerType.VerticalLine;
-
-        var powerUp = PowerTypePrefabs.First(x => x.type == targetType).prefab;
-        var powerUpChuzzle = Level.CreateChuzzle(firstTile.Current.x, firstTile.Current.y, powerUp);
-        powerUpChuzzle.Type = firstTile.Type;
-        powerUpChuzzle.PowerType = targetType;
+        var powerUp = PowerTypePrefabs.First(x => x.type == powerType).prefab;
+        var powerUpChuzzle = Level.CreateChuzzle(targetTile.Current.x, targetTile.Current.y, powerUp);
+        powerUpChuzzle.Type = targetTile.Type;
+        powerUpChuzzle.PowerType = powerType;
 
         var color =
-            Object.Instantiate(Level.ChuzzlePrefabs.First(x => x.GetComponent<Chuzzle>().Type == firstTile.Type)) as
+            Instantiate(Level.ChuzzlePrefabs.First(x => x.GetComponent<Chuzzle>().Type == targetTile.Type)) as
                 GameObject;
         color.transform.parent = powerUpChuzzle.transform;
         color.transform.localPosition = Vector3.zero;
@@ -698,9 +663,9 @@ public class Gamefield : MonoBehaviour
         Destroy(color.gameObject.GetComponent<BoxCollider>());
         color.GetComponent<tk2dSprite>().SortingOrder = -1;
 
-        Destroy(firstTile.gameObject);
-        Level.chuzzles.Remove(firstTile);
-        ordered.Remove(firstTile);
+        Destroy(targetTile.gameObject);
+        Level.Chuzzles.Remove(targetTile);
+        ordered.Remove(targetTile);
 
         foreach (var c in ordered)
         {
@@ -709,22 +674,29 @@ public class Gamefield : MonoBehaviour
                 MoveToSpecialTween(c);
             }
         }
+
+        return true;
+    }
+
+    private bool CreateLine(List<Chuzzle> comb)
+    {
+        return CreateSpecialWithType(comb, Random.Range(0, 100) > 50 ? PowerType.HorizontalLine : PowerType.VerticalLine);
     }
 
     private void OnCreateLineTweenComplete(Object chuzzleObject)
     {
         var chuzzle = chuzzleObject as Chuzzle;
 
-        specialTilesAnimated.Remove(chuzzle);
+        SpecialTilesAnimated.Remove(chuzzle);
         Destroy(chuzzle.gameObject);
 
-        if (specialTilesAnimated.Count == 0)
+        if (SpecialTilesAnimated.Count == 0)
         {
             MoveTilesWhoNeedMoves();
         }
     }
 
-    private bool KillSpecials(List<List<Chuzzle>> combinations)
+    private bool KillSpecials(IEnumerable<List<Chuzzle>> combinations)
     {
         var tilesToKill = new List<Chuzzle>();
         foreach (var combination in combinations)
@@ -749,16 +721,16 @@ public class Gamefield : MonoBehaviour
 
     public bool CreateNew()
     {
-        var hasNew = newTilesInColumns.Any(x => x > 0);
+        var hasNew = NewTilesInColumns.Any(x => x > 0);
         if (!hasNew)
         {
             return false;
         }
 
         //check if need create new tiles
-        for (var x = 0; x < newTilesInColumns.Length; x++)
+        for (var x = 0; x < NewTilesInColumns.Length; x++)
         {
-            var newInColumn = newTilesInColumns[x];
+            var newInColumn = NewTilesInColumns[x];
             if (newInColumn > 0)
             {
                 for (var j = 0; j < newInColumn; j++)
@@ -770,9 +742,9 @@ public class Gamefield : MonoBehaviour
         }
 
         //move tiles to fill positions
-        for (var x = 0; x < newTilesInColumns.Length; x++)
+        for (var x = 0; x < NewTilesInColumns.Length; x++)
         {
-            var newInColumn = newTilesInColumns[x];
+            var newInColumn = NewTilesInColumns[x];
             if (newInColumn > 0)
             {
                 for (var y = 0; y < Level.Height; y++)
@@ -795,7 +767,7 @@ public class Gamefield : MonoBehaviour
             }
         }
 
-        newTilesInColumns = new int[Level.Width];
+        NewTilesInColumns = new int[Level.Width];
 
         MoveTilesWhoNeedMoves();
         return hasNew;
@@ -803,11 +775,11 @@ public class Gamefield : MonoBehaviour
 
     private void MoveTilesWhoNeedMoves()
     {
-        foreach (var c in Level.chuzzles)
+        foreach (var c in Level.Chuzzles)
         {
             if (c.MoveTo.y != c.Current.y)
             {
-                newTilesAnimationChuzzles.Add(c);
+                NewTilesAnimationChuzzles.Add(c);
                 var targetPosition = new Vector3(c.Current.x*c.Scale.x, c.MoveTo.y*c.Scale.y, 0);
                 iTween.MoveTo(c.gameObject,
                     iTween.Hash("x", targetPosition.x, "y", targetPosition.y, "z", targetPosition.z, "time", 0.3f,
@@ -821,13 +793,13 @@ public class Gamefield : MonoBehaviour
         var chuzzle = chuzzleObject as Chuzzle;
         chuzzle.Real = chuzzle.Current = chuzzle.MoveTo;
 
-        if (newTilesAnimationChuzzles.Contains(chuzzle))
+        if (NewTilesAnimationChuzzles.Contains(chuzzle))
         {
             chuzzle.GetComponent<TeleportableEntity>().prevPosition = chuzzle.transform.localPosition;
-            newTilesAnimationChuzzles.Remove(chuzzle);
+            NewTilesAnimationChuzzles.Remove(chuzzle);
         }
 
-        if (newTilesAnimationChuzzles.Count() == 0)
+        if (NewTilesAnimationChuzzles.Count() == 0)
         {
             var combinations = FindCombinations();
             if (combinations.Count > 0)
@@ -847,9 +819,9 @@ public class Gamefield : MonoBehaviour
     #region Death
 
     public GameObject Explosion;
-    public List<Chuzzle> deathAnimationChuzzles = new List<Chuzzle>();
-    public List<Chuzzle> newTilesAnimationChuzzles = new List<Chuzzle>();
-    public int[] newTilesInColumns = new int[0];
+    public List<Chuzzle> DeathAnimationChuzzles = new List<Chuzzle>();
+    public List<Chuzzle> NewTilesAnimationChuzzles = new List<Chuzzle>();
+    public int[] NewTilesInColumns = new int[0];
 
     public void RemoveCombinations(List<List<Chuzzle>> combinations)
     {
@@ -862,6 +834,7 @@ public class Gamefield : MonoBehaviour
 
     private void RemoveTiles(List<Chuzzle> combination, bool needCountPoints)
     {
+        InvokeCombinationDestroyed(combination);
         if (needCountPoints)
         {
             //count points
@@ -869,18 +842,22 @@ public class Gamefield : MonoBehaviour
         }
         foreach (var chuzzle in combination)
         {
+            if (chuzzle.Counter > 0)
+            {
+                continue;
+            }
             //remove chuzzle from game logic
             RemoveChuzzle(chuzzle);
 
             var explosion = Object.Instantiate(Explosion, chuzzle.transform.position, Quaternion.identity);
-            Level.ScaleSprite((explosion as GameObject).GetComponent<tk2dBaseSprite>());
+            Level.ScaleSprite(((GameObject) explosion).GetComponent<tk2dBaseSprite>());
             Destroy(explosion, 1f);
             //iTween.MoveTo(chuzzle.gameObject, iTween.Hash("x", 0, "y", 0, "z", 0, "time", 0.3f));
             iTween.ScaleTo(chuzzle.gameObject,
                 iTween.Hash("x", 0, "y", 0, "z", 0, "time", 0.3f, "oncomplete", "OnCompleteDeath", "oncompletetarget",
                     gameObject, "oncompleteparams", chuzzle));
 
-            deathAnimationChuzzles.Add(chuzzle);
+            DeathAnimationChuzzles.Add(chuzzle);
         }
     }
 
@@ -889,10 +866,10 @@ public class Gamefield : MonoBehaviour
     {
         var chuzzle = chuzzleObject as Chuzzle;
 
-        deathAnimationChuzzles.Remove(chuzzle);
+        DeathAnimationChuzzles.Remove(chuzzle);
 
         //if all deleted
-        if (deathAnimationChuzzles.Count() == 0)
+        if (DeathAnimationChuzzles.Count() == 0)
         {
             //start tweens for new chuzzles
             MoveTilesWhoNeedMoves();

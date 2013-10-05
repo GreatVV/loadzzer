@@ -23,29 +23,32 @@ public class SerializedLevel
         serializedLevel.Height = (int) jsonObject.GetField("height").n;
         serializedLevel.NumberOfColors = jsonObject.HasField("NumberOfColor")
             ? (int) jsonObject.GetField("NumberOfColors").n
-            : 8;
+            : 5;
 
         serializedLevel.GameMode = GameModeDescription.CreateFromJson(jsonObject.GetField("GameMode"));
 
         var array = jsonObject.GetField("map").list;
         foreach (var tile in array)
         {
-            if (tile.n == 0)
-                continue;
-            
             var x = array.IndexOf(tile) % serializedLevel.Width;
             var y = serializedLevel.Height - (array.IndexOf(tile) / serializedLevel.Width) - 1;
-            // 2 - place for target delete
-            //else - block
-            if (Math.Abs(tile.n - 2) < 0.01f)
+
+            var tileType = (int)tile.n;
+            switch (tileType)
             {
-              //  Debug.Log("Place at " + x + ": " + y);
-                serializedLevel.SpecialCells.Add(new Cell(x,y) {HasPlace = true});
+                case(0): //empty
+                    break;
+                case(2): // place
+                    serializedLevel.SpecialCells.Add(new Cell(x, y) { HasPlace = true });
+                    break;
+                case(3): //counter
+                    serializedLevel.SpecialCells.Add(new Cell(x, y) { HasCounter = true });
+                    break;
+                default: // block
+                    serializedLevel.SpecialCells.Add(new Cell(x, y, CellTypes.Block));
+                    break;
             }
-            else
-            {        
-                serializedLevel.SpecialCells.Add(new Cell(x, y, CellTypes.Block));
-            }
+            
         }
         return serializedLevel;
     }     

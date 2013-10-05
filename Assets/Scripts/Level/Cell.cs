@@ -9,6 +9,7 @@ public class Cell
     public GameObject GameObject;
 
     public bool HasPlace;
+    public bool HasCounter;
 
     public int x;
     public int y;
@@ -16,7 +17,15 @@ public class Cell
     public Cell Left;
     public Cell Right;
     public Cell Top;
-    public Cell Bottom;   
+    public Cell Bottom;
+
+    public Cell Copy
+    {
+        get
+        {
+            return new Cell(x,y,Type) {HasCounter = HasCounter, HasPlace = HasPlace};
+        }
+    }
 
     public Cell(int x, int y, CellTypes type = CellTypes.Usual)
     {

@@ -16,9 +16,15 @@ public class GameModeDescription
         if (jsonObject == null)
             return new GameModeDescription()
             {
+                Mode = "TargetChuzzle",
+                Turns = 30,
+                Amount = 20
+            };
+            /*return new GameModeDescription()
+            {
                 Mode = "TargetPlace",
                 Turns = 30
-            };
+            };*/
             //return new GameModeDescription()
             //{
             //    Mode = "TargetScore",

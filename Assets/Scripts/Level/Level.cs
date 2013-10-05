@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -25,15 +26,16 @@ public class Level
     public Vector3 ChuzzleSize = new Vector3(80, 80);
     public GameObject[] ChuzzlePrefabs;
 
-    public List<Chuzzle> chuzzles = new List<Chuzzle>();
+    public List<Chuzzle> Chuzzles = new List<Chuzzle>();
 
     public GameObject Gamefield;
 
     public CellSprite[] cellPrefabs;
 
-    public List<GameObject> cellSprites;
+    public List<GameObject> CellSprites;
 
     public GameObject PlacePrefab;
+    public GameObject CounterPrefab;
 
     public void InitRandom()
     {
@@ -87,7 +89,7 @@ public class Level
     {
         var prefab = cellPrefabs.First(x => x.type == cell.Type).cellPrefab;
         var cellSprite = NGUITools.AddChild(Gamefield, prefab);
-        cellSprites.Add(cellSprite);
+        CellSprites.Add(cellSprite);
         cellSprite.transform.localPosition = ConvertXYToPosition(cell.x, cell.y, ChuzzleSize);
         var sprite = cellSprite.GetComponent<tk2dSprite>();
         ScaleSprite(sprite);
@@ -100,7 +102,6 @@ public class Level
             var placesprite = place.GetComponent<tk2dSprite>();
             ScaleSprite(placesprite);
         }
-
     }
 
     public void InitFromFile(SerializedLevel level)
@@ -114,7 +115,7 @@ public class Level
         ChuzzleSize = new Vector3(480, 480, 0) / Width;
         foreach(var newCell in level.SpecialCells)
         {
-            AddCell(newCell.x, newCell.y, newCell);
+            AddCell(newCell.x, newCell.y, newCell.Copy);
         }
         NumberOfColors = level.NumberOfColors;
         
@@ -140,16 +141,24 @@ public class Level
         var sprite = gameObject.GetComponent<tk2dSprite>();
         ScaleSprite(sprite);                                                  
 
-        (gameObject.collider as BoxCollider).size = ChuzzleSize;
-        (gameObject.collider as BoxCollider).center = ChuzzleSize / 2;
+        ((BoxCollider) gameObject.collider).size = ChuzzleSize;
+        ((BoxCollider) gameObject.collider).center = ChuzzleSize / 2;
         var chuzzle = gameObject.GetComponent<Chuzzle>();
         chuzzle.Real = chuzzle.MoveTo = chuzzle.Current = GetCellAt(x, y);
 
         gameObject.transform.parent = Gamefield.transform;
         gameObject.transform.localPosition = new Vector3(x * gameObject.GetComponent<Chuzzle>().Scale.x, y * gameObject.GetComponent<Chuzzle>().Scale.y, 0);
 
-        
-        chuzzles.Add(chuzzle);
+        if (chuzzle.Current.HasCounter)
+        {
+            chuzzle.Counter = ((TargetChuzzleGameMode) Gamefield.GetComponent<Gamefield>().gameMode).Amount;
+            
+            var counter = NGUITools.AddChild(gameObject, CounterPrefab).GetComponent<tk2dTextMesh>();
+            counter.text = chuzzle.Counter.ToString(CultureInfo.InvariantCulture);
+
+            chuzzle.Current.HasCounter = false;
+        }
+        Chuzzles.Add(chuzzle);
         return chuzzle;
     }
 
@@ -244,17 +253,17 @@ public class Level
     public void Reset()
     {
         portals.Clear();
-        foreach (var chuzzle in chuzzles)
+        foreach (var chuzzle in Chuzzles)
         {
             GameObject.Destroy(chuzzle.gameObject);
         }
-        chuzzles.Clear();
+        Chuzzles.Clear();
 
-        foreach (var cellSprite in cellSprites)
+        foreach (var cellSprite in CellSprites)
         {
             GameObject.Destroy(cellSprite.gameObject);
         }
-        cellSprites.Clear();
+        CellSprites.Clear();
     }
 
 }

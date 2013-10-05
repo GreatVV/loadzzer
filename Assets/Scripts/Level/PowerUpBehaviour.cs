@@ -16,19 +16,19 @@ public static class PowerUpBehaviour {
 
         if (chuzzle.PowerType == PowerType.HorizontalLine)
         {
-            var horizontalChuzzles = gamefield.Level.chuzzles.Where(x => x.Current.y == chuzzle.Current.y && x.PowerType == PowerType.Usual);            
+            var horizontalChuzzles = gamefield.Level.Chuzzles.Where(x => x.Current.y == chuzzle.Current.y && x.PowerType == PowerType.Usual);            
             tilesToKill.AddUniqRange(horizontalChuzzles);             
         }
 
         if (chuzzle.PowerType == PowerType.VerticalLine)
         {
-            var vertical = gamefield.Level.chuzzles.Where(x => x.Current.x == chuzzle.Current.x && x.PowerType == PowerType.Usual);
+            var vertical = gamefield.Level.Chuzzles.Where(x => x.Current.x == chuzzle.Current.x && x.PowerType == PowerType.Usual);
             tilesToKill.AddUniqRange(vertical);    
         }
 
         if (chuzzle.PowerType == PowerType.Bomb)
         {
-            var square = gamefield.Level.chuzzles.Where(x => (x.Current.x == chuzzle.Current.x - 1 || x.Current.x == chuzzle.Current.x + 1 || x.Current.x == chuzzle.Current.x) && (x.Current.y == chuzzle.Current.y - 1 || x.Current.y == chuzzle.Current.y || x.Current.y == chuzzle.Current.y + 1) && x.PowerType == PowerType.Usual);
+            var square = gamefield.Level.Chuzzles.Where(x => (x.Current.x == chuzzle.Current.x - 1 || x.Current.x == chuzzle.Current.x + 1 || x.Current.x == chuzzle.Current.x) && (x.Current.y == chuzzle.Current.y - 1 || x.Current.y == chuzzle.Current.y || x.Current.y == chuzzle.Current.y + 1) && x.PowerType == PowerType.Usual);
             tilesToKill.AddUniqRange(square);                    
         }
     }
