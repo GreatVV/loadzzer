@@ -18,18 +18,8 @@ public class TargetChuzzleGameMode : GameMode
 
     protected override void OnInit()
     {
-        //TODO find chuzzle (it's special type)
-        TargetChuzzle = Gamefield.Level.Chuzzles.FirstOrDefault(x => x.Counter > 0);
-        if (TargetChuzzle == null)
-        {
-           Debug.Log("No target chuzzle");
-            return;
-        }
-        Debug.Log("Fucking magic");
-
         Gamefield.CombinationDestroyed -= OnCombinationDestroyed;
         Gamefield.CombinationDestroyed += OnCombinationDestroyed;
-        
     }
 
 
@@ -40,7 +30,18 @@ public class TargetChuzzleGameMode : GameMode
 
     private void OnCombinationDestroyed(List<Chuzzle> destroyedChuzzles)
     {
-        Debug.Log("destroy");
+        //TODO find chuzzle (it's special type)
+        if (TargetChuzzle == null)
+        {
+            TargetChuzzle = Gamefield.Level.Chuzzles.FirstOrDefault(x => x.Counter > 0);
+            if (TargetChuzzle == null)
+            {
+                Debug.Log("No target chuzzle");
+                return;
+            }
+        }
+
+       // Debug.Log("destroy");
         if (destroyedChuzzles.Contains(TargetChuzzle))
         {
             Amount -= destroyedChuzzles.Count-1;
@@ -67,5 +68,10 @@ public class TargetChuzzleGameMode : GameMode
     {
         Amount = TargetAmount;
         //TODO find target chuzzle
+    }
+
+    public override string ToString()
+    {
+        return "Target chuzzle";
     }
 }

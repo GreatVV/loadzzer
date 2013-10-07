@@ -21,11 +21,11 @@ public class SerializedLevel
         serializedLevel.Name = jsonObject.GetField("name").str;
         serializedLevel.Width = (int) jsonObject.GetField("width").n;
         serializedLevel.Height = (int) jsonObject.GetField("height").n;
-        serializedLevel.NumberOfColors = jsonObject.HasField("NumberOfColor")
-            ? (int) jsonObject.GetField("NumberOfColors").n
-            : 5;
+        serializedLevel.NumberOfColors = jsonObject.HasField("numberOfColors")
+            ? (int) jsonObject.GetField("numberOfColors").n
+            : 6;
 
-        serializedLevel.GameMode = GameModeDescription.CreateFromJson(jsonObject.GetField("GameMode"));
+        serializedLevel.GameMode = GameModeDescription.CreateFromJson(jsonObject.GetField("gameMode"));
 
         var array = jsonObject.GetField("map").list;
         foreach (var tile in array)
@@ -51,5 +51,10 @@ public class SerializedLevel
             
         }
         return serializedLevel;
-    }     
+    }
+
+    public override string ToString()
+    {
+        return string.Format("Name: {0} Width:{1} Height: {2}", Name, Width, Height);
+    }
 }

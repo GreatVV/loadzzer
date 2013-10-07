@@ -25,7 +25,15 @@ public class UI : MonoBehaviour {
     {
         Gamefield.GameStarted += OnGameStarted;
         Gamefield.pointSystem.PointChanged += OnPointsChanged;
+
+        Application.RegisterLogCallback(CallBackLog);
       
+    }
+
+    private void CallBackLog(string condition, string stacktrace, LogType type)
+    {
+        NGUIDebug.Log("\nType: "+type);
+        NGUIDebug.Log("\n"+condition);
     }
 
     private void OnPointsChanged(int obj)
@@ -41,10 +49,13 @@ public class UI : MonoBehaviour {
 
     public void LoadLevel(GameObject gameObject)
     {
-        Debug.Log("Load Level: "+gameObject.name);
-        var levelToLoad = LevelList.loadedLevels.FirstOrDefault(x => x.Name == gameObject.name);
+        NGUIDebug.Log("Start Load Level: "+gameObject.name);
+        var levelToLoad = LevelList.LoadedLevels.FirstOrDefault(x => x.Name == gameObject.name);
+        NGUIDebug.Log("Choose to load: " + levelToLoad);
         Gamefield.StartGame(levelToLoad);
+        NGUIDebug.Log("Game created");
         DisableAllPanels();
+        NGUIDebug.Log("Panel disabled");
         inGamePanel.SetActive(true);
     }
 
@@ -93,9 +104,15 @@ public class UI : MonoBehaviour {
 
         if (Gamefield.gameMode is TargetScoreGameMode)
         {
-            TargetScoreLabel.text = string.Format("Target score: {0}",
+            TargetScoreLabel.text = string.Format("Game mode: Target Score. Target score: {0}",
                 (Gamefield.gameMode as TargetScoreGameMode).TargetScore);
         }
+        else
+        {
+            TargetScoreLabel.text = string.Format("Game mode: {0}",Gamefield.gameMode.ToString());
+        }
+
+        OnTurnsChanged();
     }
 
     private void OnTurnsChanged()

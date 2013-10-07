@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using Debug = UnityEngine.Debug;
 
 [Serializable]
 public class TargetPlaceGameMode : GameMode
@@ -46,19 +48,27 @@ public class TargetPlaceGameMode : GameMode
 
     protected override void OnInit()
     {
+        Gamefield.TileDestroyed -= OnTileDestroyed;
         Gamefield.TileDestroyed += OnTileDestroyed;
 
         PlaceCoordinates.Clear();
         var placeCell = Gamefield.Level.cells.Where(x => x.HasPlace);
+        Debug.Log("Now of cells: "+placeCell.Count());
         foreach (var cell in placeCell)
         {
             PlaceCoordinates.Add(new IntVector2(cell.x, cell.y));
         }
+        OnReset();
     }
 
     public override void OnReset()
     {
         CurrentPlaceCoordinates.Clear();
         CurrentPlaceCoordinates.AddRange(PlaceCoordinates);
+    }
+
+    public override string ToString()
+    {
+        return "Target place";
     }
 }

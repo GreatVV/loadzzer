@@ -65,6 +65,7 @@ public class Gamefield : MonoBehaviour
 
     public void StartGame(SerializedLevel level = null)
     {
+        Debug.Log("0");
         LastSerializedLevel = level;
         NewTilesAnimationChuzzles.Clear();
         DeathAnimationChuzzles.Clear();
@@ -75,9 +76,9 @@ public class Gamefield : MonoBehaviour
         directionChozen = false;
         isVerticalDrag = false;
         pointSystem.Reset();
-
+        Debug.Log("1");
         Level.Reset();
-
+        Debug.Log("2");
         if (level == null)
         {
             Level.InitRandom();
@@ -87,12 +88,13 @@ public class Gamefield : MonoBehaviour
         {
             Level.InitFromFile(level);
         }
+        Debug.Log("3");
         NewTilesInColumns = new int[Level.Width];
-        gameMode.Init(this);
 
         InvokeGameStarted();
         
         AnalyzeField(false);
+        Debug.Log("4");
     }
 
     private void Update()

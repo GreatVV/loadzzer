@@ -26,8 +26,7 @@ public abstract class GameMode
     public virtual void Reset()
     {
         Turns = StartTurns;
-        IsGameOver = false;
-        IsWin = false;
+        IsWin = IsGameOver = false;
         OnReset();
     }
 

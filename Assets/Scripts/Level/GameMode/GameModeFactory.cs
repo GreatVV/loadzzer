@@ -14,23 +14,27 @@ public class GameModeDescription
     public static GameModeDescription CreateFromJson(JSONObject jsonObject)
     {
         if (jsonObject == null)
+        {
+            Debug.LogWarning("There is no gameMode");
             return new GameModeDescription()
+            {
+                Mode = "TargetScore",
+                TargetScore = 3000,
+                Turns = 40
+            };
+            /*return new GameModeDescription()
             {
                 Mode = "TargetChuzzle",
                 Turns = 30,
                 Amount = 20
-            };
+            };*/
             /*return new GameModeDescription()
             {
                 Mode = "TargetPlace",
                 Turns = 30
             };*/
-            //return new GameModeDescription()
-            //{
-            //    Mode = "TargetScore",
-            //    TargetScore = 3000,
-            //    Turns = 40
-            //};
+        }
+
 
         var desc = new GameModeDescription();
         desc.Mode = jsonObject.GetField("Mode").str;

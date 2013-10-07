@@ -108,22 +108,22 @@ public class Level
     {
         cells.Clear();
         portals.Clear();
-        
 
         Width = level.Width;
         Height = level.Height;
+        //BUG change 480 for other resolutiion
         ChuzzleSize = new Vector3(480, 480, 0) / Width;
+        Debug.Log("Add cells");
         foreach(var newCell in level.SpecialCells)
         {
             AddCell(newCell.x, newCell.y, newCell.Copy);
         }
         NumberOfColors = level.NumberOfColors;
-        
-        InitRandom();
 
         Gamefield.GetComponent<Gamefield>().gameMode = GameModeFactory.CreateGameMode(level.GameMode);
         Gamefield.GetComponent<Gamefield>().gameMode.Init(Gamefield.GetComponent<Gamefield>());
 
+        InitRandom();
     }
 
     public Chuzzle CreateRandomChuzzle(int x, int y)

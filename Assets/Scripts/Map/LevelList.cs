@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using System.Collections;
 
@@ -7,7 +8,7 @@ public class LevelList : MonoBehaviour
 
     public string LevelUrl = "https://www.dropbox.com/s/h2ejykp67vdb784/loadzerbalance.txt?dl=1";
     public JSONObject levels;
-    public List<SerializedLevel> loadedLevels;
+    public List<SerializedLevel> LoadedLevels;
     public GameObject Grid;
     public GameObject LevelLabelPrefab;
 
@@ -28,33 +29,35 @@ public class LevelList : MonoBehaviour
      PopulateToGrid();
 #else               */
         Loading.text = "Loading";
-        StartCoroutine(DownloadLevel(LevelUrl, levels, loadedLevels));
+        NGUITools.ClearChildren(Grid);
+        StartCoroutine(DownloadLevel(LevelUrl, levels));
         //#endif
     }
 
-    public IEnumerator DownloadLevel(string url, JSONObject jsonObject, List<SerializedLevel> levels)
+    public IEnumerator DownloadLevel(string url, JSONObject jsonObject)
     {
         WWW www = new WWW(url);
         yield return www;
         if (www.isDone && www.text != "")
         {
             jsonObject = new JSONObject(www.text);
-
+            LoadedLevels.Clear();
             var levelArray = jsonObject.GetField("levelArray").list;
             foreach (var level in levelArray)
             {
-                levels.Add(SerializedLevel.FromJson(level));
+                LoadedLevels.Add(SerializedLevel.FromJson(level));
             }
+            NGUIDebug.Log("Number of loaded levels: "+LoadedLevels.Count);
             PopulateToGrid();
         }
 
-        Debug.Log("Levels Loaded:" + jsonObject);
+        //NGUIDebug.Log("Levels Loaded:" + jsonObject);
     }
 
     public void PopulateToGrid()
     {
         NGUITools.ClearChildren(Grid);
-        foreach (var level in loadedLevels)
+        foreach (var level in LoadedLevels)
         {
             var child = NGUITools.AddChild(Grid, LevelLabelPrefab);
             child.name = level.Name;
@@ -66,4 +69,17 @@ public class LevelList : MonoBehaviour
         Grid.GetComponent<UIGrid>().Reposition();
         Loading.text = "";
     }
+
+  /*  bool firstRun = true;
+    void Update()
+    {
+        if (firstRun)
+        {
+            firstRun = false;
+            UICamera.currentCamera.GetComponent<UICamera>().useMouse = true;
+            UICamera.currentCamera.GetComponent<UICamera>().useController = true;
+            UICamera.currentCamera.GetComponent<UICamera>().useKeyboard = true;
+        }
+
+    }*/
 }
