@@ -26,7 +26,7 @@ public class TargetScoreGameMode : GameMode
 
     protected override void OnInit()
     {
-        PointSystem = Gamefield.pointSystem;
+        PointSystem = Gamefield.PointSystem;
         PointSystem.PointChanged += OnPointChanged;
     }
 

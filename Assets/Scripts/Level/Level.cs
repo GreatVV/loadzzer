@@ -20,8 +20,8 @@ public class Level
 
     public int NumberOfColors = -1;
                                                                
-    public List<PortalBlock> portals = new List<PortalBlock>();
-    public List<Cell> cells = new List<Cell>();           
+    public List<PortalBlock> Portals = new List<PortalBlock>();
+    public List<Cell> Cells = new List<Cell>();           
 
     public Vector3 ChuzzleSize = new Vector3(80, 80);
     public GameObject[] ChuzzlePrefabs;
@@ -61,8 +61,8 @@ public class Level
             rightPortalBlock.toX = 0;
             rightPortalBlock.toY = y;
 
-            this.portals.Add(leftPortalBlock);
-            this.portals.Add(rightPortalBlock);
+            this.Portals.Add(leftPortalBlock);
+            this.Portals.Add(rightPortalBlock);
         }
 
 
@@ -80,8 +80,8 @@ public class Level
             bottomPortalBlock.x = j;
             bottomPortalBlock.y = -1;
 
-            this.portals.Add(upPortalBlock);
-            this.portals.Add(bottomPortalBlock);
+            this.Portals.Add(upPortalBlock);
+            this.Portals.Add(bottomPortalBlock);
         }       
     }
 
@@ -106,8 +106,8 @@ public class Level
 
     public void InitFromFile(SerializedLevel level)
     {
-        cells.Clear();
-        portals.Clear();
+        Cells.Clear();
+        Portals.Clear();
 
         Width = level.Width;
         Height = level.Height;
@@ -120,8 +120,8 @@ public class Level
         }
         NumberOfColors = level.NumberOfColors;
 
-        Gamefield.GetComponent<Gamefield>().gameMode = GameModeFactory.CreateGameMode(level.GameMode);
-        Gamefield.GetComponent<Gamefield>().gameMode.Init(Gamefield.GetComponent<Gamefield>());
+        Gamefield.GetComponent<Gamefield>().GameMode = GameModeFactory.CreateGameMode(level.GameMode);
+        Gamefield.GetComponent<Gamefield>().GameMode.Init(Gamefield.GetComponent<Gamefield>());
 
         InitRandom();
     }
@@ -151,7 +151,7 @@ public class Level
 
         if (chuzzle.Current.HasCounter)
         {
-            chuzzle.Counter = ((TargetChuzzleGameMode) Gamefield.GetComponent<Gamefield>().gameMode).Amount;
+            chuzzle.Counter = ((TargetChuzzleGameMode) Gamefield.GetComponent<Gamefield>().GameMode).Amount;
             
             var counter = NGUITools.AddChild(gameObject, CounterPrefab).GetComponent<tk2dTextMesh>();
             counter.text = chuzzle.Counter.ToString(CultureInfo.InvariantCulture);
@@ -179,7 +179,7 @@ public class Level
 
     public Cell GetCellAt(int x, int y)
     {
-        var cell = cells.FirstOrDefault(c => c.x == x && c.y == y);
+        var cell = Cells.FirstOrDefault(c => c.x == x && c.y == y);
         if (cell == null)
         {
             var newCell = new Cell(x, y);            
@@ -192,9 +192,9 @@ public class Level
 
     private void AddCell(int x, int y, Cell newCell)
     {
-        cells.Add(newCell);
+        Cells.Add(newCell);
         //set left
-        var left = cells.FirstOrDefault(c => c.x == x - 1 && c.y == y);
+        var left = Cells.FirstOrDefault(c => c.x == x - 1 && c.y == y);
         if (left != null)
         {
             newCell.Left = left;
@@ -202,7 +202,7 @@ public class Level
         }
 
         //set right
-        var right = cells.FirstOrDefault(c => c.x == x + 1 && c.y == y);
+        var right = Cells.FirstOrDefault(c => c.x == x + 1 && c.y == y);
         if (right != null)
         {
             newCell.Right = right;
@@ -210,7 +210,7 @@ public class Level
         }
 
         //set top
-        var top = cells.FirstOrDefault(c => c.x == x && c.y == y + 1);
+        var top = Cells.FirstOrDefault(c => c.x == x && c.y == y + 1);
         if (top != null)
         {
             newCell.Top = top;
@@ -218,7 +218,7 @@ public class Level
         }
 
         //set bottom
-        var bottom = cells.FirstOrDefault(c => c.x == x && c.y == y - 1);
+        var bottom = Cells.FirstOrDefault(c => c.x == x && c.y == y - 1);
         if (bottom != null)
         {
             newCell.Bottom = bottom;
@@ -235,12 +235,12 @@ public class Level
 
     public bool IsPortal(int x, int y)
     {
-        return portals.Any(p => p.x == x && p.y == y);
+        return Portals.Any(p => p.x == x && p.y == y);
     }
 
     public PortalBlock GetPortalAt(int x, int y)
     {
-        return portals.First(p => p.x == x && p.y == y);
+        return Portals.First(p => p.x == x && p.y == y);
     }
 
     public Vector3 ConvertXYToPosition(int x, int y, Vector3 scale)
@@ -252,7 +252,7 @@ public class Level
 
     public void Reset()
     {
-        portals.Clear();
+        Portals.Clear();
         foreach (var chuzzle in Chuzzles)
         {
             GameObject.Destroy(chuzzle.gameObject);

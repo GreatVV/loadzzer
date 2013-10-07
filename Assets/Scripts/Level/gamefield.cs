@@ -15,25 +15,25 @@ public class Gamefield : MonoBehaviour
         ToBottom
     };
 
-    public Level Level;
-    public List<Pair> PowerTypePrefabs;
-    public List<Chuzzle> animatedChuzzles;
+    public Level Level = new Level();
+    public List<Pair> PowerTypePrefabs = new List<Pair>();
+    public List<Chuzzle> AnimatedChuzzles = new List<Chuzzle>();
 
     public LayerMask chuzzleMask;
-    public Chuzzle currentChuzzle;
-    public Direction currentDirection;
+    public Chuzzle CurrentChuzzle;
+    public Direction CurrentDirection;
 
-    private Vector3 delta;
-    private Vector3 deltaTouch;
-    private bool directionChozen;
-    private Vector3 dragOrigin;
-    private Chuzzle draggable;
-    public GameMode gameMode;
-    public bool isMovingToPrevPosition;
-    private bool isVerticalDrag;
-    public Points pointSystem;
-    public GameObject portalPrefab;
-    public List<Chuzzle> selectedChuzzles;
+    private Vector3 _delta;
+    private Vector3 _deltaTouch;
+    private bool _directionChozen;
+    private Vector3 _dragOrigin;
+    private Chuzzle _draggable;
+    public GameMode GameMode = GameModeFactory.CreateGameMode(GameModeDescription.CreateFromJson(null));
+    public bool IsMovingToPrevPosition;
+    private bool _isVerticalDrag;
+    public Points PointSystem = new Points();
+    public GameObject PortalPrefab;
+    public List<Chuzzle> SelectedChuzzles = new List<Chuzzle>();
 
     public event Action<List<Chuzzle>> CombinationDestroyed;
 
@@ -65,43 +65,54 @@ public class Gamefield : MonoBehaviour
 
     public void StartGame(SerializedLevel level = null)
     {
-        Debug.Log("0");
         LastSerializedLevel = level;
+     
         NewTilesAnimationChuzzles.Clear();
+     
         DeathAnimationChuzzles.Clear();
-        animatedChuzzles.Clear();
-        selectedChuzzles.Clear();
-        currentChuzzle = null;
-
-        directionChozen = false;
-        isVerticalDrag = false;
-        pointSystem.Reset();
-        Debug.Log("1");
+     
+        AnimatedChuzzles.Clear();
+     
+        SelectedChuzzles.Clear();
+     
+        CurrentChuzzle = null;
+     
+        _directionChozen = false;
+     
+        _isVerticalDrag = false;
+     
+        PointSystem.Reset();
+     
         Level.Reset();
-        Debug.Log("2");
+     
         if (level == null)
         {
             Level.InitRandom();
-            gameMode = GameModeFactory.CreateGameMode( GameModeDescription.CreateFromJson(null));
+            GameMode = GameModeFactory.CreateGameMode( GameModeDescription.CreateFromJson(null));
         }
         else
         {
             Level.InitFromFile(level);
         }
-        Debug.Log("3");
+     
         NewTilesInColumns = new int[Level.Width];
 
         InvokeGameStarted();
         
         AnalyzeField(false);
-        Debug.Log("4");
     }
 
     private void Update()
     {
-        isMovingToPrevPosition = animatedChuzzles.Any() || DeathAnimationChuzzles.Any() ||
+        if (LastSerializedLevel == null)
+        {
+            Debug.Log("Cry");
+            return;
+        }
+
+        IsMovingToPrevPosition = AnimatedChuzzles.Any() || DeathAnimationChuzzles.Any() ||
                                  NewTilesAnimationChuzzles.Any() || SpecialTilesAnimated.Any();
-        if (isMovingToPrevPosition)
+        if (IsMovingToPrevPosition)
         {
             return;
         }
@@ -110,20 +121,20 @@ public class Gamefield : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0) || (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began))
         {
-            dragOrigin = Input.mousePosition;
+            _dragOrigin = Input.mousePosition;
 
             if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
             {
                 //   Debug.Log("is touch drag started");
-                dragOrigin = new Vector3(Input.GetTouch(0).position.x, Input.GetTouch(0).position.y);
+                _dragOrigin = new Vector3(Input.GetTouch(0).position.x, Input.GetTouch(0).position.y);
             }
 
 
-            var ray = Camera.main.ScreenPointToRay(dragOrigin);
+            var ray = Camera.main.ScreenPointToRay(_dragOrigin);
             RaycastHit hit;
             if (Physics.Raycast(ray, out hit, float.MaxValue, chuzzleMask))
             {
-                currentChuzzle = hit.transform.gameObject.GetComponent<Chuzzle>();
+                CurrentChuzzle = hit.transform.gameObject.GetComponent<Chuzzle>();
             }
 
             return;
@@ -136,7 +147,7 @@ public class Gamefield : MonoBehaviour
             return;
         }
 
-        if (currentChuzzle == null)
+        if (CurrentChuzzle == null)
         {
             return;
         }
@@ -145,7 +156,7 @@ public class Gamefield : MonoBehaviour
         if (Input.GetMouseButton(0)) // Get Position Difference between Last and Current Touches
         {
             // MOUSE
-            delta = Input.mousePosition - dragOrigin;
+            _delta = Input.mousePosition - _dragOrigin;
 
             //   Debug.Log("Drag delta");
         }
@@ -154,75 +165,75 @@ public class Gamefield : MonoBehaviour
             if (Input.touchCount > 0)
             {
                 // TOUCH
-                deltaTouch = new Vector3(Input.GetTouch(0).position.x, Input.GetTouch(0).position.y, 0);
-                delta = deltaTouch - dragOrigin;
+                _deltaTouch = new Vector3(Input.GetTouch(0).position.x, Input.GetTouch(0).position.y, 0);
+                _delta = _deltaTouch - _dragOrigin;
                 // Debug.Log("Drag delta TOUCH");
             }
         }
 
-        if (!directionChozen)
+        if (!_directionChozen)
         {
             //chooze drag direction
-            if (Mathf.Abs(delta.x) < 1.5*Mathf.Abs(delta.y) || Mathf.Abs(delta.x) > 1.5*Mathf.Abs(delta.y))
+            if (Mathf.Abs(_delta.x) < 1.5*Mathf.Abs(_delta.y) || Mathf.Abs(_delta.x) > 1.5*Mathf.Abs(_delta.y))
             {
-                if (Mathf.Abs(delta.x) < Mathf.Abs(delta.y))
+                if (Mathf.Abs(_delta.x) < Mathf.Abs(_delta.y))
                 {
                     //TODO: choose row
-                    selectedChuzzles = Level.Chuzzles.Where(x => x.Current.x == currentChuzzle.Current.x).ToList();
-                    isVerticalDrag = true;
+                    SelectedChuzzles = Level.Chuzzles.Where(x => x.Current.x == CurrentChuzzle.Current.x).ToList();
+                    _isVerticalDrag = true;
                 }
                 else
                 {
                     //TODO: choose column
-                    selectedChuzzles = Level.Chuzzles.Where(x => x.Current.y == currentChuzzle.Current.y).ToList();
-                    isVerticalDrag = false;
+                    SelectedChuzzles = Level.Chuzzles.Where(x => x.Current.y == CurrentChuzzle.Current.y).ToList();
+                    _isVerticalDrag = false;
                 }
 
-                directionChozen = true;
+                _directionChozen = true;
                 //  Debug.Log("Direction chozen. Vertical: "+isVerticalDrag);
             }
         }
 
-        if (directionChozen)
+        if (_directionChozen)
         {
-            if (isVerticalDrag)
+            if (_isVerticalDrag)
             {
-                if (delta.y > 0)
+                if (_delta.y > 0)
                 {
-                    currentDirection = Direction.ToTop;
+                    CurrentDirection = Direction.ToTop;
                 }
                 else
                 {
-                    currentDirection = Direction.ToBottom;
+                    CurrentDirection = Direction.ToBottom;
                 }
             }
             else
             {
-                if (delta.x > 0)
+                if (_delta.x > 0)
                 {
-                    currentDirection = Direction.ToLeft;
+                    CurrentDirection = Direction.ToLeft;
                 }
                 else
                 {
-                    currentDirection = Direction.ToRight;
+                    CurrentDirection = Direction.ToRight;
                 }
             }
         }
 
         // RESET START POINT
-        dragOrigin = Input.mousePosition;
+        _dragOrigin = Input.mousePosition;
 
         #endregion
     }
 
     private void LateUpdate()
     {
-        if (selectedChuzzles.Any() && directionChozen)
+        if (SelectedChuzzles.Any() && _directionChozen)
         {
-            foreach (var c in selectedChuzzles)
+            foreach (var c in SelectedChuzzles)
             {
                 c.GetComponent<TeleportableEntity>().prevPosition = c.transform.localPosition;
-                c.transform.localPosition += isVerticalDrag ? new Vector3(0, delta.y, 0) : new Vector3(delta.x, 0, 0);
+                c.transform.localPosition += _isVerticalDrag ? new Vector3(0, _delta.y, 0) : new Vector3(_delta.x, 0, 0);
 
                 var real = ToRealCoordinates(c);
                 if (Level.IsPortal(real.x, real.y))
@@ -239,7 +250,7 @@ public class Gamefield : MonoBehaviour
                         var currentCell = Level.GetCellAt(real.x, real.y);
                        // Debug.Log("Teleport from " + currentCell);
                         Cell targetCell = null;
-                        switch (currentDirection)
+                        switch (CurrentDirection)
                         {
                             case Direction.ToRight:
                                 targetCell = currentCell.GetLeftWithType();
@@ -335,7 +346,7 @@ public class Gamefield : MonoBehaviour
 
             if (isHumanAction)
             {
-                gameMode.HumanTurn();
+                GameMode.HumanTurn();
             }
         }
         else
@@ -390,7 +401,7 @@ public class Gamefield : MonoBehaviour
             if (Vector3.Distance(c.transform.localPosition, targetPosition) > 0.1f)
             {
                 isAnyTween = true;
-                animatedChuzzles.Add(c);
+                AnimatedChuzzles.Add(c);
                 iTween.MoveTo(c.gameObject,
                     iTween.Hash("x", targetPosition.x, "y", targetPosition.y, "z", targetPosition.z, "time", 0.3f,
                         "oncomplete", callbackOnComplete, "oncompletetarget", gameObject, "oncompleteparams", c));
@@ -530,26 +541,26 @@ public class Gamefield : MonoBehaviour
 
     private void DropDrag()
     {
-        foreach (var c in selectedChuzzles)
+        foreach (var c in SelectedChuzzles)
         {
             CalculateRealCoordinatesFor(c);
         }
         //move all tiles to new real coordinates
         MoveToRealCoordinates();
 
-        directionChozen = false;
-        currentChuzzle = null;
-        selectedChuzzles.Clear();
+        _directionChozen = false;
+        CurrentChuzzle = null;
+        SelectedChuzzles.Clear();
     }
 
     private void MoveToRealCoordinates()
     {
-        foreach (var c in selectedChuzzles)
+        foreach (var c in SelectedChuzzles)
         {
             c.MoveTo = c.Real;
         }
 
-        var anyMove = MoveToTargetPosition(selectedChuzzles, "OnTweenMoveAfterDrag");
+        var anyMove = MoveToTargetPosition(SelectedChuzzles, "OnTweenMoveAfterDrag");
 
         if (!anyMove)
         {
@@ -561,12 +572,12 @@ public class Gamefield : MonoBehaviour
     {
         var chuzzle = chuzzleObject as Chuzzle;
 
-        if (animatedChuzzles.Contains(chuzzle))
+        if (AnimatedChuzzles.Contains(chuzzle))
         {
-            animatedChuzzles.Remove(chuzzle);
+            AnimatedChuzzles.Remove(chuzzle);
         }
 
-        if (animatedChuzzles.Count() == 0)
+        if (AnimatedChuzzles.Count() == 0)
         {
             AnalyzeField(true);
         }
@@ -576,10 +587,10 @@ public class Gamefield : MonoBehaviour
     {
         var chuzzle = chuzzleObject as Chuzzle;
 
-        if (animatedChuzzles.Contains(chuzzle))
+        if (AnimatedChuzzles.Contains(chuzzle))
         {
             chuzzle.GetComponent<TeleportableEntity>().prevPosition = chuzzle.transform.localPosition;
-            animatedChuzzles.Remove(chuzzle);
+            AnimatedChuzzles.Remove(chuzzle);
         }
     }
 
@@ -811,7 +822,7 @@ public class Gamefield : MonoBehaviour
             else
             {
                 //check gameover or win
-                gameMode.Check();
+                GameMode.Check();
             }
         }
     }
@@ -840,7 +851,7 @@ public class Gamefield : MonoBehaviour
         if (needCountPoints)
         {
             //count points
-            pointSystem.CountForCombinations(combination);
+            PointSystem.CountForCombinations(combination);
         }
         foreach (var chuzzle in combination)
         {
@@ -850,8 +861,8 @@ public class Gamefield : MonoBehaviour
             }
             //remove chuzzle from game logic
             RemoveChuzzle(chuzzle);
-
-            var explosion = Object.Instantiate(Explosion, chuzzle.transform.position, Quaternion.identity);
+            Debug.Log("1");
+            var explosion = Instantiate(Explosion, chuzzle.transform.position, Quaternion.identity);
             Level.ScaleSprite(((GameObject) explosion).GetComponent<tk2dBaseSprite>());
             Destroy(explosion, 1f);
             //iTween.MoveTo(chuzzle.gameObject, iTween.Hash("x", 0, "y", 0, "z", 0, "time", 0.3f));

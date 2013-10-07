@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
 
-public class Points : MonoBehaviour
+[Serializable]
+public class Points
 {
     public int CurrentPoints;              
     public event Action<int> PointChanged;
@@ -22,7 +22,6 @@ public class Points : MonoBehaviour
 
     public void InvokePointChanged()
     {
-        
         if (PointChanged != null)
         {
             PointChanged(CurrentPoints);

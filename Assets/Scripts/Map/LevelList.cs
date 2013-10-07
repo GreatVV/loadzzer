@@ -47,7 +47,7 @@ public class LevelList : MonoBehaviour
             {
                 LoadedLevels.Add(SerializedLevel.FromJson(level));
             }
-            NGUIDebug.Log("Number of loaded levels: "+LoadedLevels.Count);
+            Debug.Log("Number of loaded levels: "+LoadedLevels.Count);
             PopulateToGrid();
         }
 

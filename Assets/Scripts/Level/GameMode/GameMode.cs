@@ -99,7 +99,7 @@ public abstract class GameMode
     public void Init(Gamefield gamefield)
     {   
         this.Gamefield = gamefield;
-        PointSystem = Gamefield.pointSystem;
+        PointSystem = Gamefield.PointSystem;
         Reset();
         OnDestroy();
         OnInit();

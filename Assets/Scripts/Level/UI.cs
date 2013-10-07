@@ -24,38 +24,40 @@ public class UI : MonoBehaviour {
     public void Awake()
     {
         Gamefield.GameStarted += OnGameStarted;
-        Gamefield.pointSystem.PointChanged += OnPointsChanged;
+        Gamefield.PointSystem.PointChanged += OnPointsChanged;
 
-        Application.RegisterLogCallback(CallBackLog);
+        //Application.RegisterLogCallback(CallBackLog);
+       // Application.RegisterLogCallbackThreaded(CallBackLog);
       
     }
 
     private void CallBackLog(string condition, string stacktrace, LogType type)
     {
         NGUIDebug.Log("\nType: "+type);
-        NGUIDebug.Log("\n"+condition);
+        NGUIDebug.Log(stacktrace);
+        NGUIDebug.Log(condition);
     }
 
     private void OnPointsChanged(int obj)
     {
-        PointsLabel.text = string.Format("Points: {0}", Gamefield.pointSystem.CurrentPoints);
+        PointsLabel.text = string.Format("Points: {0}", Gamefield.PointSystem.CurrentPoints);
     }
 
     void OnDestroy()
     {
         Gamefield.GameStarted -= OnGameStarted;
-        Gamefield.pointSystem.PointChanged -= OnPointsChanged;
+        Gamefield.PointSystem.PointChanged -= OnPointsChanged;
     }
 
     public void LoadLevel(GameObject gameObject)
     {
-        NGUIDebug.Log("Start Load Level: "+gameObject.name);
+        //Debug.Log("Start Load Level: "+gameObject.name);
         var levelToLoad = LevelList.LoadedLevels.FirstOrDefault(x => x.Name == gameObject.name);
-        NGUIDebug.Log("Choose to load: " + levelToLoad);
+        //Debug.Log("Choose to load: " + levelToLoad);
         Gamefield.StartGame(levelToLoad);
-        NGUIDebug.Log("Game created");
+        //Debug.Log("Game created");
         DisableAllPanels();
-        NGUIDebug.Log("Panel disabled");
+        //Debug.Log("Panel disabled");
         inGamePanel.SetActive(true);
     }
 
@@ -93,23 +95,23 @@ public class UI : MonoBehaviour {
 
     public void OnGameStarted()
     {
-        Gamefield.gameMode.GameOver -= OnGameOver;
-        Gamefield.gameMode.Win -= OnWin;
+        Gamefield.GameMode.GameOver -= OnGameOver;
+        Gamefield.GameMode.Win -= OnWin;
 
-        Gamefield.gameMode.GameOver += OnGameOver;
-        Gamefield.gameMode.Win += OnWin;
+        Gamefield.GameMode.GameOver += OnGameOver;
+        Gamefield.GameMode.Win += OnWin;
 
-        Gamefield.gameMode.TurnsChanged -= OnTurnsChanged;
-        Gamefield.gameMode.TurnsChanged += OnTurnsChanged;
+        Gamefield.GameMode.TurnsChanged -= OnTurnsChanged;
+        Gamefield.GameMode.TurnsChanged += OnTurnsChanged;
 
-        if (Gamefield.gameMode is TargetScoreGameMode)
+        if (Gamefield.GameMode is TargetScoreGameMode)
         {
             TargetScoreLabel.text = string.Format("Game mode: Target Score. Target score: {0}",
-                (Gamefield.gameMode as TargetScoreGameMode).TargetScore);
+                (Gamefield.GameMode as TargetScoreGameMode).TargetScore);
         }
         else
         {
-            TargetScoreLabel.text = string.Format("Game mode: {0}",Gamefield.gameMode.ToString());
+            TargetScoreLabel.text = string.Format("Game mode: {0}",Gamefield.GameMode.ToString());
         }
 
         OnTurnsChanged();
@@ -117,15 +119,15 @@ public class UI : MonoBehaviour {
 
     private void OnTurnsChanged()
     {       
-        TurnsLabel.text = string.Format("Turns: {0}", Gamefield.gameMode.Turns);  
+        TurnsLabel.text = string.Format("Turns: {0}", Gamefield.GameMode.Turns);  
     }
 
     public void OnWin()
     {
         DisableAllPanels();        
         winPanel.gameObject.SetActive(true);
-        Debug.Log("Turn left:" + Gamefield.gameMode.Turns);
-        winPanel.SetTurnsLeft(Gamefield.gameMode.Turns);
+        Debug.Log("Turn left:" + Gamefield.GameMode.Turns);
+        winPanel.SetTurnsLeft(Gamefield.GameMode.Turns);
     }
 
 
@@ -160,13 +162,13 @@ public class UI : MonoBehaviour {
 
     public void OnSetTS(string text)
     {
-        (Gamefield.gameMode as TargetScoreGameMode).TargetScore = int.Parse(text);        
+        (Gamefield.GameMode as TargetScoreGameMode).TargetScore = int.Parse(text);        
         OnRestartClick();
     }
 
     public void OnSetTST(string text)
     {
-        (Gamefield.gameMode as TargetScoreGameMode).StartTurns = int.Parse(text);
+        (Gamefield.GameMode as TargetScoreGameMode).StartTurns = int.Parse(text);
         OnRestartClick();
     }
 
