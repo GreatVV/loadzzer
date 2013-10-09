@@ -13,7 +13,7 @@ public class Chuzzle : MonoBehaviour {
 
     public Vector3 Scale { get { return collider.bounds.size; } }
 
-    public bool isCheckedForSearch;
+    public bool IsCheckedForSearch;
 
     public PowerType PowerType;
     

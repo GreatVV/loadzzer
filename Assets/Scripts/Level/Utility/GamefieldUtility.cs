@@ -15,7 +15,7 @@ public class GamefieldUtility
         //find combination
         foreach (var c in chuzzles)
         {
-            if (c.isCheckedForSearch) continue;
+            if (c.IsCheckedForSearch) continue;
 
             var combination = RecursiveFind(c, new List<Chuzzle>(), chuzzles);
 
@@ -27,7 +27,7 @@ public class GamefieldUtility
 
         foreach (var c in chuzzles)
         {
-            c.isCheckedForSearch = false;
+            c.IsCheckedForSearch = false;
         }
 
         return combinations;
@@ -35,12 +35,12 @@ public class GamefieldUtility
 
     public static List<Chuzzle> RecursiveFind(Chuzzle chuzzle, List<Chuzzle> combination, List<Chuzzle> chuzzles)
     {
-        if (chuzzle == null || combination.Contains(chuzzle) || chuzzle.isCheckedForSearch)
+        if (chuzzle == null || combination.Contains(chuzzle) || chuzzle.IsCheckedForSearch)
         {
             return new List<Chuzzle>();
         }
         combination.Add(chuzzle);
-        chuzzle.isCheckedForSearch = true;
+        chuzzle.IsCheckedForSearch = true;
 
         var left = GetLeftFor(chuzzle, chuzzles);
         if (left != null && left.Type == chuzzle.Type)

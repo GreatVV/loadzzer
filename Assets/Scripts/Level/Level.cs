@@ -3,45 +3,48 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using UnityEngine;
+using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
 
 [Serializable]
 public class CellSprite
 {
-    public CellTypes type;
-    public GameObject cellPrefab;
+    public CellTypes Type;
+    public GameObject CellPrefab;
 }
 
 [Serializable]
 public class Level
 {
-    public int Width = 6;
-    public int Height = 6;
+    #region Set in editor
 
-    public int NumberOfColors = -1;
-                                                               
-    public List<PortalBlock> Portals = new List<PortalBlock>();
-    public List<Cell> Cells = new List<Cell>();           
-
-    public Vector3 ChuzzleSize = new Vector3(80, 80);
-    public GameObject[] ChuzzlePrefabs;
-
-    public List<Chuzzle> Chuzzles = new List<Chuzzle>();
-
-    public GameObject Gamefield;
-
-    public CellSprite[] cellPrefabs;
-
-    public List<GameObject> CellSprites;
-
+    public CellSprite[] CellPrefabs;
     public GameObject PlacePrefab;
     public GameObject CounterPrefab;
 
+    public GameObject[] ChuzzlePrefabs;
+
+    public GameObject Gamefield;
+
+    #endregion
+
+    public int Width = 6;
+    public int Height = 6;
+
+    public Vector3 ChuzzleSize = new Vector3(80, 80);
+    public int NumberOfColors = 6;
+
+    public List<PortalBlock> Portals = new List<PortalBlock>();
+    public List<Cell> Cells = new List<Cell>();
+
+    public List<Chuzzle> Chuzzles = new List<Chuzzle>();
+    public List<GameObject> CellSprites = new List<GameObject>();
+
     public void InitRandom()
     {
-        for (int y = 0; y < Height; y++)
+        for (var y = 0; y < Height; y++)
         {
-            for (int x = 0; x < Width; x++)
+            for (var x = 0; x < Width; x++)
             {
                 if (GetCellAt(x, y).Type == CellTypes.Usual)
                 {
@@ -66,7 +69,7 @@ public class Level
         }
 
 
-        for (int j = 0; j < Width; j++)
+        for (var j = 0; j < Width; j++)
         {
             var upPortalBlock = new PortalBlock();
             upPortalBlock.x = j;
@@ -82,12 +85,12 @@ public class Level
 
             this.Portals.Add(upPortalBlock);
             this.Portals.Add(bottomPortalBlock);
-        }       
+        }
     }
 
     private void CreateTileSprite(Cell cell)
     {
-        var prefab = cellPrefabs.First(x => x.type == cell.Type).cellPrefab;
+        var prefab = CellPrefabs.First(x => x.Type == cell.Type).CellPrefab;
         var cellSprite = NGUITools.AddChild(Gamefield, prefab);
         CellSprites.Add(cellSprite);
         cellSprite.transform.localPosition = ConvertXYToPosition(cell.x, cell.y, ChuzzleSize);
@@ -112,9 +115,9 @@ public class Level
         Width = level.Width;
         Height = level.Height;
         //BUG change 480 for other resolutiion
-        ChuzzleSize = new Vector3(480, 480, 0) / Width;
+        ChuzzleSize = new Vector3(480, 480, 0)/Width;
         Debug.Log("Add cells");
-        foreach(var newCell in level.SpecialCells)
+        foreach (var newCell in level.SpecialCells)
         {
             AddCell(newCell.x, newCell.y, newCell.Copy);
         }
@@ -139,20 +142,21 @@ public class Level
         gameObject.layer = prefab.layer;
 
         var sprite = gameObject.GetComponent<tk2dSprite>();
-        ScaleSprite(sprite);                                                  
+        ScaleSprite(sprite);
 
         ((BoxCollider) gameObject.collider).size = ChuzzleSize;
-        ((BoxCollider) gameObject.collider).center = ChuzzleSize / 2;
+        ((BoxCollider) gameObject.collider).center = ChuzzleSize/2;
         var chuzzle = gameObject.GetComponent<Chuzzle>();
         chuzzle.Real = chuzzle.MoveTo = chuzzle.Current = GetCellAt(x, y);
 
         gameObject.transform.parent = Gamefield.transform;
-        gameObject.transform.localPosition = new Vector3(x * gameObject.GetComponent<Chuzzle>().Scale.x, y * gameObject.GetComponent<Chuzzle>().Scale.y, 0);
+        gameObject.transform.localPosition = new Vector3(x*gameObject.GetComponent<Chuzzle>().Scale.x,
+            y*gameObject.GetComponent<Chuzzle>().Scale.y, 0);
 
         if (chuzzle.Current.HasCounter)
         {
             chuzzle.Counter = ((TargetChuzzleGameMode) Gamefield.GetComponent<Gamefield>().GameMode).Amount;
-            
+
             var counter = NGUITools.AddChild(gameObject, CounterPrefab).GetComponent<tk2dTextMesh>();
             counter.text = chuzzle.Counter.ToString(CultureInfo.InvariantCulture);
 
@@ -182,7 +186,7 @@ public class Level
         var cell = Cells.FirstOrDefault(c => c.x == x && c.y == y);
         if (cell == null)
         {
-            var newCell = new Cell(x, y);            
+            var newCell = new Cell(x, y);
             AddCell(x, y, newCell);
 
             return newCell;
@@ -231,6 +235,22 @@ public class Level
         }
     }
 
+    public void Reset()
+    {
+        Portals.Clear();
+        foreach (var chuzzle in Chuzzles)
+        {
+            Object.Destroy(chuzzle.gameObject);
+        }
+        Chuzzles.Clear();
+
+        foreach (var cellSprite in CellSprites)
+        {
+            Object.Destroy(cellSprite.gameObject);
+        }
+        CellSprites.Clear();
+    }
+
     #region Block and Portals
 
     public bool IsPortal(int x, int y)
@@ -245,25 +265,8 @@ public class Level
 
     public Vector3 ConvertXYToPosition(int x, int y, Vector3 scale)
     {
-        return new Vector3(x * scale.x, y * scale.y, 0);
+        return new Vector3(x*scale.x, y*scale.y, 0);
     }
 
     #endregion
-
-    public void Reset()
-    {
-        Portals.Clear();
-        foreach (var chuzzle in Chuzzles)
-        {
-            GameObject.Destroy(chuzzle.gameObject);
-        }
-        Chuzzles.Clear();
-
-        foreach (var cellSprite in CellSprites)
-        {
-            GameObject.Destroy(cellSprite.gameObject);
-        }
-        CellSprites.Clear();
-    }
-
 }

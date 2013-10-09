@@ -70,7 +70,7 @@ public class UI : MonoBehaviour {
 
     public void OnRestartClick()
     {   
-        Gamefield.StartGame(Gamefield.LastSerializedLevel);
+        Gamefield.StartGame(Gamefield.LastLoadedLevel);
     }
 
     public void ChoseLevel()

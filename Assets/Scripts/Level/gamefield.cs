@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Object = UnityEngine.Object;
-using Random = UnityEngine.Random;
 
 public class Gamefield : MonoBehaviour
 {
+    #region Direction enum
+
     public enum Direction
     {
         ToLeft,
@@ -15,35 +16,59 @@ public class Gamefield : MonoBehaviour
         ToBottom
     };
 
+    #endregion
+
+    #region Set in editor
+
+    public GameObject Explosion;
+    public GameObject PortalPrefab;
+
+    public LayerMask ChuzzleMask;
+
+    #endregion
+
     public Level Level = new Level();
-    public List<Pair> PowerTypePrefabs = new List<Pair>();
+
+    public SpecialCreationUtility SpecialCreation;
+    
+    public GameMode GameMode = GameModeFactory.CreateGameMode(GameModeDescription.CreateFromJson(null));
+    
+    public Points PointSystem = new Points();
+    
+    public SerializedLevel LastLoadedLevel = null;
+
     public List<Chuzzle> AnimatedChuzzles = new List<Chuzzle>();
 
-    public LayerMask chuzzleMask;
     public Chuzzle CurrentChuzzle;
     public Direction CurrentDirection;
+    public List<Chuzzle> DeathAnimationChuzzles = new List<Chuzzle>();
+
+    public bool IsMovingToPrevPosition;
+
+    public List<Chuzzle> NewTilesAnimationChuzzles = new List<Chuzzle>();
+    public int[] NewTilesInColumns = new int[0];
+
+    public List<Chuzzle> SelectedChuzzles = new List<Chuzzle>();
+    
 
     private Vector3 _delta;
     private Vector3 _deltaTouch;
     private bool _directionChozen;
     private Vector3 _dragOrigin;
     private Chuzzle _draggable;
-    public GameMode GameMode = GameModeFactory.CreateGameMode(GameModeDescription.CreateFromJson(null));
-    public bool IsMovingToPrevPosition;
     private bool _isVerticalDrag;
-    public Points PointSystem = new Points();
-    public GameObject PortalPrefab;
-    public List<Chuzzle> SelectedChuzzles = new List<Chuzzle>();
+
+    #region Events
 
     public event Action<List<Chuzzle>> CombinationDestroyed;
 
     public event Action GameStarted;
 
-    protected virtual void InvokeGameStarted()
-    {
-        Action handler = GameStarted;
-        if (handler != null) handler();
-    }
+    public event Action<Chuzzle> TileDestroyed;
+
+    #endregion
+
+    #region Event Invokators
 
     protected virtual void InvokeCombinationDestroyed(List<Chuzzle> combination)
     {
@@ -51,7 +76,11 @@ public class Gamefield : MonoBehaviour
         if (handler != null) handler(combination);
     }
 
-    public event Action<Chuzzle> TileDestroyed;
+    protected virtual void InvokeGameStarted()
+    {
+        var handler = GameStarted;
+        if (handler != null) handler();
+    }
 
     private void InvokeTileDestroyed(Chuzzle destroyedChuzzle)
     {
@@ -61,57 +90,237 @@ public class Gamefield : MonoBehaviour
         }
     }
 
-    public SerializedLevel LastSerializedLevel = null;
+    #endregion
+
+    private void AnalyzeField(bool isHumanAction)
+    {
+        var hasNewTiles = CreateNew();
+        if (hasNewTiles)
+        {
+            return;
+        }
+
+        //check new combination
+        var combinations = GamefieldUtility.FindCombinations(Level.Chuzzles);
+        if (combinations.Any())
+        {
+            foreach (var c in Level.Chuzzles)
+            {
+                c.Current = c.Real;
+            }
+            //check can we make new specialTiles
+            var newSpecials = SpecialCreation.CheckForSpecial(combinations);
+
+            var animationForSpecials = newSpecials;
+            if (!newSpecials)
+            {
+                animationForSpecials = SpecialCreation.KillSpecials(combinations);
+            }
+
+            //if there is no specials
+            if (!animationForSpecials)
+            {
+                //remove combinations
+                RemoveCombinations(combinations);
+            }
+
+            if (isHumanAction)
+            {
+                GameMode.HumanTurn();
+            }
+        }
+        else
+        {
+            //if no new combination - move to prevposition       
+            foreach (var c in Level.Chuzzles)
+            {
+                c.MoveTo = c.Real = c.Current;
+            }
+
+            MoveToTargetPosition(Level.Chuzzles, "OnCompleteBackToPreviousPositionTween");
+        }
+    }
+
+    public Chuzzle At(int x, int y)
+    {
+        return Level.Chuzzles.FirstOrDefault(c => c.Current.x == x && c.Current.y == y);
+    }
+
+    private void LateUpdate()
+    {
+        if (SelectedChuzzles.Any() && _directionChozen)
+        {
+            foreach (var c in SelectedChuzzles)
+            {
+                c.GetComponent<TeleportableEntity>().prevPosition = c.transform.localPosition;
+                c.transform.localPosition += _isVerticalDrag ? new Vector3(0, _delta.y, 0) : new Vector3(_delta.x, 0, 0);
+
+                var real = ToRealCoordinates(c);
+                if (Level.IsPortal(real.x, real.y))
+                {
+                    var difference = c.transform.localPosition - Level.ConvertXYToPosition(real.x, real.y, c.Scale);
+
+                    var portal = Level.GetPortalAt(real.x, real.y);
+                    c.transform.localPosition = Level.ConvertXYToPosition(portal.toX, portal.toY, c.Scale) + difference;
+                }
+                else
+                {
+                    if (Level.GetCellAt(real.x, real.y).Type == CellTypes.Block)
+                    {
+                        var currentCell = Level.GetCellAt(real.x, real.y);
+                        // Debug.Log("Teleport from " + currentCell);
+                        Cell targetCell = null;
+                        switch (CurrentDirection)
+                        {
+                            case Direction.ToRight:
+                                targetCell = currentCell.GetLeftWithType();
+                                //     Debug.Log("To Right");
+                                if (targetCell == null)
+                                {
+                                    targetCell = Level.GetCellAt(Level.Width - 1, currentCell.y);
+                                    if (targetCell.Type == CellTypes.Block)
+                                    {
+                                        targetCell = targetCell.GetLeftWithType();
+                                    }
+                                }
+                                break;
+                            case Direction.ToLeft:
+                                targetCell = currentCell.GetRightWithType();
+                                //   Debug.Log("To Left");
+                                if (targetCell == null)
+                                {
+                                    targetCell = Level.GetCellAt(0, currentCell.y);
+                                    if (targetCell.Type == CellTypes.Block)
+                                    {
+                                        targetCell = targetCell.GetRightWithType();
+                                    }
+                                }
+                                break;
+                            case Direction.ToTop:
+                                targetCell = currentCell.GetTopWithType();
+                                if (targetCell == null)
+                                {
+                                    targetCell = Level.GetCellAt(currentCell.x, 0);
+                                    if (targetCell.Type == CellTypes.Block)
+                                    {
+                                        targetCell = targetCell.GetTopWithType();
+                                    }
+                                }
+                                break;
+                            case Direction.ToBottom:
+                                targetCell = currentCell.GetBottomWithType();
+                                if (targetCell == null)
+                                {
+                                    targetCell = Level.GetCellAt(currentCell.x, Level.Height - 1);
+                                    if (targetCell.Type == CellTypes.Block)
+                                    {
+                                        targetCell = targetCell.GetBottomWithType();
+                                    }
+                                }
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException("Current direction can not be shit");
+                        }
+                        //  Debug.Log("Teleport to " + targetCell);
+
+                        var difference = c.transform.localPosition - Level.ConvertXYToPosition(real.x, real.y, c.Scale);
+                        c.transform.localPosition = Level.ConvertXYToPosition(targetCell.x, targetCell.y, c.Scale) +
+                                                    difference;
+                    }
+                }
+            }
+        }
+    }
+
+    public bool MoveToTargetPosition(List<Chuzzle> targetChuzzles, string callbackOnComplete)
+    {
+        var isAnyTween = false;
+        foreach (var c in targetChuzzles)
+        {
+            var targetPosition = new Vector3(c.MoveTo.x*c.Scale.x, c.MoveTo.y*c.Scale.y, 0);
+            if (Vector3.Distance(c.transform.localPosition, targetPosition) > 0.1f)
+            {
+                isAnyTween = true;
+                AnimatedChuzzles.Add(c);
+                iTween.MoveTo(c.gameObject,
+                    iTween.Hash("x", targetPosition.x, "y", targetPosition.y, "z", targetPosition.z, "time", 0.3f,
+                        "oncomplete", callbackOnComplete, "oncompletetarget", gameObject, "oncompleteparams", c));
+            }
+            else
+            {
+                c.transform.localPosition = targetPosition;
+            }
+        }
+
+        return isAnyTween;
+    }
+
+    /// <summary>
+    ///     Remove chuzzle from game logic and add new tiles in column
+    /// </summary>
+    /// <param name="chuzzle">Chuzzle to remove</param>
+    /// <param name="invokeEvent">Need to invoke event or not</param>
+    public void RemoveChuzzle(Chuzzle chuzzle, bool invokeEvent = true)
+    {
+        Level.Chuzzles.Remove(chuzzle);
+        NewTilesInColumns[chuzzle.Current.x]++;
+        if (invokeEvent)
+        {
+            InvokeTileDestroyed(chuzzle);
+        }
+    }
 
     public void StartGame(SerializedLevel level = null)
     {
-        LastSerializedLevel = level;
-     
+        LastLoadedLevel = level;
+
         NewTilesAnimationChuzzles.Clear();
-     
+
         DeathAnimationChuzzles.Clear();
-     
+
         AnimatedChuzzles.Clear();
-     
+
         SelectedChuzzles.Clear();
-     
+
         CurrentChuzzle = null;
-     
+
+        SpecialCreation.SpecialTilesAnimated.Clear();
+
         _directionChozen = false;
-     
+
         _isVerticalDrag = false;
-     
+
         PointSystem.Reset();
-     
+
         Level.Reset();
-     
+
         if (level == null)
         {
             Level.InitRandom();
-            GameMode = GameModeFactory.CreateGameMode( GameModeDescription.CreateFromJson(null));
+            GameMode = GameModeFactory.CreateGameMode(GameModeDescription.CreateFromJson(null));
         }
         else
         {
             Level.InitFromFile(level);
         }
-     
+
         NewTilesInColumns = new int[Level.Width];
 
         InvokeGameStarted();
-        
+
         AnalyzeField(false);
     }
 
     private void Update()
     {
-        if (LastSerializedLevel == null)
+        if (LastLoadedLevel == null)
         {
             Debug.Log("Cry");
             return;
         }
 
         IsMovingToPrevPosition = AnimatedChuzzles.Any() || DeathAnimationChuzzles.Any() ||
-                                 NewTilesAnimationChuzzles.Any() || SpecialTilesAnimated.Any();
+                                 NewTilesAnimationChuzzles.Any() || SpecialCreation.SpecialTilesAnimated.Any();
         if (IsMovingToPrevPosition)
         {
             return;
@@ -132,7 +341,7 @@ public class Gamefield : MonoBehaviour
 
             var ray = Camera.main.ScreenPointToRay(_dragOrigin);
             RaycastHit hit;
-            if (Physics.Raycast(ray, out hit, float.MaxValue, chuzzleMask))
+            if (Physics.Raycast(ray, out hit, float.MaxValue, ChuzzleMask))
             {
                 CurrentChuzzle = hit.transform.gameObject.GetComponent<Chuzzle>();
             }
@@ -226,197 +435,37 @@ public class Gamefield : MonoBehaviour
         #endregion
     }
 
-    private void LateUpdate()
-    {
-        if (SelectedChuzzles.Any() && _directionChozen)
-        {
-            foreach (var c in SelectedChuzzles)
-            {
-                c.GetComponent<TeleportableEntity>().prevPosition = c.transform.localPosition;
-                c.transform.localPosition += _isVerticalDrag ? new Vector3(0, _delta.y, 0) : new Vector3(_delta.x, 0, 0);
-
-                var real = ToRealCoordinates(c);
-                if (Level.IsPortal(real.x, real.y))
-                {
-                    var difference = c.transform.localPosition - Level.ConvertXYToPosition(real.x, real.y, c.Scale);
-
-                    var portal = Level.GetPortalAt(real.x, real.y);
-                    c.transform.localPosition = Level.ConvertXYToPosition(portal.toX, portal.toY, c.Scale) + difference;
-                }
-                else
-                {
-                    if (Level.GetCellAt(real.x, real.y).Type == CellTypes.Block)
-                    {
-                        var currentCell = Level.GetCellAt(real.x, real.y);
-                       // Debug.Log("Teleport from " + currentCell);
-                        Cell targetCell = null;
-                        switch (CurrentDirection)
-                        {
-                            case Direction.ToRight:
-                                targetCell = currentCell.GetLeftWithType();
-                           //     Debug.Log("To Right");
-                                if (targetCell == null)
-                                {
-                                    targetCell = Level.GetCellAt(Level.Width - 1, currentCell.y);
-                                    if (targetCell.Type == CellTypes.Block)
-                                    {
-                                        targetCell = targetCell.GetLeftWithType();
-                                    }
-                                }
-                                break;
-                            case Direction.ToLeft:
-                                targetCell = currentCell.GetRightWithType();
-                             //   Debug.Log("To Left");
-                                if (targetCell == null)
-                                {
-                                    targetCell = Level.GetCellAt(0, currentCell.y);
-                                    if (targetCell.Type == CellTypes.Block)
-                                    {
-                                        targetCell = targetCell.GetRightWithType();
-                                    }
-                                }
-                                break;
-                            case Direction.ToTop:
-                                targetCell = currentCell.GetTopWithType();
-                                if (targetCell == null)
-                                {
-                                    targetCell = Level.GetCellAt(currentCell.x, 0);
-                                    if (targetCell.Type == CellTypes.Block)
-                                    {
-                                        targetCell = targetCell.GetTopWithType();
-                                    }
-                                }
-                                break;
-                            case Direction.ToBottom:
-                                targetCell = currentCell.GetBottomWithType();
-                                if (targetCell == null)
-                                {
-                                    targetCell = Level.GetCellAt(currentCell.x, Level.Height - 1);
-                                    if (targetCell.Type == CellTypes.Block)
-                                    {
-                                        targetCell = targetCell.GetBottomWithType();
-                                    }
-                                }
-                                break;
-                            default:
-                                throw new ArgumentOutOfRangeException("Current direction can not be shit");
-                        }
-                      //  Debug.Log("Teleport to " + targetCell);
-
-                        var difference = c.transform.localPosition - Level.ConvertXYToPosition(real.x, real.y, c.Scale);
-                        c.transform.localPosition = Level.ConvertXYToPosition(targetCell.x, targetCell.y, c.Scale) +
-                                                    difference;
-                    }
-                }
-            }
-        }
-    }
-
-    private void AnalyzeField(bool isHumanAction)
-    {
-        var hasNewTiles = CreateNew();
-        if (hasNewTiles)
-        {
-            return;
-        }
-
-        //check new combination
-        var combinations = GamefieldUtility.FindCombinations(Level.Chuzzles);
-        if (combinations.Any())
-        {
-            foreach (var c in Level.Chuzzles)
-            {
-                c.Current = c.Real;
-            }
-            //check can we make new specialTiles
-            var newSpecials = CheckForSpecial(combinations);
-
-            var animationForSpecials = newSpecials;
-            if (!newSpecials)
-            {
-                animationForSpecials = KillSpecials(combinations);
-            }
-
-            //if there is no specials
-            if (!animationForSpecials)
-            {
-                //remove combinations
-                RemoveCombinations(combinations);
-            }
-
-            if (isHumanAction)
-            {
-                GameMode.HumanTurn();
-            }
-        }
-        else
-        {
-            //if no new combination - move to prevposition       
-            foreach (var c in Level.Chuzzles)
-            {
-                c.MoveTo = c.Real = c.Current;
-            }
-
-            MoveToTargetPosition(Level.Chuzzles, "OnCompleteBackToPreviousPositionTween");
-        }
-    }
-
-    
-
-    public Chuzzle At(int x, int y)
-    {
-        return Level.Chuzzles.FirstOrDefault(c => c.Current.x == x && c.Current.y == y);
-    }
-
-    public bool MoveToTargetPosition(List<Chuzzle> targetChuzzles, string callbackOnComplete)
-    {
-        var isAnyTween = false;
-        foreach (var c in targetChuzzles)
-        {
-            var targetPosition = new Vector3(c.MoveTo.x*c.Scale.x, c.MoveTo.y*c.Scale.y, 0);
-            if (Vector3.Distance(c.transform.localPosition, targetPosition) > 0.1f)
-            {
-                isAnyTween = true;
-                AnimatedChuzzles.Add(c);
-                iTween.MoveTo(c.gameObject,
-                    iTween.Hash("x", targetPosition.x, "y", targetPosition.y, "z", targetPosition.z, "time", 0.3f,
-                        "oncomplete", callbackOnComplete, "oncompletetarget", gameObject, "oncompleteparams", c));
-            }
-            else
-            {
-                c.transform.localPosition = targetPosition;
-            }
-        }
-
-        return isAnyTween;
-    }
-
-   
-
-   
-
-    /// <summary>
-    ///     Remove chuzzle from game logic and add new tiles in column
-    /// </summary>
-    /// <param name="chuzzle">Chuzzle to remove</param>
-    /// <param name="invokeEvent">Need to invoke event or not</param>
-    public void RemoveChuzzle(Chuzzle chuzzle, bool invokeEvent = true)
-    {
-        Level.Chuzzles.Remove(chuzzle);
-        NewTilesInColumns[chuzzle.Current.x]++;
-        if (invokeEvent)
-        {
-            InvokeTileDestroyed(chuzzle);
-        }
-    }
-
     #region Control
 
-    public IntVector2 ToRealCoordinates(Chuzzle chuzzle)
+    #region Event Handlers
+
+    private void OnCompleteBackToPreviousPositionTween(Object chuzzleObject)
     {
-        return new IntVector2(Mathf.RoundToInt(chuzzle.transform.localPosition.x/chuzzle.Scale.x),
-            Mathf.RoundToInt(chuzzle.transform.localPosition.y/chuzzle.Scale.y));
+        var chuzzle = chuzzleObject as Chuzzle;
+
+        if (AnimatedChuzzles.Contains(chuzzle))
+        {
+            chuzzle.GetComponent<TeleportableEntity>().prevPosition = chuzzle.transform.localPosition;
+            AnimatedChuzzles.Remove(chuzzle);
+        }
     }
+
+    private void OnTweenMoveAfterDrag(Object chuzzleObject)
+    {
+        var chuzzle = chuzzleObject as Chuzzle;
+
+        if (AnimatedChuzzles.Contains(chuzzle))
+        {
+            AnimatedChuzzles.Remove(chuzzle);
+        }
+
+        if (AnimatedChuzzles.Count() == 0)
+        {
+            AnalyzeField(true);
+        }
+    }
+
+    #endregion
 
     public void CalculateRealCoordinatesFor(Chuzzle chuzzle)
     {
@@ -464,169 +513,62 @@ public class Gamefield : MonoBehaviour
         }
     }
 
-    private void OnTweenMoveAfterDrag(Object chuzzleObject)
+    public IntVector2 ToRealCoordinates(Chuzzle chuzzle)
     {
-        var chuzzle = chuzzleObject as Chuzzle;
-
-        if (AnimatedChuzzles.Contains(chuzzle))
-        {
-            AnimatedChuzzles.Remove(chuzzle);
-        }
-
-        if (AnimatedChuzzles.Count() == 0)
-        {
-            AnalyzeField(true);
-        }
-    }
-
-    private void OnCompleteBackToPreviousPositionTween(Object chuzzleObject)
-    {
-        var chuzzle = chuzzleObject as Chuzzle;
-
-        if (AnimatedChuzzles.Contains(chuzzle))
-        {
-            chuzzle.GetComponent<TeleportableEntity>().prevPosition = chuzzle.transform.localPosition;
-            AnimatedChuzzles.Remove(chuzzle);
-        }
+        return new IntVector2(Mathf.RoundToInt(chuzzle.transform.localPosition.x/chuzzle.Scale.x),
+            Mathf.RoundToInt(chuzzle.transform.localPosition.y/chuzzle.Scale.y));
     }
 
     #endregion
 
     #region Special Chuzzles
 
-    public List<Chuzzle> SpecialTilesAnimated;
-
-    public bool CheckForSpecial(List<List<Chuzzle>> combinations)
-    {
-        var isNewSpecial = false;
-
-        for (var i = 0; i < combinations.Count; i++)
-        {
-            var comb = combinations[i];
-            //if any tile is powerup - then don't check for new bonuses
-            //or any tile has counter
-            if (comb.Any(x => x.PowerType != PowerType.Usual) || comb.Any(x=>x.Counter != 0))
-            {
-                continue;
-            }
-
-            if (comb.Count == 4)
-            {
-                isNewSpecial = CreateLine(comb);
-                 
-            }
-            else
-            {
-                if (comb.Count >= 5)
-                {
-                    isNewSpecial = CreateBomb(comb);
-                    
-                }
-            }
-        }
-
-        return isNewSpecial;
-    }
-
-    private bool CreateBomb(List<Chuzzle> comb)
-    {
-        return CreateSpecialWithType(comb, PowerType.Bomb);
-    }
-
-    private void MoveToSpecialTween(Chuzzle c)
-    {
-        RemoveChuzzle(c);
-
-        var targetPosition = new Vector3(c.MoveTo.x*c.Scale.x, c.MoveTo.y*c.Scale.y, 0);
-
-        SpecialTilesAnimated.Add(c);
-        // iTween.ScaleTo(c.gameObject, Vector3.zero, 1f);
-        iTween.MoveTo(c.gameObject,
-            iTween.Hash("x", targetPosition.x, "y", targetPosition.y, "z", targetPosition.z, "time", 0.3f, "easetype",
-                iTween.EaseType.easeInOutQuad, "oncomplete", "OnCreateLineTweenComplete", "oncompletetarget", gameObject,
-                "oncompleteparams", c));
-    }
-
-    public bool CreateSpecialWithType(List<Chuzzle> comb,PowerType powerType)
-    {
-        var ordered = comb.OrderBy(x => x.Current.y).ToList();
-        var targetTile = ordered.First();
-        var cellForNew = ordered.First().Current;
-        for (var i = 1; i < ordered.Count; i++)
-        {
-            var chuzzle = ordered[i];
-            chuzzle.MoveTo = cellForNew;
-        }
-
-        var powerUp = PowerTypePrefabs.First(x => x.type == powerType).prefab;
-        var powerUpChuzzle = Level.CreateChuzzle(targetTile.Current.x, targetTile.Current.y, powerUp);
-        powerUpChuzzle.Type = targetTile.Type;
-        powerUpChuzzle.PowerType = powerType;
-
-        var color =
-            Instantiate(Level.ChuzzlePrefabs.First(x => x.GetComponent<Chuzzle>().Type == targetTile.Type)) as
-                GameObject;
-        color.transform.parent = powerUpChuzzle.transform;
-        color.transform.localPosition = Vector3.zero;
-        Destroy(color.gameObject.GetComponent<Chuzzle>());
-        Destroy(color.gameObject.GetComponent<BoxCollider>());
-        color.GetComponent<tk2dSprite>().SortingOrder = -1;
-
-        Destroy(targetTile.gameObject);
-        Level.Chuzzles.Remove(targetTile);
-        ordered.Remove(targetTile);
-
-        foreach (var c in ordered)
-        {
-            if (c.PowerType == PowerType.Usual)
-            {
-                MoveToSpecialTween(c);
-            }
-        }
-
-        return true;
-    }
-
-    private bool CreateLine(List<Chuzzle> comb)
-    {
-        return CreateSpecialWithType(comb, Random.Range(0, 100) > 50 ? PowerType.HorizontalLine : PowerType.VerticalLine);
-    }
-
     private void OnCreateLineTweenComplete(Object chuzzleObject)
     {
         var chuzzle = chuzzleObject as Chuzzle;
 
-        SpecialTilesAnimated.Remove(chuzzle);
+        SpecialCreation.SpecialTilesAnimated.Remove(chuzzle);
         Destroy(chuzzle.gameObject);
 
-        if (SpecialTilesAnimated.Count == 0)
+        if (SpecialCreation.SpecialTilesAnimated.Count == 0)
         {
             MoveTilesWhoNeedMoves();
         }
     }
 
-    private bool KillSpecials(IEnumerable<List<Chuzzle>> combinations)
-    {
-        var tilesToKill = new List<Chuzzle>();
-        foreach (var combination in combinations)
-        {
-            foreach (var chuzzle in combination)
-            {
-                if (chuzzle.PowerType != PowerType.Usual)
-                {
-                    tilesToKill.AddUniqRange(combination);
-                    this.ApplyPowerUp(tilesToKill, chuzzle);
-                }
-            }
-        }
-        RemoveTiles(tilesToKill, true);
-
-        return tilesToKill.Any();
-    }
-
     #endregion
 
     #region New Tiles
+
+    #region Event Handlers
+
+    public void OnCompleteNewChuzzleTween(Object chuzzleObject)
+    {
+        var chuzzle = chuzzleObject as Chuzzle;
+        chuzzle.Real = chuzzle.Current = chuzzle.MoveTo;
+
+        if (NewTilesAnimationChuzzles.Contains(chuzzle))
+        {
+            chuzzle.GetComponent<TeleportableEntity>().prevPosition = chuzzle.transform.localPosition;
+            NewTilesAnimationChuzzles.Remove(chuzzle);
+        }
+
+        if (!NewTilesAnimationChuzzles.Any())
+        {
+            var combinations = GamefieldUtility.FindCombinations(Level.Chuzzles);
+            if (combinations.Count > 0)
+            {
+                AnalyzeField(false);
+            }
+            else
+            {
+                //check gameover or win
+                GameMode.Check();
+            }
+        }
+    }
+
+    #endregion
 
     public bool CreateNew()
     {
@@ -682,7 +624,7 @@ public class Gamefield : MonoBehaviour
         return hasNew;
     }
 
-    private void MoveTilesWhoNeedMoves()
+    public void MoveTilesWhoNeedMoves()
     {
         foreach (var c in Level.Chuzzles)
         {
@@ -697,40 +639,28 @@ public class Gamefield : MonoBehaviour
         }
     }
 
-    public void OnCompleteNewChuzzleTween(Object chuzzleObject)
-    {
-        var chuzzle = chuzzleObject as Chuzzle;
-        chuzzle.Real = chuzzle.Current = chuzzle.MoveTo;
-
-        if (NewTilesAnimationChuzzles.Contains(chuzzle))
-        {
-            chuzzle.GetComponent<TeleportableEntity>().prevPosition = chuzzle.transform.localPosition;
-            NewTilesAnimationChuzzles.Remove(chuzzle);
-        }
-
-        if (!NewTilesAnimationChuzzles.Any())
-        {
-            var combinations = GamefieldUtility.FindCombinations(Level.Chuzzles);
-            if (combinations.Count > 0)
-            {
-                AnalyzeField(false);
-            }
-            else
-            {
-                //check gameover or win
-                GameMode.Check();
-            }
-        }
-    }
-
     #endregion
 
     #region Death
 
-    public GameObject Explosion;
-    public List<Chuzzle> DeathAnimationChuzzles = new List<Chuzzle>();
-    public List<Chuzzle> NewTilesAnimationChuzzles = new List<Chuzzle>();
-    public int[] NewTilesInColumns = new int[0];
+    #region Event Handlers
+
+    public void OnCompleteDeath(Object chuzzleObject)
+    {
+        var chuzzle = chuzzleObject as Chuzzle;
+
+        DeathAnimationChuzzles.Remove(chuzzle);
+
+        //if all deleted
+        if (!DeathAnimationChuzzles.Any())
+        {
+            //start tweens for new chuzzles
+            MoveTilesWhoNeedMoves();
+        }
+        Destroy(chuzzle.gameObject);
+    }
+
+    #endregion
 
     public void RemoveCombinations(List<List<Chuzzle>> combinations)
     {
@@ -741,7 +671,7 @@ public class Gamefield : MonoBehaviour
         }
     }
 
-    private void RemoveTiles(List<Chuzzle> combination, bool needCountPoints)
+    public void RemoveTiles(List<Chuzzle> combination, bool needCountPoints)
     {
         InvokeCombinationDestroyed(combination);
         if (needCountPoints)
@@ -771,20 +701,6 @@ public class Gamefield : MonoBehaviour
     }
 
     //on tweener complete
-    public void OnCompleteDeath(Object chuzzleObject)
-    {
-        var chuzzle = chuzzleObject as Chuzzle;
-
-        DeathAnimationChuzzles.Remove(chuzzle);
-
-        //if all deleted
-        if (DeathAnimationChuzzles.Count() == 0)
-        {
-            //start tweens for new chuzzles
-            MoveTilesWhoNeedMoves();
-        }
-        Destroy(chuzzle.gameObject);
-    }
 
     #endregion
 }
