@@ -321,7 +321,7 @@ public class Gamefield : MonoBehaviour
         }
 
         //check new combination
-        var combinations = FindCombinations();
+        var combinations = GamefieldUtility.FindCombinations(Level.Chuzzles);
         if (combinations.Any())
         {
             foreach (var c in Level.Chuzzles)
@@ -361,31 +361,7 @@ public class Gamefield : MonoBehaviour
         }
     }
 
-    public List<List<Chuzzle>> FindCombinations()
-    {
-        var combinations = new List<List<Chuzzle>>();
-
-        //find combination
-        foreach (var c in Level.Chuzzles)
-        {
-            if (!c.isCheckedForSearch)
-            {
-                var combination = RecursiveFind(c, new List<Chuzzle>());
-
-                if (combination.Count() >= 3)
-                {
-                    combinations.Add(combination);
-                }
-            }
-        }
-
-        foreach (var c in Level.Chuzzles)
-        {
-            c.isCheckedForSearch = false;
-        }
-
-        return combinations;
-    }
+    
 
     public Chuzzle At(int x, int y)
     {
@@ -415,89 +391,9 @@ public class Gamefield : MonoBehaviour
         return isAnyTween;
     }
 
-    public Chuzzle GetLeftFor(Chuzzle c)
-    {
-        return Level.Chuzzles.FirstOrDefault(x => x.Real == c.Real.Left);
-    }
+   
 
-    public Chuzzle GetRightFor(Chuzzle c)
-    {
-        return Level.Chuzzles.FirstOrDefault(x => x.Real == c.Real.Right);
-    }
-
-    public Chuzzle GetTopFor(Chuzzle c)
-    {
-        return Level.Chuzzles.FirstOrDefault(x => x.Real == c.Real.Top);
-    }
-
-    public Chuzzle GetBottomFor(Chuzzle c)
-    {
-        return Level.Chuzzles.FirstOrDefault(x => x.Real == c.Real.Bottom);
-    }
-
-    public List<Chuzzle> RecursiveFind(Chuzzle chuzzle, List<Chuzzle> combination)
-    {
-        if (chuzzle == null || combination.Contains(chuzzle) || chuzzle.isCheckedForSearch)
-        {
-            return new List<Chuzzle>();
-        }
-        combination.Add(chuzzle);
-        chuzzle.isCheckedForSearch = true;
-
-        var left = GetLeftFor(chuzzle);
-        if (left != null && left.Type == chuzzle.Type)
-        {
-            var answer = RecursiveFind(left, combination);
-            foreach (var a in answer)
-            {
-                if (combination.Contains(a) == false)
-                {
-                    combination.Add(a);
-                }
-            }
-        }
-
-        var right = GetRightFor(chuzzle);
-        if (right != null && chuzzle.Type == right.Type)
-        {
-            var answer = RecursiveFind(right, combination);
-            foreach (var a in answer)
-            {
-                if (combination.Contains(a) == false)
-                {
-                    combination.Add(a);
-                }
-            }
-        }
-
-        var top = GetTopFor(chuzzle);
-        if (top != null && chuzzle.Type == top.Type)
-        {
-            var answer = RecursiveFind(top, combination);
-            foreach (var a in answer)
-            {
-                if (combination.Contains(a) == false)
-                {
-                    combination.Add(a);
-                }
-            }
-        }
-
-        var bottom = GetBottomFor(chuzzle);
-        if (bottom != null && chuzzle.Type == bottom.Type)
-        {
-            var answer = RecursiveFind(bottom, combination);
-            foreach (var a in answer)
-            {
-                if (combination.Contains(a) == false)
-                {
-                    combination.Add(a);
-                }
-            }
-        }
-
-        return combination;
-    }
+   
 
     /// <summary>
     ///     Remove chuzzle from game logic and add new tiles in column
@@ -812,9 +708,9 @@ public class Gamefield : MonoBehaviour
             NewTilesAnimationChuzzles.Remove(chuzzle);
         }
 
-        if (NewTilesAnimationChuzzles.Count() == 0)
+        if (!NewTilesAnimationChuzzles.Any())
         {
-            var combinations = FindCombinations();
+            var combinations = GamefieldUtility.FindCombinations(Level.Chuzzles);
             if (combinations.Count > 0)
             {
                 AnalyzeField(false);

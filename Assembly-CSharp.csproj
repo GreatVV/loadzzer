@@ -148,6 +148,7 @@
      <Compile Include="Assets\Scripts\Level\GameMode\TargetPlaceGameMode.cs" />
      <Compile Include="Assets\Scripts\Level\GameMode\TargetScoreGameMode.cs" />
      <Compile Include="Assets\Scripts\Level\Gamefield.cs" />
+     <Compile Include="Assets\Scripts\Level\GamefieldUtility.cs" />
      <Compile Include="Assets\Scripts\Level\IntVector2.cs" />
      <Compile Include="Assets\Scripts\Level\Level.cs" />
      <Compile Include="Assets\Scripts\Level\Pair.cs" />
