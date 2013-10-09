@@ -148,7 +148,6 @@
      <Compile Include="Assets\Scripts\Level\Gamefield.cs" />
      <Compile Include="Assets\Scripts\Level\Level.cs" />
      <Compile Include="Assets\Scripts\Level\Points.cs" />
-     <Compile Include="Assets\Scripts\Level\PortalBlock.cs" />
      <Compile Include="Assets\Scripts\Level\PowerType.cs" />
      <Compile Include="Assets\Scripts\Level\PowerUpBehaviour.cs" />
      <Compile Include="Assets\Scripts\Level\SerializedLevel.cs" />

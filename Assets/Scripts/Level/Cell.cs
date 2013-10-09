@@ -19,6 +19,8 @@ public class Cell
     public Cell Top;
     public Cell Bottom;
 
+    public bool IsTemporary;
+
     public Cell Copy
     {
         get
@@ -53,7 +55,7 @@ public class Cell
         var left = Left;
         while (left != null)
         {
-            if (left.Type == type)
+            if (left.Type == type )
             {
                 return left;
             }
@@ -80,7 +82,7 @@ public class Cell
     public Cell GetTopWithType(CellTypes type = CellTypes.Usual)
     {
         var top = Top;
-        while (top != null)
+        while (top != null && !top.IsTemporary)
         {
             if (top.Type == type)
             {
@@ -93,6 +95,6 @@ public class Cell
 
     public override string ToString()
     {
-        return string.Format("({0},{1}):{2}", x,y, Type);
+        return string.Format("({0},{1}):{2} Temp:{3}", x,y, Type,IsTemporary);
     }                        
 }

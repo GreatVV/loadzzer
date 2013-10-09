@@ -156,78 +156,118 @@ public class Gamefield : MonoBehaviour
                 c.transform.localPosition += _isVerticalDrag ? new Vector3(0, _delta.y, 0) : new Vector3(_delta.x, 0, 0);
 
                 var real = ToRealCoordinates(c);
-                if (Level.IsPortal(real.x, real.y))
+                Cell targetCell = Level.GetCellAt(real.x, real.y, false);
+                if (targetCell == null || targetCell.Type == CellTypes.Block || targetCell.IsTemporary)
                 {
-                    var difference = c.transform.localPosition - Level.ConvertXYToPosition(real.x, real.y, c.Scale);
-
-                    var portal = Level.GetPortalAt(real.x, real.y);
-                    c.transform.localPosition = Level.ConvertXYToPosition(portal.toX, portal.toY, c.Scale) + difference;
-                }
-                else
-                {
-                    if (Level.GetCellAt(real.x, real.y).Type == CellTypes.Block)
+                    // Debug.Log("Teleport from " + currentCell);
+                    switch (CurrentDirection)
                     {
-                        var currentCell = Level.GetCellAt(real.x, real.y);
-                        // Debug.Log("Teleport from " + currentCell);
-                        Cell targetCell = null;
-                        switch (CurrentDirection)
-                        {
-                            case Direction.ToRight:
-                                targetCell = currentCell.GetLeftWithType();
-                                //     Debug.Log("To Right");
+                        case Direction.ToRight:
+                            //if border
+                            if (targetCell == null)
+                            {
+                                targetCell = Level.GetCellAt(Level.Width - 1, c.Current.y, false);
+                                if (targetCell.Type == CellTypes.Block)
+                                {
+                                    targetCell = targetCell.GetLeftWithType();
+                                }
+                            }
+                            else
+                            {
+                                //if block
+                                targetCell = targetCell.GetLeftWithType();
+
                                 if (targetCell == null)
                                 {
-                                    targetCell = Level.GetCellAt(Level.Width - 1, currentCell.y);
+                                    targetCell = Level.GetCellAt(Level.Width - 1, c.Current.y, false);
                                     if (targetCell.Type == CellTypes.Block)
                                     {
                                         targetCell = targetCell.GetLeftWithType();
                                     }
                                 }
-                                break;
-                            case Direction.ToLeft:
-                                targetCell = currentCell.GetRightWithType();
-                                //   Debug.Log("To Left");
+                            }
+                            break;
+                        case Direction.ToLeft:
+                             //if border
+                            if (targetCell == null)
+                            {
+                                targetCell = Level.GetCellAt(0, c.Current.y, false);
+                                if (targetCell.Type == CellTypes.Block)
+                                {
+                                    targetCell = targetCell.GetRightWithType();
+                                }
+                            }
+                            else
+                            {
+                                targetCell = targetCell.GetRightWithType();
                                 if (targetCell == null)
                                 {
-                                    targetCell = Level.GetCellAt(0, currentCell.y);
+                                    targetCell = Level.GetCellAt(0, c.Current.y, false);
                                     if (targetCell.Type == CellTypes.Block)
                                     {
                                         targetCell = targetCell.GetRightWithType();
                                     }
                                 }
-                                break;
-                            case Direction.ToTop:
-                                targetCell = currentCell.GetTopWithType();
+                            }
+                            break;
+                        case Direction.ToTop:
+                              //if border
+                            if (targetCell == null || targetCell.IsTemporary)
+                            {
+                                targetCell = Level.GetCellAt(c.Current.x, 0, false);
+                                if (targetCell.Type == CellTypes.Block)
+                                {
+                                    targetCell = targetCell.GetTopWithType();
+                                }
+                            }
+                            else
+                            {
+                                targetCell = targetCell.GetTopWithType();
+
                                 if (targetCell == null)
                                 {
-                                    targetCell = Level.GetCellAt(currentCell.x, 0);
+                                    targetCell = Level.GetCellAt(c.Current.x, 0, false);
                                     if (targetCell.Type == CellTypes.Block)
                                     {
                                         targetCell = targetCell.GetTopWithType();
                                     }
                                 }
-                                break;
-                            case Direction.ToBottom:
-                                targetCell = currentCell.GetBottomWithType();
+                            }
+                            break;
+                        case Direction.ToBottom:
+                             //if border
+                            if (targetCell == null)
+                            {
+                                targetCell = Level.GetCellAt(c.Current.x, Level.Height - 1, false);
+                                if (targetCell.Type == CellTypes.Block)
+                                {
+                                    targetCell = targetCell.GetBottomWithType();
+                                }
+                            }
+                            else
+                            {
+                                targetCell = targetCell.GetBottomWithType();
+
                                 if (targetCell == null)
                                 {
-                                    targetCell = Level.GetCellAt(currentCell.x, Level.Height - 1);
+                                    targetCell = Level.GetCellAt(c.Current.x, Level.Height - 1, false);
                                     if (targetCell.Type == CellTypes.Block)
                                     {
                                         targetCell = targetCell.GetBottomWithType();
                                     }
                                 }
-                                break;
-                            default:
-                                throw new ArgumentOutOfRangeException("Current direction can not be shit");
-                        }
-                        //  Debug.Log("Teleport to " + targetCell);
-
-                        var difference = c.transform.localPosition - Level.ConvertXYToPosition(real.x, real.y, c.Scale);
-                        c.transform.localPosition = Level.ConvertXYToPosition(targetCell.x, targetCell.y, c.Scale) +
-                                                    difference;
+                            }
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException("Current direction can not be shit");
                     }
+                    //  Debug.Log("Teleport to " + targetCell);
+
+                    var difference = c.transform.localPosition - Level.ConvertXYToPosition(real.x, real.y, c.Scale);
+                    c.transform.localPosition = Level.ConvertXYToPosition(targetCell.x, targetCell.y, c.Scale) +
+                                                difference;
                 }
+
             }
         }
     }
@@ -380,6 +420,9 @@ public class Gamefield : MonoBehaviour
             }
         }
 
+        _delta = Vector3.ClampMagnitude(_delta, Level.ChuzzleSize.x);
+
+
         if (!_directionChozen)
         {
             //chooze drag direction
@@ -470,18 +513,7 @@ public class Gamefield : MonoBehaviour
     public void CalculateRealCoordinatesFor(Chuzzle chuzzle)
     {
         chuzzle.Real = Level.GetCellAt(Mathf.RoundToInt(chuzzle.transform.localPosition.x/chuzzle.Scale.x),
-            Mathf.RoundToInt(chuzzle.transform.localPosition.y/chuzzle.Scale.y));
-
-        if (Level.IsPortal(chuzzle.Real.x, chuzzle.Real.y))
-        {
-            var difference = chuzzle.transform.localPosition -
-                             Level.ConvertXYToPosition(chuzzle.Real.x, chuzzle.Real.y, chuzzle.Scale);
-
-            var portal = Level.GetPortalAt(chuzzle.Real.x, chuzzle.Real.y);
-            chuzzle.transform.localPosition = Level.ConvertXYToPosition(portal.toX, portal.toY, chuzzle.Scale) +
-                                              difference;
-            chuzzle.Real = Level.GetCellAt(portal.toX, portal.toY);
-        }
+            Mathf.RoundToInt(chuzzle.transform.localPosition.y/chuzzle.Scale.y), false);
     }
 
     private void DropDrag()
@@ -587,7 +619,8 @@ public class Gamefield : MonoBehaviour
                 for (var j = 0; j < newInColumn; j++)
                 {
                     //create new tiles
-                    Level.CreateRandomChuzzle(x, Level.Height + j);
+                    var chuzzle = Level.CreateRandomChuzzle(x, Level.Height + j);
+                    chuzzle.Current.IsTemporary = true;
                 }
             }
         }
@@ -600,7 +633,7 @@ public class Gamefield : MonoBehaviour
             {
                 for (var y = 0; y < Level.Height; y++)
                 {
-                    var cell = Level.GetCellAt(x, y);
+                    var cell = Level.GetCellAt(x, y, false);
                     if (At(x, y) == null && cell.Type != CellTypes.Block)
                     {
                         while (cell != null)
@@ -687,7 +720,6 @@ public class Gamefield : MonoBehaviour
             }
             //remove chuzzle from game logic
             RemoveChuzzle(chuzzle);
-            Debug.Log("1");
             var explosion = Instantiate(Explosion, chuzzle.transform.position, Quaternion.identity);
             Level.ScaleSprite(((GameObject) explosion).GetComponent<tk2dBaseSprite>());
             Destroy(explosion, 1f);

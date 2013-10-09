@@ -33,8 +33,7 @@ public class Level
 
     public Vector3 ChuzzleSize = new Vector3(80, 80);
     public int NumberOfColors = 6;
-
-    public List<PortalBlock> Portals = new List<PortalBlock>();
+    
     public List<Cell> Cells = new List<Cell>();
 
     public List<Chuzzle> Chuzzles = new List<Chuzzle>();
@@ -51,41 +50,8 @@ public class Level
                     CreateRandomChuzzle(x, y);
                 }
             }
-
-            var leftPortalBlock = new PortalBlock();
-            leftPortalBlock.x = -1;
-            leftPortalBlock.y = y;
-            leftPortalBlock.toX = Width - 1;
-            leftPortalBlock.toY = y;
-
-            var rightPortalBlock = new PortalBlock();
-            rightPortalBlock.x = Width;
-            rightPortalBlock.y = y;
-            rightPortalBlock.toX = 0;
-            rightPortalBlock.toY = y;
-
-            this.Portals.Add(leftPortalBlock);
-            this.Portals.Add(rightPortalBlock);
         }
 
-
-        for (var j = 0; j < Width; j++)
-        {
-            var upPortalBlock = new PortalBlock();
-            upPortalBlock.x = j;
-            upPortalBlock.y = Height;
-            upPortalBlock.toX = j;
-            upPortalBlock.toY = 0;
-
-            var bottomPortalBlock = new PortalBlock();
-            bottomPortalBlock.toX = j;
-            bottomPortalBlock.toY = Height - 1;
-            bottomPortalBlock.x = j;
-            bottomPortalBlock.y = -1;
-
-            this.Portals.Add(upPortalBlock);
-            this.Portals.Add(bottomPortalBlock);
-        }
     }
 
     private void CreateTileSprite(Cell cell)
@@ -110,7 +76,6 @@ public class Level
     public void InitFromFile(SerializedLevel level)
     {
         Cells.Clear();
-        Portals.Clear();
 
         Width = level.Width;
         Height = level.Height;
@@ -181,14 +146,13 @@ public class Level
         }
     }
 
-    public Cell GetCellAt(int x, int y)
+    public Cell GetCellAt(int x, int y, bool createIfNotFound = true)
     {
         var cell = Cells.FirstOrDefault(c => c.x == x && c.y == y);
-        if (cell == null)
+        if (cell == null && createIfNotFound)
         {
             var newCell = new Cell(x, y);
             AddCell(x, y, newCell);
-
             return newCell;
         }
         return cell;
@@ -237,7 +201,6 @@ public class Level
 
     public void Reset()
     {
-        Portals.Clear();
         foreach (var chuzzle in Chuzzles)
         {
             Object.Destroy(chuzzle.gameObject);
@@ -252,17 +215,7 @@ public class Level
     }
 
     #region Block and Portals
-
-    public bool IsPortal(int x, int y)
-    {
-        return Portals.Any(p => p.x == x && p.y == y);
-    }
-
-    public PortalBlock GetPortalAt(int x, int y)
-    {
-        return Portals.First(p => p.x == x && p.y == y);
-    }
-
+ 
     public Vector3 ConvertXYToPosition(int x, int y, Vector3 scale)
     {
         return new Vector3(x*scale.x, y*scale.y, 0);
