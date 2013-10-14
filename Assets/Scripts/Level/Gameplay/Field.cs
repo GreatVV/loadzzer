@@ -2,13 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using System.Collections;
 
 [Serializable]
-public class Field {
-
-    public LayerMask ChuzzleMask;
-
+public class Field
+{
     #region Direction enum
 
     public enum Direction
@@ -21,6 +18,8 @@ public class Field {
 
     #endregion
 
+    public LayerMask ChuzzleMask;
+
     private Vector3 _delta;
     private Vector3 _deltaTouch;
     private bool _directionChozen;
@@ -31,18 +30,29 @@ public class Field {
     public Chuzzle CurrentChuzzle;
     public Direction CurrentDirection;
 
+    #region Events
 
     public event Action DragDrop;
 
+    #endregion
+
+    #region Event Invokators
+
     protected virtual void InvokeDragDrop()
     {
-        Action handler = DragDrop;
-        if (handler != null) handler();
+        var handler = DragDrop;
+        if (handler != null)
+        {
+            Debug.Log("Drag dropped");
+            handler();
+        }
     }
 
-    // Update is called once per frame
-	public void Update (IEnumerable<Chuzzle> draggableChuzzles) {
+    #endregion
 
+    // Update is called once per frame
+    public void Update(IEnumerable<Chuzzle> draggableChuzzles)
+    {
         #region Drag
 
         if (Input.GetMouseButtonDown(0) || (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began))
@@ -103,7 +113,7 @@ public class Field {
         if (!_directionChozen)
         {
             //chooze drag direction
-            if (Mathf.Abs(_delta.x) < 1.5 * Mathf.Abs(_delta.y) || Mathf.Abs(_delta.x) > 1.5 * Mathf.Abs(_delta.y))
+            if (Mathf.Abs(_delta.x) < 1.5*Mathf.Abs(_delta.y) || Mathf.Abs(_delta.x) > 1.5*Mathf.Abs(_delta.y))
             {
                 if (Mathf.Abs(_delta.x) < Mathf.Abs(_delta.y))
                 {
@@ -153,7 +163,7 @@ public class Field {
         _dragOrigin = Input.mousePosition;
 
         #endregion
-	}
+    }
 
     public void LateUpdate(List<Cell> activeCells)
     {
@@ -175,7 +185,7 @@ public class Field {
                             //if border
                             if (targetCell == null)
                             {
-                                targetCell = GamefieldUtility.CellAt(activeCells, activeCells.Max(x=>x.x), c.Current.y);
+                                targetCell = GamefieldUtility.CellAt(activeCells, activeCells.Max(x => x.x), c.Current.y);
                                 if (targetCell.Type == CellTypes.Block)
                                 {
                                     targetCell = targetCell.GetLeftWithType();
@@ -188,7 +198,8 @@ public class Field {
 
                                 if (targetCell == null)
                                 {
-                                    targetCell = GamefieldUtility.CellAt(activeCells, activeCells.Max(x => x.x), c.Current.y);
+                                    targetCell = GamefieldUtility.CellAt(activeCells, activeCells.Max(x => x.x),
+                                        c.Current.y);
                                     if (targetCell.Type == CellTypes.Block)
                                     {
                                         targetCell = targetCell.GetLeftWithType();
@@ -211,7 +222,8 @@ public class Field {
                                 targetCell = targetCell.GetRightWithType();
                                 if (targetCell == null)
                                 {
-                                    targetCell = GamefieldUtility.CellAt(activeCells, activeCells.Min(x => x.x), c.Current.y);
+                                    targetCell = GamefieldUtility.CellAt(activeCells, activeCells.Min(x => x.x),
+                                        c.Current.y);
                                     if (targetCell.Type == CellTypes.Block)
                                     {
                                         targetCell = targetCell.GetRightWithType();
@@ -223,7 +235,8 @@ public class Field {
                             //if border
                             if (targetCell == null || targetCell.IsTemporary)
                             {
-                                targetCell = GamefieldUtility.CellAt(activeCells, c.Current.x, activeCells.Where(x => !x.IsTemporary).Min(x => x.y));
+                                targetCell = GamefieldUtility.CellAt(activeCells, c.Current.x,
+                                    activeCells.Where(x => !x.IsTemporary).Min(x => x.y));
                                 if (targetCell.Type == CellTypes.Block)
                                 {
                                     targetCell = targetCell.GetTopWithType();
@@ -235,7 +248,8 @@ public class Field {
 
                                 if (targetCell == null)
                                 {
-                                    targetCell = GamefieldUtility.CellAt(activeCells, c.Current.x, activeCells.Where(x => !x.IsTemporary).Min(x => x.y));
+                                    targetCell = GamefieldUtility.CellAt(activeCells, c.Current.x,
+                                        activeCells.Where(x => !x.IsTemporary).Min(x => x.y));
                                     if (targetCell.Type == CellTypes.Block)
                                     {
                                         targetCell = targetCell.GetTopWithType();
@@ -247,7 +261,8 @@ public class Field {
                             //if border
                             if (targetCell == null)
                             {
-                                targetCell = GamefieldUtility.CellAt(activeCells, c.Current.x, activeCells.Where(x=>!x.IsTemporary).Max(x=>x.y));
+                                targetCell = GamefieldUtility.CellAt(activeCells, c.Current.x,
+                                    activeCells.Where(x => !x.IsTemporary).Max(x => x.y));
                                 if (targetCell.Type == CellTypes.Block)
                                 {
                                     targetCell = targetCell.GetBottomWithType();
@@ -259,7 +274,8 @@ public class Field {
 
                                 if (targetCell == null)
                                 {
-                                    targetCell = GamefieldUtility.CellAt(activeCells, c.Current.x, activeCells.Where(x=>!x.IsTemporary).Max(x=>x.y));
+                                    targetCell = GamefieldUtility.CellAt(activeCells, c.Current.x,
+                                        activeCells.Where(x => !x.IsTemporary).Max(x => x.y));
                                     if (targetCell.Type == CellTypes.Block)
                                     {
                                         targetCell = targetCell.GetBottomWithType();
@@ -272,19 +288,23 @@ public class Field {
                     }
                     //  Debug.Log("Teleport to " + targetCell);
 
-                    var difference = c.transform.localPosition - GamefieldUtility.ConvertXYToPosition(real.x, real.y, c.Scale);
-                    c.transform.localPosition = GamefieldUtility.ConvertXYToPosition(targetCell.x, targetCell.y, c.Scale) +
-                                                difference;
+                    var difference = c.transform.localPosition -
+                                     GamefieldUtility.ConvertXYToPosition(real.x, real.y, c.Scale);
+                    c.transform.localPosition =
+                        GamefieldUtility.ConvertXYToPosition(targetCell.x, targetCell.y, c.Scale) +
+                        difference;
                 }
-
             }
         }
     }
 
     private void DropDrag()
     {
-        InvokeDragDrop();
-        Reset();
+        if (SelectedChuzzles.Any())
+        {
+            InvokeDragDrop();
+            Reset();
+        }
     }
 
     public void Reset()

@@ -1,5 +1,4 @@
-﻿using System.Runtime.Serialization.Formatters;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Chuzzle : MonoBehaviour
 {
@@ -17,6 +16,24 @@ public class Chuzzle : MonoBehaviour
 
     public int Counter;
 
+
+    public tk2dSprite Sprite;
+
+    public bool _shine;
+
+    public float Alpha;
+
+    public bool Shine
+    {
+        get { return _shine; }
+        set
+        {
+            _shine = value;
+            Alpha = 1;
+        }
+    }
+
+
     public Vector3 Scale
     {
         get { return collider.bounds.size; }
@@ -27,22 +44,16 @@ public class Chuzzle : MonoBehaviour
         return "" + Type + " (" + Current.x + "," + Current.y + ")";
     }
 
-
-    public tk2dSprite Sprite;
-
-    void Awake()
+    private void Awake()
     {
         Sprite = GetComponent<tk2dSprite>();
     }
 
-    public bool Shine;
-    public float Alpha;
-
-    void Update()
+    private void Update()
     {
         if (Shine)
         {
-            Alpha = Alpha + Time.deltaTime;
+            Alpha = Alpha + Time.deltaTime*3;
             Sprite.color = new Color(Sprite.color.r, Sprite.color.g, Sprite.color.b, Mathf.Sin(Alpha)/2f + 0.5f);
         }
     }

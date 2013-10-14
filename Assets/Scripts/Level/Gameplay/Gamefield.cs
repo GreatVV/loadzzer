@@ -18,23 +18,23 @@ public class Gamefield : MonoBehaviour
     public Field Field = new Field();
 
     public SpecialCreationUtility SpecialCreation;
-    
+
     public GameMode GameMode = GameModeFactory.CreateGameMode(GameModeDescription.CreateFromJson(null));
-    
+
     public Points PointSystem = new Points();
-    
+
     public SerializedLevel LastLoadedLevel = null;
 
     public List<Chuzzle> AnimatedChuzzles = new List<Chuzzle>();
 
-    
+
     public List<Chuzzle> DeathAnimationChuzzles = new List<Chuzzle>();
 
     public bool IsMovingToPrevPosition;
 
     public List<Chuzzle> NewTilesAnimationChuzzles = new List<Chuzzle>();
     public int[] NewTilesInColumns = new int[0];
-   
+    public float TimeFromTip = 0;
 
     #region Events
 
@@ -70,24 +70,30 @@ public class Gamefield : MonoBehaviour
 
     #endregion
 
-    void Awake()
-    {
-        Field.DragDrop += OnDragDrop;
-    }
+    #region Event Handlers
 
-    void OnDestroy()
+    private void OnDestroy()
     {
         Field.DragDrop -= OnDragDrop;
     }
 
     private void OnDragDrop()
     {
-        foreach (var c in Field.SelectedChuzzles)
-        {
-            CalculateRealCoordinatesFor(c);
-        }
         //move all tiles to new real coordinates
         MoveToRealCoordinates();
+
+        //drop shining
+        foreach (var chuzzle in Level.Chuzzles)
+        {
+            chuzzle.Shine = false;
+        }
+    }
+
+    #endregion
+
+    private void Awake()
+    {
+        Field.DragDrop += OnDragDrop;
     }
 
     private void AnalyzeField(bool isHumanAction)
@@ -197,13 +203,9 @@ public class Gamefield : MonoBehaviour
 
         AnimatedChuzzles.Clear();
 
-     
-
         SpecialCreation.SpecialTilesAnimated.Clear();
 
         Field.Reset();
-
-        
 
         PointSystem.Reset();
 
@@ -226,12 +228,11 @@ public class Gamefield : MonoBehaviour
         AnalyzeField(false);
     }
 
-    public float TimeFromTip = 0;
     private void Update()
     {
         if (LastLoadedLevel == null)
         {
-            Debug.Log("Cry");
+            Debug.Log("No level loaded");
             return;
         }
 
@@ -257,7 +258,6 @@ public class Gamefield : MonoBehaviour
         }
 
         Field.Update(Level.Chuzzles);
-
     }
 
     #region Control
@@ -284,7 +284,7 @@ public class Gamefield : MonoBehaviour
             AnimatedChuzzles.Remove(chuzzle);
         }
 
-        if (AnimatedChuzzles.Count() == 0)
+        if (!AnimatedChuzzles.Any())
         {
             AnalyzeField(true);
         }
@@ -298,10 +298,13 @@ public class Gamefield : MonoBehaviour
             Mathf.RoundToInt(chuzzle.transform.localPosition.y/chuzzle.Scale.y), false);
     }
 
-   
-
     private void MoveToRealCoordinates()
     {
+        foreach (var c in Field.SelectedChuzzles)
+        {
+            CalculateRealCoordinatesFor(c);
+        }
+
         foreach (var c in Level.Chuzzles)
         {
             c.MoveTo = c.Real;
@@ -315,7 +318,6 @@ public class Gamefield : MonoBehaviour
         }
     }
 
-   
     #endregion
 
     #region Special Chuzzles
@@ -419,7 +421,7 @@ public class Gamefield : MonoBehaviour
         NewTilesInColumns = new int[Level.Width];
 
         MoveTilesWhoNeedMoves();
-        return hasNew;
+        return true;
     }
 
     public void MoveTilesWhoNeedMoves()
@@ -435,6 +437,11 @@ public class Gamefield : MonoBehaviour
                         "oncomplete", "OnCompleteNewChuzzleTween", "oncompletetarget", gameObject, "oncompleteparams", c));
             }
         }
+
+        if (!NewTilesAnimationChuzzles.Any())
+        {
+            AnalyzeField(false);
+        }
     }
 
     #endregion
@@ -448,14 +455,14 @@ public class Gamefield : MonoBehaviour
         var chuzzle = chuzzleObject as Chuzzle;
 
         DeathAnimationChuzzles.Remove(chuzzle);
+        Destroy(chuzzle.gameObject);
 
         //if all deleted
-        if (!DeathAnimationChuzzles.Any())
+        if (DeathAnimationChuzzles.Count() == 0)
         {
             //start tweens for new chuzzles
             MoveTilesWhoNeedMoves();
         }
-        Destroy(chuzzle.gameObject);
     }
 
     #endregion
