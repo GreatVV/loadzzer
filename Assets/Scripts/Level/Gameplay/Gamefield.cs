@@ -351,6 +351,7 @@ public class Gamefield : MonoBehaviour
         AnalyzeField(false);
     }
 
+    public float TimeFromTip = 0;
     private void Update()
     {
         if (LastLoadedLevel == null)
@@ -364,6 +365,20 @@ public class Gamefield : MonoBehaviour
         if (IsMovingToPrevPosition)
         {
             return;
+        }
+
+        TimeFromTip += Time.deltaTime;
+        if (TimeFromTip > 1)
+        {
+            var list = GamefieldUtility.Tip(Level.Chuzzles);
+            if (list.Any())
+            {
+                foreach (var chuzzle in list)
+                {
+                    chuzzle.Shine = true;
+                }
+            }
+            TimeFromTip = 0;
         }
 
         #region Drag

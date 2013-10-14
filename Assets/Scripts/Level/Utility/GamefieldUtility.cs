@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using UnityEngine;
 
 
 public class GamefieldUtility
@@ -128,7 +129,72 @@ public class GamefieldUtility
     /// <returns>Список элементов которые составляют эту комбинацию</returns>
     public static List<Chuzzle> Tip(List<Chuzzle> chuzzles)
     {
+        var vercticalTip =
+            chuzzles.FirstOrDefault(
+                x => VerticalCheck(x, chuzzles));
+
+        if (vercticalTip != null)
+        {
+            var list = new List<Chuzzle>
+            {
+                vercticalTip,
+                chuzzles.FirstOrDefault(y => y.Current.x == vercticalTip.Current.x && y.Current.y == vercticalTip.Current.y + 2),
+                chuzzles.FirstOrDefault(x => x.Current.y == vercticalTip.Current.y + 1 && x.Type == vercticalTip.Type)
+            };
+            Debug.Log("Vertical Tip found");
+            return list;
+        }
+
+        var horizontalTip =
+            chuzzles.FirstOrDefault(
+                x => VerticalCheck(x, chuzzles));
+
+        if (horizontalTip != null)
+        {
+            var list = new List<Chuzzle>
+            {
+                horizontalTip,
+                chuzzles.FirstOrDefault(y => y.Current.y == horizontalTip.Current.y && y.Current.x == horizontalTip.Current.x + 2),
+                chuzzles.FirstOrDefault(x => x.Current.x == horizontalTip.Current.x + 1 && x.Type == horizontalTip.Type)
+            };
+            Debug.Log("Horizontal Tip found");
+            return list;
+        }
         return new List<Chuzzle>();
+    }
+
+    public static bool VerticalCheck(Chuzzle chuzzle, List<Chuzzle> allChuzzles)
+    {
+        var firstChuzzle = chuzzle;
+        var secondChuzzle =
+            allChuzzles.FirstOrDefault(
+                y => y.Current.x == firstChuzzle.Current.x && y.Current.y == firstChuzzle.Current.y + 2);
+
+        if (secondChuzzle == null)
+            return false;
+
+        if (firstChuzzle.Type == secondChuzzle.Type)
+        {
+            return allChuzzles.Any(x => x.Current.y == firstChuzzle.Current.y + 1 && x.Type == firstChuzzle.Type);
+        }
+        return false;
+    }
+
+    public static bool HorizontalCheck(Chuzzle chuzzle, List<Chuzzle> allChuzzles)
+    {
+        var firstChuzzle = chuzzle;
+        var secondChuzzle =
+            allChuzzles.FirstOrDefault(
+                y => y.Current.y == firstChuzzle.Current.y && y.Current.x == firstChuzzle.Current.x + 2);
+
+        if (secondChuzzle == null)
+            return false;
+
+        if (firstChuzzle.Type == secondChuzzle.Type)
+        {
+            return allChuzzles.Any(x => x.Current.x == firstChuzzle.Current.x + 1 && x.Type == firstChuzzle.Type);
+        }
+        return false;
     }
 
     #endregion
