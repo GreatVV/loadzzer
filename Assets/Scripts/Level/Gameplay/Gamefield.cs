@@ -6,28 +6,16 @@ using Object = UnityEngine.Object;
 
 public class Gamefield : MonoBehaviour
 {
-    #region Direction enum
-
-    public enum Direction
-    {
-        ToLeft,
-        ToRight,
-        ToTop,
-        ToBottom
-    };
-
-    #endregion
-
     #region Set in editor
 
     public GameObject Explosion;
     public GameObject PortalPrefab;
 
-    public LayerMask ChuzzleMask;
-
     #endregion
 
     public Level Level = new Level();
+
+    public Field Field = new Field();
 
     public SpecialCreationUtility SpecialCreation;
     
@@ -39,24 +27,14 @@ public class Gamefield : MonoBehaviour
 
     public List<Chuzzle> AnimatedChuzzles = new List<Chuzzle>();
 
-    public Chuzzle CurrentChuzzle;
-    public Direction CurrentDirection;
+    
     public List<Chuzzle> DeathAnimationChuzzles = new List<Chuzzle>();
 
     public bool IsMovingToPrevPosition;
 
     public List<Chuzzle> NewTilesAnimationChuzzles = new List<Chuzzle>();
     public int[] NewTilesInColumns = new int[0];
-
-    public List<Chuzzle> SelectedChuzzles = new List<Chuzzle>();
-    
-
-    private Vector3 _delta;
-    private Vector3 _deltaTouch;
-    private bool _directionChozen;
-    private Vector3 _dragOrigin;
-    private Chuzzle _draggable;
-    private bool _isVerticalDrag;
+   
 
     #region Events
 
@@ -91,6 +69,26 @@ public class Gamefield : MonoBehaviour
     }
 
     #endregion
+
+    void Awake()
+    {
+        Field.DragDrop += OnDragDrop;
+    }
+
+    void OnDestroy()
+    {
+        Field.DragDrop -= OnDragDrop;
+    }
+
+    private void OnDragDrop()
+    {
+        foreach (var c in Field.SelectedChuzzles)
+        {
+            CalculateRealCoordinatesFor(c);
+        }
+        //move all tiles to new real coordinates
+        MoveToRealCoordinates();
+    }
 
     private void AnalyzeField(bool isHumanAction)
     {
@@ -148,128 +146,7 @@ public class Gamefield : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (SelectedChuzzles.Any() && _directionChozen)
-        {
-            foreach (var c in SelectedChuzzles)
-            {
-                c.GetComponent<TeleportableEntity>().prevPosition = c.transform.localPosition;
-                c.transform.localPosition += _isVerticalDrag ? new Vector3(0, _delta.y, 0) : new Vector3(_delta.x, 0, 0);
-
-                var real = ToRealCoordinates(c);
-                Cell targetCell = Level.GetCellAt(real.x, real.y, false);
-                if (targetCell == null || targetCell.Type == CellTypes.Block || targetCell.IsTemporary)
-                {
-                    // Debug.Log("Teleport from " + currentCell);
-                    switch (CurrentDirection)
-                    {
-                        case Direction.ToRight:
-                            //if border
-                            if (targetCell == null)
-                            {
-                                targetCell = Level.GetCellAt(Level.Width - 1, c.Current.y, false);
-                                if (targetCell.Type == CellTypes.Block)
-                                {
-                                    targetCell = targetCell.GetLeftWithType();
-                                }
-                            }
-                            else
-                            {
-                                //if block
-                                targetCell = targetCell.GetLeftWithType();
-
-                                if (targetCell == null)
-                                {
-                                    targetCell = Level.GetCellAt(Level.Width - 1, c.Current.y, false);
-                                    if (targetCell.Type == CellTypes.Block)
-                                    {
-                                        targetCell = targetCell.GetLeftWithType();
-                                    }
-                                }
-                            }
-                            break;
-                        case Direction.ToLeft:
-                             //if border
-                            if (targetCell == null)
-                            {
-                                targetCell = Level.GetCellAt(0, c.Current.y, false);
-                                if (targetCell.Type == CellTypes.Block)
-                                {
-                                    targetCell = targetCell.GetRightWithType();
-                                }
-                            }
-                            else
-                            {
-                                targetCell = targetCell.GetRightWithType();
-                                if (targetCell == null)
-                                {
-                                    targetCell = Level.GetCellAt(0, c.Current.y, false);
-                                    if (targetCell.Type == CellTypes.Block)
-                                    {
-                                        targetCell = targetCell.GetRightWithType();
-                                    }
-                                }
-                            }
-                            break;
-                        case Direction.ToTop:
-                              //if border
-                            if (targetCell == null || targetCell.IsTemporary)
-                            {
-                                targetCell = Level.GetCellAt(c.Current.x, 0, false);
-                                if (targetCell.Type == CellTypes.Block)
-                                {
-                                    targetCell = targetCell.GetTopWithType();
-                                }
-                            }
-                            else
-                            {
-                                targetCell = targetCell.GetTopWithType();
-
-                                if (targetCell == null)
-                                {
-                                    targetCell = Level.GetCellAt(c.Current.x, 0, false);
-                                    if (targetCell.Type == CellTypes.Block)
-                                    {
-                                        targetCell = targetCell.GetTopWithType();
-                                    }
-                                }
-                            }
-                            break;
-                        case Direction.ToBottom:
-                             //if border
-                            if (targetCell == null)
-                            {
-                                targetCell = Level.GetCellAt(c.Current.x, Level.Height - 1, false);
-                                if (targetCell.Type == CellTypes.Block)
-                                {
-                                    targetCell = targetCell.GetBottomWithType();
-                                }
-                            }
-                            else
-                            {
-                                targetCell = targetCell.GetBottomWithType();
-
-                                if (targetCell == null)
-                                {
-                                    targetCell = Level.GetCellAt(c.Current.x, Level.Height - 1, false);
-                                    if (targetCell.Type == CellTypes.Block)
-                                    {
-                                        targetCell = targetCell.GetBottomWithType();
-                                    }
-                                }
-                            }
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException("Current direction can not be shit");
-                    }
-                    //  Debug.Log("Teleport to " + targetCell);
-
-                    var difference = c.transform.localPosition - Level.ConvertXYToPosition(real.x, real.y, c.Scale);
-                    c.transform.localPosition = Level.ConvertXYToPosition(targetCell.x, targetCell.y, c.Scale) +
-                                                difference;
-                }
-
-            }
-        }
+        Field.LateUpdate(Level.Cells);
     }
 
     public bool MoveToTargetPosition(List<Chuzzle> targetChuzzles, string callbackOnComplete)
@@ -320,15 +197,13 @@ public class Gamefield : MonoBehaviour
 
         AnimatedChuzzles.Clear();
 
-        SelectedChuzzles.Clear();
-
-        CurrentChuzzle = null;
+     
 
         SpecialCreation.SpecialTilesAnimated.Clear();
 
-        _directionChozen = false;
+        Field.Reset();
 
-        _isVerticalDrag = false;
+        
 
         PointSystem.Reset();
 
@@ -381,116 +256,8 @@ public class Gamefield : MonoBehaviour
             TimeFromTip = 0;
         }
 
-        #region Drag
+        Field.Update(Level.Chuzzles);
 
-        if (Input.GetMouseButtonDown(0) || (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began))
-        {
-            _dragOrigin = Input.mousePosition;
-
-            if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
-            {
-                //   Debug.Log("is touch drag started");
-                _dragOrigin = new Vector3(Input.GetTouch(0).position.x, Input.GetTouch(0).position.y);
-            }
-
-
-            var ray = Camera.main.ScreenPointToRay(_dragOrigin);
-            RaycastHit hit;
-            if (Physics.Raycast(ray, out hit, float.MaxValue, ChuzzleMask))
-            {
-                CurrentChuzzle = hit.transform.gameObject.GetComponent<Chuzzle>();
-            }
-
-            return;
-        }
-
-        // CHECK DRAG STATE (Mouse or Touch)
-        if ((!Input.GetMouseButton(0) || Input.GetMouseButtonUp(0)) && 0 == Input.touchCount)
-        {
-            DropDrag();
-            return;
-        }
-
-        if (CurrentChuzzle == null)
-        {
-            return;
-        }
-
-
-        if (Input.GetMouseButton(0)) // Get Position Difference between Last and Current Touches
-        {
-            // MOUSE
-            _delta = Input.mousePosition - _dragOrigin;
-
-            //   Debug.Log("Drag delta");
-        }
-        else
-        {
-            if (Input.touchCount > 0)
-            {
-                // TOUCH
-                _deltaTouch = new Vector3(Input.GetTouch(0).position.x, Input.GetTouch(0).position.y, 0);
-                _delta = _deltaTouch - _dragOrigin;
-                // Debug.Log("Drag delta TOUCH");
-            }
-        }
-
-        _delta = Vector3.ClampMagnitude(_delta, Level.ChuzzleSize.x);
-
-
-        if (!_directionChozen)
-        {
-            //chooze drag direction
-            if (Mathf.Abs(_delta.x) < 1.5*Mathf.Abs(_delta.y) || Mathf.Abs(_delta.x) > 1.5*Mathf.Abs(_delta.y))
-            {
-                if (Mathf.Abs(_delta.x) < Mathf.Abs(_delta.y))
-                {
-                    //TODO: choose row
-                    SelectedChuzzles = Level.Chuzzles.Where(x => x.Current.x == CurrentChuzzle.Current.x).ToList();
-                    _isVerticalDrag = true;
-                }
-                else
-                {
-                    //TODO: choose column
-                    SelectedChuzzles = Level.Chuzzles.Where(x => x.Current.y == CurrentChuzzle.Current.y).ToList();
-                    _isVerticalDrag = false;
-                }
-
-                _directionChozen = true;
-                //  Debug.Log("Direction chozen. Vertical: "+isVerticalDrag);
-            }
-        }
-
-        if (_directionChozen)
-        {
-            if (_isVerticalDrag)
-            {
-                if (_delta.y > 0)
-                {
-                    CurrentDirection = Direction.ToTop;
-                }
-                else
-                {
-                    CurrentDirection = Direction.ToBottom;
-                }
-            }
-            else
-            {
-                if (_delta.x > 0)
-                {
-                    CurrentDirection = Direction.ToLeft;
-                }
-                else
-                {
-                    CurrentDirection = Direction.ToRight;
-                }
-            }
-        }
-
-        // RESET START POINT
-        _dragOrigin = Input.mousePosition;
-
-        #endregion
     }
 
     #region Control
@@ -531,28 +298,16 @@ public class Gamefield : MonoBehaviour
             Mathf.RoundToInt(chuzzle.transform.localPosition.y/chuzzle.Scale.y), false);
     }
 
-    private void DropDrag()
-    {
-        foreach (var c in SelectedChuzzles)
-        {
-            CalculateRealCoordinatesFor(c);
-        }
-        //move all tiles to new real coordinates
-        MoveToRealCoordinates();
-
-        _directionChozen = false;
-        CurrentChuzzle = null;
-        SelectedChuzzles.Clear();
-    }
+   
 
     private void MoveToRealCoordinates()
     {
-        foreach (var c in SelectedChuzzles)
+        foreach (var c in Level.Chuzzles)
         {
             c.MoveTo = c.Real;
         }
 
-        var anyMove = MoveToTargetPosition(SelectedChuzzles, "OnTweenMoveAfterDrag");
+        var anyMove = MoveToTargetPosition(Level.Chuzzles, "OnTweenMoveAfterDrag");
 
         if (!anyMove)
         {
@@ -560,12 +315,7 @@ public class Gamefield : MonoBehaviour
         }
     }
 
-    public IntVector2 ToRealCoordinates(Chuzzle chuzzle)
-    {
-        return new IntVector2(Mathf.RoundToInt(chuzzle.transform.localPosition.x/chuzzle.Scale.x),
-            Mathf.RoundToInt(chuzzle.transform.localPosition.y/chuzzle.Scale.y));
-    }
-
+   
     #endregion
 
     #region Special Chuzzles

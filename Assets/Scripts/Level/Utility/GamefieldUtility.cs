@@ -129,9 +129,7 @@ public class GamefieldUtility
     /// <returns>Список элементов которые составляют эту комбинацию</returns>
     public static List<Chuzzle> Tip(List<Chuzzle> chuzzles)
     {
-        var vercticalTip =
-            chuzzles.FirstOrDefault(
-                x => VerticalCheck(x, chuzzles));
+        Chuzzle vercticalTip = chuzzles.FirstOrDefault(x => VerticalCheck(x, chuzzles));
 
         if (vercticalTip != null)
         {
@@ -198,5 +196,22 @@ public class GamefieldUtility
     }
 
     #endregion
+
+    public static IntVector2 ToRealCoordinates(Chuzzle chuzzle)
+    {
+        return new IntVector2(Mathf.RoundToInt(chuzzle.transform.localPosition.x / chuzzle.Scale.x),
+            Mathf.RoundToInt(chuzzle.transform.localPosition.y / chuzzle.Scale.y));
+    }
+
+    public static Cell CellAt(List<Cell> cells, int x, int y)
+    {
+        return cells.FirstOrDefault(c => c.x == x && c.y == y);
+    }
+
+    public static Vector3 ConvertXYToPosition(int x, int y, Vector3 scale)
+    {
+        return new Vector3(x * scale.x, y * scale.y, 0);
+    }
+
 }
 

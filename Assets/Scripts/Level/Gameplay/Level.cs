@@ -59,7 +59,7 @@ public class Level
         var prefab = CellPrefabs.First(x => x.Type == cell.Type).CellPrefab;
         var cellSprite = NGUITools.AddChild(Gamefield, prefab);
         CellSprites.Add(cellSprite);
-        cellSprite.transform.localPosition = ConvertXYToPosition(cell.x, cell.y, ChuzzleSize);
+        cellSprite.transform.localPosition = GamefieldUtility.ConvertXYToPosition(cell.x, cell.y, ChuzzleSize);
         var sprite = cellSprite.GetComponent<tk2dSprite>();
         ScaleSprite(sprite);
         cell.GameObject = cellSprite;
@@ -148,7 +148,7 @@ public class Level
 
     public Cell GetCellAt(int x, int y, bool createIfNotFound = true)
     {
-        var cell = Cells.FirstOrDefault(c => c.x == x && c.y == y);
+        var cell = GamefieldUtility.CellAt(Cells, x, y);
         if (cell == null && createIfNotFound)
         {
             var newCell = new Cell(x, y);
@@ -213,13 +213,4 @@ public class Level
         }
         CellSprites.Clear();
     }
-
-    #region Block and Portals
- 
-    public Vector3 ConvertXYToPosition(int x, int y, Vector3 scale)
-    {
-        return new Vector3(x*scale.x, y*scale.y, 0);
-    }
-
-    #endregion
 }
