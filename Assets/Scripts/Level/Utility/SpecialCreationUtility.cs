@@ -92,6 +92,7 @@ public class SpecialCreationUtility
         color.GetComponent<tk2dSprite>().SortingOrder = -1;
 
         Object.Destroy(targetTile.gameObject);
+        Gamefield.Level.ActiveChuzzles.Remove(targetTile);
         Gamefield.Level.Chuzzles.Remove(targetTile);
         ordered.Remove(targetTile);
 

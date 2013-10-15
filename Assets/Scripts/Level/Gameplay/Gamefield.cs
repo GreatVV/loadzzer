@@ -17,6 +17,8 @@ public class Gamefield : MonoBehaviour
 
     public Field Field = new Field();
 
+    public StageManager StageManager = new StageManager();
+
     public SpecialCreationUtility SpecialCreation;
 
     public GameMode GameMode = GameModeFactory.CreateGameMode(GameModeDescription.CreateFromJson(null));
@@ -26,7 +28,6 @@ public class Gamefield : MonoBehaviour
     public SerializedLevel LastLoadedLevel = null;
 
     public List<Chuzzle> AnimatedChuzzles = new List<Chuzzle>();
-
 
     public List<Chuzzle> DeathAnimationChuzzles = new List<Chuzzle>();
 
@@ -83,7 +84,7 @@ public class Gamefield : MonoBehaviour
         MoveToRealCoordinates();
 
         //drop shining
-        foreach (var chuzzle in Level.Chuzzles)
+        foreach (var chuzzle in Level.ActiveChuzzles)
         {
             chuzzle.Shine = false;
         }
@@ -105,7 +106,7 @@ public class Gamefield : MonoBehaviour
         }
 
         //check new combination
-        var combinations = GamefieldUtility.FindCombinations(Level.Chuzzles);
+        var combinations = GamefieldUtility.FindCombinations(Level.ActiveChuzzles);
         if (combinations.Any())
         {
             foreach (var c in Level.Chuzzles)
@@ -145,14 +146,9 @@ public class Gamefield : MonoBehaviour
         }
     }
 
-    public Chuzzle At(int x, int y)
-    {
-        return Level.Chuzzles.FirstOrDefault(c => c.Current.x == x && c.Current.y == y);
-    }
-
     private void LateUpdate()
     {
-        Field.LateUpdate(Level.Cells);
+        Field.LateUpdate(Level.ActiveCells);
     }
 
     public bool MoveToTargetPosition(List<Chuzzle> targetChuzzles, string callbackOnComplete)
@@ -186,6 +182,10 @@ public class Gamefield : MonoBehaviour
     public void RemoveChuzzle(Chuzzle chuzzle, bool invokeEvent = true)
     {
         Level.Chuzzles.Remove(chuzzle);
+        if (Level.ActiveChuzzles.Contains(chuzzle))
+        {
+            Level.ActiveChuzzles.Remove(chuzzle);
+        }
         NewTilesInColumns[chuzzle.Current.x]++;
         if (invokeEvent)
         {
@@ -223,6 +223,8 @@ public class Gamefield : MonoBehaviour
 
         NewTilesInColumns = new int[Level.Width];
 
+        StageManager.Init(this);
+
         InvokeGameStarted();
 
         AnalyzeField(false);
@@ -246,7 +248,7 @@ public class Gamefield : MonoBehaviour
         TimeFromTip += Time.deltaTime;
         if (TimeFromTip > 1)
         {
-            var list = GamefieldUtility.Tip(Level.Chuzzles);
+            var list = GamefieldUtility.Tip(Level.ActiveChuzzles);
             if (list.Any())
             {
                 foreach (var chuzzle in list)
@@ -257,7 +259,7 @@ public class Gamefield : MonoBehaviour
             TimeFromTip = 0;
         }
 
-        Field.Update(Level.Chuzzles);
+        Field.Update(Level.ActiveChuzzles);
     }
 
     #region Control
@@ -354,7 +356,9 @@ public class Gamefield : MonoBehaviour
 
         if (!NewTilesAnimationChuzzles.Any())
         {
-            var combinations = GamefieldUtility.FindCombinations(Level.Chuzzles);
+            Level.UpdateActive();
+
+            var combinations = GamefieldUtility.FindCombinations(Level.ActiveChuzzles);
             if (combinations.Count > 0)
             {
                 AnalyzeField(false);
@@ -386,7 +390,7 @@ public class Gamefield : MonoBehaviour
                 for (var j = 0; j < newInColumn; j++)
                 {
                     //create new tiles
-                    var chuzzle = Level.CreateRandomChuzzle(x, Level.Height + j);
+                    var chuzzle = Level.CreateRandomChuzzle(x, Level.Height + j, true);
                     chuzzle.Current.IsTemporary = true;
                 }
             }
@@ -401,11 +405,11 @@ public class Gamefield : MonoBehaviour
                 for (var y = 0; y < Level.Height; y++)
                 {
                     var cell = Level.GetCellAt(x, y, false);
-                    if (At(x, y) == null && cell.Type != CellTypes.Block)
+                    if (Level.At(x, y) == null && cell.Type != CellTypes.Block)
                     {
                         while (cell != null)
                         {
-                            var chuzzle = At(cell.x, cell.y);
+                            var chuzzle = Level.At(cell.x, cell.y);
                             if (chuzzle != null)
                             {
                                 chuzzle.MoveTo = chuzzle.MoveTo.GetBottomWithType();

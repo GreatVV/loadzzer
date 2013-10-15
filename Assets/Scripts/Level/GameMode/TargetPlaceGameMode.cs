@@ -52,7 +52,7 @@ public class TargetPlaceGameMode : GameMode
         Gamefield.TileDestroyed += OnTileDestroyed;
 
         PlaceCoordinates.Clear();
-        var placeCell = Gamefield.Level.Cells.Where(x => x.HasPlace);
+        var placeCell = Gamefield.Level.ActiveCells.Where(x => x.HasPlace);
         Debug.Log("Now of cells: "+placeCell.Count());
         foreach (var cell in placeCell)
         {

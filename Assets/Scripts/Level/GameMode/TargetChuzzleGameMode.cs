@@ -33,7 +33,7 @@ public class TargetChuzzleGameMode : GameMode
         //TODO find chuzzle (it's special type)
         if (TargetChuzzle == null)
         {
-            TargetChuzzle = Gamefield.Level.Chuzzles.FirstOrDefault(x => x.Counter > 0);
+            TargetChuzzle = Gamefield.Level.ActiveChuzzles.FirstOrDefault(x => x.Counter > 0);
             if (TargetChuzzle == null)
             {
                 Debug.Log("No target chuzzle");

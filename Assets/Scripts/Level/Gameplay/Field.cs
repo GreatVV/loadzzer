@@ -129,7 +129,7 @@ public class Field
                 }
 
                 _directionChozen = true;
-                //  Debug.Log("Direction chozen. Vertical: "+isVerticalDrag);
+                //Debug.Log("Direction chozen. Vertical: " + _isVerticalDrag);
             }
         }
 

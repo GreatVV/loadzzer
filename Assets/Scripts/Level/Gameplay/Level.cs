@@ -34,9 +34,12 @@ public class Level
     public Vector3 ChuzzleSize = new Vector3(80, 80);
     public int NumberOfColors = 6;
     
-    public List<Cell> Cells = new List<Cell>();
-
+    protected List<Cell> Cells = new List<Cell>();
     public List<Chuzzle> Chuzzles = new List<Chuzzle>();
+
+    public List<Cell> ActiveCells = new List<Cell>();
+    public List<Chuzzle> ActiveChuzzles = new List<Chuzzle>();
+
     public List<GameObject> CellSprites = new List<GameObject>();
 
     public void InitRandom()
@@ -52,6 +55,11 @@ public class Level
             }
         }
 
+    }
+
+    public Chuzzle At(int x, int y)
+    {
+        return Chuzzles.FirstOrDefault(c => c.Current.x == x && c.Current.y == y);
     }
 
     private void CreateTileSprite(Cell cell)
@@ -79,6 +87,10 @@ public class Level
 
         Width = level.Width;
         Height = level.Height;
+
+        CurrentMinY = 0;
+        CurrentMaxY = Height;
+
         //BUG change 480 for other resolutiion
         ChuzzleSize = new Vector3(480, 480, 0)/Width;
         Debug.Log("Add cells");
@@ -94,14 +106,14 @@ public class Level
         InitRandom();
     }
 
-    public Chuzzle CreateRandomChuzzle(int x, int y)
+    public Chuzzle CreateRandomChuzzle(int x, int y, bool toActive = false)
     {
         var colorsNumber = NumberOfColors == -1 ? ChuzzlePrefabs.Length : NumberOfColors;
         var prefab = ChuzzlePrefabs[Random.Range(0, colorsNumber)];
-        return CreateChuzzle(x, y, prefab);
+        return CreateChuzzle(x, y, prefab, toActive);
     }
 
-    public Chuzzle CreateChuzzle(int x, int y, GameObject prefab)
+    public Chuzzle CreateChuzzle(int x, int y, GameObject prefab, bool toActive = false)
     {
         var gameObject = NGUITools.AddChild(Gamefield.gameObject, prefab);
         gameObject.layer = prefab.layer;
@@ -128,6 +140,10 @@ public class Level
             chuzzle.Current.HasCounter = false;
         }
         Chuzzles.Add(chuzzle);
+        if (toActive)
+        {
+            ActiveChuzzles.Add(chuzzle);
+        }
         return chuzzle;
     }
 
@@ -212,5 +228,21 @@ public class Level
             Object.Destroy(cellSprite.gameObject);
         }
         CellSprites.Clear();
+    }
+
+    public int CurrentMinY;
+    public int CurrentMaxY;
+
+    public void ChoseFor(int minY, int maxY)
+    {
+        CurrentMinY = minY;
+        CurrentMaxY = maxY;
+        UpdateActive();
+    }
+
+    public void UpdateActive()
+    {
+        ActiveCells = Cells.Where(x => x.y >= CurrentMinY && x.y <= CurrentMaxY).ToList();
+        ActiveChuzzles = Chuzzles.Where(x => x.Current.y >= CurrentMinY && x.Current.y <= CurrentMaxY).ToList();
     }
 }
