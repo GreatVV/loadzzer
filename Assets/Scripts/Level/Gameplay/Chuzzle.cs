@@ -22,6 +22,7 @@ public class Chuzzle : MonoBehaviour
     public bool _shine;
 
     public float Alpha;
+    private bool _frozen;
 
     public bool Shine
     {
@@ -51,10 +52,20 @@ public class Chuzzle : MonoBehaviour
 
     private void Update()
     {
-        if (Shine)
+        if (Shine && !Frozen)
         {
             Alpha = Alpha + Time.deltaTime*3;
             Sprite.color = new Color(Sprite.color.r, Sprite.color.g, Sprite.color.b, Mathf.Sin(Alpha)/2f + 0.5f);
+        }
+    }
+
+    public bool Frozen
+    {
+        get { return _frozen; }
+        set
+        {
+            _frozen = value;
+            Sprite.color = new Color(Sprite.color.r, Sprite.color.g, Sprite.color.b, _frozen? 0.1f : 1f);
         }
     }
 }

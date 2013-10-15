@@ -57,7 +57,7 @@ public class StageManager
                 Condition = new Condition()
                 {
                     IsScore = true,
-                    Target = 1000,
+                    Target = 200,
                 },
                 NextStage = 1,
                 MaxY = 23,
@@ -71,7 +71,7 @@ public class StageManager
                 Condition = new Condition()
                 {
                     IsScore = true,
-                    Target = 2000,
+                    Target = 400,
                 },
                 NextStage = 2,
                 MaxY = 15,
@@ -85,7 +85,7 @@ public class StageManager
                Condition = new Condition()
                {
                    IsScore = true,
-                   Target = 3000,
+                   Target = 600,
                },
                NextStage = -1,
                MaxY = 7,
@@ -122,7 +122,7 @@ public class StageManager
         var targetPosition = GamefieldUtility.ConvertXYToPosition(0, CurrentStage.MinY, Gamefield.Level.ChuzzleSize);
 
         iTween.MoveTo(Camera,
-                   iTween.Hash("x", targetPosition.x, "y", targetPosition.y, "z", -10, "time", 5f));
+                   iTween.Hash("x", targetPosition.x, "y", targetPosition.y-30, "z", -10, "time", 5f));
 
     }
 }

@@ -244,5 +244,9 @@ public class Level
     {
         ActiveCells = Cells.Where(x => x.y >= CurrentMinY && x.y <= CurrentMaxY).ToList();
         ActiveChuzzles = Chuzzles.Where(x => x.Current.y >= CurrentMinY && x.Current.y <= CurrentMaxY).ToList();
+        foreach (var chuzzle in Chuzzles)
+        {
+            chuzzle.Frozen = !ActiveChuzzles.Contains(chuzzle);
+        }
     }
 }
