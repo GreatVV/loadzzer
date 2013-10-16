@@ -15,6 +15,7 @@ public class Stage
     
     public Condition Condition;
     public event Action StageComplete;
+    public bool WinOnComplete;
 
     protected virtual void InvokeStageComplete()
     {
@@ -46,63 +47,36 @@ public class StageManager
 
     public GameObject Camera;
 
-    public void Init(Gamefield gamefield)
+    public void Init(List<Stage> stages)
     {
-        Gamefield = gamefield;
-        Stages.Clear();
-        Stages.Add(
-            new Stage()
+        if (stages == null || stages.Count == 0)
+        {
+            if (CurrentStage != null)
             {
-                Id = 0,
-                Condition = new Condition()
-                {
-                    IsScore = true,
-                    Target = 200,
-                },
-                NextStage = 1,
-                MaxY = 23,
-                MinY = 16
-            });
+                Gamefield.PointSystem.PointChanged -= CurrentStage.OnPointsChanged;
+                CurrentStage.StageComplete -= OnStageComplete;
+            }
+            Stages.Clear();
+            Camera.transform.position = new Vector3(0,0,-10);
+            Gamefield.Level.UpdateActive();
+            return;
+        }
 
-        Stages.Add(
-            new Stage()
-            {
-                Id = 1,
-                Condition = new Condition()
-                {
-                    IsScore = true,
-                    Target = 400,
-                },
-                NextStage = 2,
-                MaxY = 15,
-                MinY = 8
-            });
-
-        Stages.Add(
-           new Stage()
-           {
-               Id = 2,
-               Condition = new Condition()
-               {
-                   IsScore = true,
-                   Target = 600,
-               },
-               NextStage = -1,
-               MaxY = 7,
-               MinY = 0
-           });
-
+        Stages = stages;
         ChangeStageTo(0);
     }
 
+  
     private void OnStageComplete()
     {
         Gamefield.PointSystem.PointChanged -= CurrentStage.OnPointsChanged;
         CurrentStage.StageComplete -= OnStageComplete;
-        if (CurrentStage.NextStage == -1)
+        if (CurrentStage.NextStage == -1 )
         {
-            //HACK use other way to win (???)
-            Gamefield.GameMode.IsWin = true;
+            if (CurrentStage.WinOnComplete)
+            {
+                Gamefield.GameMode.IsWin = true;
+            }
         }
         else
         {

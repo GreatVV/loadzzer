@@ -222,12 +222,17 @@ public class Level
             Object.Destroy(chuzzle.gameObject);
         }
         Chuzzles.Clear();
+        ActiveChuzzles.Clear();
+
+        Cells.Clear();
+        ActiveCells.Clear();
 
         foreach (var cellSprite in CellSprites)
         {
             Object.Destroy(cellSprite.gameObject);
         }
         CellSprites.Clear();
+        
     }
 
     public int CurrentMinY;

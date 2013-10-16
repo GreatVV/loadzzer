@@ -219,11 +219,10 @@ public class Gamefield : MonoBehaviour
         else
         {
             Level.InitFromFile(level);
+            StageManager.Init(level.Stages);
         }
 
         NewTilesInColumns = new int[Level.Width];
-
-        StageManager.Init(this);
 
         InvokeGameStarted();
 

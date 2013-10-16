@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 [Serializable]
@@ -13,10 +14,11 @@ public class SerializedLevel
     public GameModeDescription GameMode;
 
     public List<Cell> SpecialCells = new List<Cell>();
+    public List<Stage> Stages = new List<Stage>();
 
     public static SerializedLevel FromJson(JSONObject jsonObject)
     {
-        //Debug.Log("Print: \n" + jsonObject.ToString());
+        Debug.Log("Print: \n" + jsonObject.ToString());
         var serializedLevel = new SerializedLevel();
         serializedLevel.Name = jsonObject.GetField("name").str;
         serializedLevel.Width = (int) jsonObject.GetField("width").n;
@@ -50,8 +52,44 @@ public class SerializedLevel
             }
             
         }
+
+        serializedLevel.Stages = CreateStagesFromJsonObject(jsonObject.GetField("stages"));
+
         return serializedLevel;
     }
+
+    private static List<Stage> CreateStagesFromJsonObject(JSONObject stagesJsonObject)
+    {
+        if (stagesJsonObject == null || stagesJsonObject.list == null || stagesJsonObject.list.First().type == JSONObject.Type.NULL)
+        {
+            return null;
+        }
+
+        var stages = new List<Stage>();
+        foreach (var jsonObject in stagesJsonObject.list)
+        {
+         /*   if (jsonObject.type == JSONObject.Type.NULL)
+            {
+                return null;
+            }*/
+            var stage = new Stage()
+            {
+                Id = (int)jsonObject.GetField("Id").n,
+                MinY = (int)jsonObject.GetField("MinY").n,
+                MaxY = (int)jsonObject.GetField("MaxY").n,
+                NextStage = (int)jsonObject.GetField("NextStage").n,
+                WinOnComplete = jsonObject.GetField("WinOnComplete").b,
+                Condition = new Condition()
+                {
+                    IsScore = jsonObject.GetField("Condition").GetField("IsScore").b,
+                    Target = (int)jsonObject.GetField("Condition").GetField("Target").n
+                }
+            };
+            stages.Add(stage);
+        }
+        return stages;
+    }
+
 
     public override string ToString()
     {
