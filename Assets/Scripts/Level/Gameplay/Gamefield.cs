@@ -37,6 +37,8 @@ public class Gamefield : MonoBehaviour
     public int[] NewTilesInColumns = new int[0];
     public float TimeFromTip = 0;
 
+    public bool IsPlaying;
+
     #region Events
 
     public event Action<List<Chuzzle>> CombinationDestroyed;
@@ -224,14 +226,41 @@ public class Gamefield : MonoBehaviour
 
         NewTilesInColumns = new int[Level.Width];
 
+        AddEventHandlers();
+
         InvokeGameStarted();
 
         AnalyzeField(false);
+
+        IsPlaying = true;
+    }
+
+    private void AddEventHandlers()
+    {
+        RemoveEventHandlers();
+        GameMode.Win += OnWin;
+        GameMode.GameOver += OnGameOver;
+    }
+
+    private void OnGameOver()
+    {
+        IsPlaying = false;
+    }
+
+    private void OnWin()
+    {
+        IsPlaying = false;
+    }
+
+    private void RemoveEventHandlers()
+    {
+        GameMode.Win -= OnWin;
+        GameMode.GameOver -= OnGameOver;
     }
 
     private void Update()
     {
-        if (LastLoadedLevel == null)
+        if (LastLoadedLevel == null || !IsPlaying)
         {
             Debug.Log("No level loaded");
             return;
@@ -239,7 +268,7 @@ public class Gamefield : MonoBehaviour
 
         IsMovingToPrevPosition = AnimatedChuzzles.Any() || DeathAnimationChuzzles.Any() ||
                                  NewTilesAnimationChuzzles.Any() || SpecialCreation.SpecialTilesAnimated.Any();
-        if (IsMovingToPrevPosition)
+        if (IsMovingToPrevPosition )
         {
             return;
         }

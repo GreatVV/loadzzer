@@ -55,6 +55,7 @@ public class StageManager
             {
                 Gamefield.PointSystem.PointChanged -= CurrentStage.OnPointsChanged;
                 CurrentStage.StageComplete -= OnStageComplete;
+                CurrentStage = null;
             }
             Stages.Clear();
             Camera.transform.position = new Vector3(0,0,-10);

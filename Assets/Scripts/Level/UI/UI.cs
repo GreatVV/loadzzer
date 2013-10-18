@@ -4,10 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 public class UI : MonoBehaviour {
-
-   
-
-
+    
     public Gamefield Gamefield;
 
     public GameObject startGamePanel;
@@ -172,4 +169,13 @@ public class UI : MonoBehaviour {
         OnRestartClick();
     }
 
+    public void OnAddTurns()
+    {
+        Gamefield.GameMode.Turns += 5;
+        Gamefield.GameMode.IsGameOver = false;
+        Gamefield.IsPlaying = true;
+        DisableAllPanels();
+        inGamePanel.SetActive(true);
+        OnTurnsChanged();
+    }
 }
