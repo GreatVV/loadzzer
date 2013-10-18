@@ -129,7 +129,9 @@ public class GamefieldUtility
     /// <returns>Список элементов которые составляют эту комбинацию</returns>
     public static List<Chuzzle> Tip(List<Chuzzle> chuzzles)
     {
-        Chuzzle vercticalTip = chuzzles.FirstOrDefault(x => VerticalCheck(x, chuzzles));
+        /*var vercticalTip =
+            chuzzles.FirstOrDefault(
+                x => VerticalCheck(x, chuzzles));
 
         if (vercticalTip != null)
         {
@@ -157,7 +159,36 @@ public class GamefieldUtility
             };
             Debug.Log("Horizontal Tip found");
             return list;
+        }*/
+        var vercticalTip =
+            chuzzles.FirstOrDefault(
+                x => AnotherVerticalCheck(x, chuzzles));
+
+        if (vercticalTip != null)
+        {
+            var list = new List<Chuzzle>
+            {
+                vercticalTip,
+                chuzzles.FirstOrDefault(ch => ch.Current.x == vercticalTip.Current.x && ch.Current.y == vercticalTip.Current.y + 1),
+                chuzzles.FirstOrDefault(ch => (Math.Abs(ch.Current.x - vercticalTip.Current.x) == 1) && (ch.Type == vercticalTip.Type))
+            };
+         
+            var additionalChuzzle = GetBottomFor(list.Last(), chuzzles);
+            if (additionalChuzzle != null)
+            {
+                if (additionalChuzzle.Type == list.Last().Type) list.Add(additionalChuzzle);
+            }
+            additionalChuzzle = GetTopFor(list.Last(), chuzzles);
+            if (additionalChuzzle != null)
+            {
+                if (additionalChuzzle.Type == list.Last().Type) list.Add(additionalChuzzle);
+            }
+
+
+            Debug.Log("Danila Vertical Tip found");
+            return list;
         }
+
         return new List<Chuzzle>();
     }
 
@@ -192,6 +223,29 @@ public class GamefieldUtility
         {
             return allChuzzles.Any(x => x.Current.x == firstChuzzle.Current.x + 1 && x.Type == firstChuzzle.Type);
         }
+        return false;
+    }
+
+    // вертикальная и горизонтальная проверка для второго случая
+    public static bool AnotherVerticalCheck(Chuzzle chuzzle, List<Chuzzle> allChuzzles)
+    {
+        var firstChuzzle = chuzzle;
+        var secondChuzzle =
+            allChuzzles.FirstOrDefault(
+                ch => ch.Current.x == firstChuzzle.Current.x && ch.Current.y == firstChuzzle.Current.y + 1);
+
+        if (secondChuzzle == null) return false;
+
+        if (firstChuzzle.Type == secondChuzzle.Type)
+        {
+            return allChuzzles.Any(ch => Math.Abs(ch.Current.x - firstChuzzle.Current.x) == 1 && ch.Type == firstChuzzle.Type);
+        }
+
+        return false;
+    }
+
+    public static bool AnotherHorizontalCheck(Chuzzle chuzzle, List<Chuzzle> allChuzzles)
+    {
         return false;
     }
 
