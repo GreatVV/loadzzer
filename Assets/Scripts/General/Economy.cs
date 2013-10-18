@@ -51,7 +51,6 @@ public class Economy : MonoBehaviour
     {
         Instance = this;
         //TODO load from files
-        CurrentMoney = 10000;
     }
 
     public JSONObject Serialize()

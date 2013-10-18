@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class GuiGameplay : MonoBehaviour
+public class GuiGameplay : Window
 {
     public UILabel PointsLabel;
     public UILabel TargetScoreLabel;

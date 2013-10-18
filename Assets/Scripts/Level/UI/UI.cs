@@ -8,38 +8,20 @@ public class UI : MonoBehaviour
 
     public GuiGameplay GuiGameplay;
 
-    public GameObject StartGamePanel;
-    public GameObject GameOverPanel;
+    public GuiGameOverPopup GameOverPopup;
     public GuiWinPanel WinPanel;
 
     public LevelList LevelList;
 
-    #region Event Handlers
+    public GuiInAppPopup InAppPopup;
 
-    public void OnAddTurns()
-    {
-        if (Economy.Instance.Spent(60))
-        {
-            Gamefield.GameMode.AddTurns(5);
-            Gamefield.GameMode.IsGameOver = false;
-            Gamefield.IsPlaying = true;
-            DisableAllPanels();
-            GuiGameplay.gameObject.SetActive(true);
-        }
-    }
+    #region Event Handlers
 
     private void OnDestroy()
     {
         RemoveEventHandlers();
     }
 
-    public void OnGameOverRestartClick()
-    {
-        DisableAllPanels();
-        GuiGameplay.gameObject.SetActive(true);
-
-        Restart();
-    }
 
     public void OnStartClick()
     {
@@ -50,7 +32,7 @@ public class UI : MonoBehaviour
 
     public void OnWinRestartClick()
     {
-        OnGameOverRestartClick();
+        GameOverRestart();
     }
 
     #endregion
@@ -105,10 +87,10 @@ public class UI : MonoBehaviour
     private void DisableAllPanels()
     {
         LevelList.Grid.transform.parent.gameObject.SetActive(false);
-        StartGamePanel.SetActive(false);
-        GuiGameplay.gameObject.SetActive(false);
-        GameOverPanel.SetActive(false);
+        GuiGameplay.Close();
+        GameOverPopup.Close();
         WinPanel.gameObject.SetActive(false);
+        InAppPopup.Close();
     }
 
     public void ShowMap()
@@ -128,6 +110,29 @@ public class UI : MonoBehaviour
     public void ShowGameoverPopup()
     {
         DisableAllPanels();
-        GameOverPanel.SetActive(true);
+        GameOverPopup.Show();
+    }
+
+    public void AddTurns()
+    {
+        DisableAllPanels();
+        if (Economy.Instance.Spent(60))
+        {
+            Gamefield.GameMode.AddTurns(5);
+            Gamefield.GameMode.IsGameOver = false;
+            Gamefield.IsPlaying = true;
+            GuiGameplay.gameObject.SetActive(true);
+        }
+        else
+        {
+            InAppPopup.Show(GameOverPopup);
+        }
+    }
+
+    public void GameOverRestart()
+    {
+        DisableAllPanels();
+        GuiGameplay.Show();
+        Restart();
     }
 }
