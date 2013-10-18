@@ -35,7 +35,7 @@ public abstract class GameMode
     public event Action GameOver;
     public event Action Win;
     public event Action NoTurns;
-    public event Action TurnsChanged;
+    public event Action<int> TurnsChanged;
 
     public void InvokeWin()
     {
@@ -90,8 +90,14 @@ public abstract class GameMode
     {
         if (TurnsChanged != null)
         {
-            TurnsChanged();
+            TurnsChanged(Turns);
         }
+    }
+
+    public void AddTurns(int additionalTurns)
+    {
+        Turns += additionalTurns;
+        InvokeTurnsChanged();
     }
     
     public Gamefield Gamefield;

@@ -43,7 +43,7 @@ public class Gamefield : MonoBehaviour
 
     public event Action<List<Chuzzle>> CombinationDestroyed;
 
-    public event Action GameStarted;
+    public event Action<Gamefield> GameStarted;
 
     public event Action<Chuzzle> TileDestroyed;
 
@@ -60,7 +60,7 @@ public class Gamefield : MonoBehaviour
     protected virtual void InvokeGameStarted()
     {
         var handler = GameStarted;
-        if (handler != null) handler();
+        if (handler != null) handler(this);
     }
 
     private void InvokeTileDestroyed(Chuzzle destroyedChuzzle)
