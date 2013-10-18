@@ -170,7 +170,7 @@ public class GamefieldUtility
             {
                 vercticalTip,
                 chuzzles.FirstOrDefault(ch => ch.Current.x == vercticalTip.Current.x && ch.Current.y == vercticalTip.Current.y + 1),
-                chuzzles.FirstOrDefault(ch => (Math.Abs(ch.Current.x - vercticalTip.Current.x) == 1) && (ch.Type == vercticalTip.Type))
+                chuzzles.FirstOrDefault(ch => (Math.Abs(ch.Current.x - vercticalTip.Current.x) == 1 || ch.Current.y == vercticalTip.Current.y - 1 || ch.Current.y == vercticalTip.Current.y + 2) && (ch.Type == vercticalTip.Type))
             };
          
             var additionalChuzzle = GetBottomFor(list.Last(), chuzzles);
@@ -238,9 +238,8 @@ public class GamefieldUtility
 
         if (firstChuzzle.Type == secondChuzzle.Type)
         {
-            return allChuzzles.Any(ch => Math.Abs(ch.Current.x - firstChuzzle.Current.x) == 1 && ch.Type == firstChuzzle.Type);
+            return allChuzzles.Where(ch => Math.Abs(ch.Current.x - firstChuzzle.Current.x) == 1 || ch.Current.y == firstChuzzle.Current.y - 1 || ch.Current.y == firstChuzzle.Current.y + 2).Any(ch => ch.Type == firstChuzzle.Type);
         }
-
         return false;
     }
 
