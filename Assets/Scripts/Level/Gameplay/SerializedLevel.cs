@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Facebook.MiniJSON;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 [Serializable]
 public class SerializedLevel
@@ -15,6 +17,7 @@ public class SerializedLevel
 
     public List<Cell> SpecialCells = new List<Cell>();
     public List<Stage> Stages = new List<Stage>();
+    public int Seed;
 
     public static SerializedLevel FromJson(JSONObject jsonObject)
     {
@@ -26,6 +29,7 @@ public class SerializedLevel
         serializedLevel.NumberOfColors = jsonObject.HasField("numberOfColors")
             ? (int) jsonObject.GetField("numberOfColors").n
             : 6;
+        serializedLevel.Seed = jsonObject.HasField("seed") ? (int)jsonObject.GetField("seed").n : 1;
 
         serializedLevel.GameMode = GameModeDescription.CreateFromJson(jsonObject.GetField("gameMode"));
 

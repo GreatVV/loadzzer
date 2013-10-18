@@ -91,6 +91,8 @@ public class Level
         CurrentMinY = 0;
         CurrentMaxY = Height;
 
+        Random.seed = level.Seed;
+
         //BUG change 480 for other resolutiion
         ChuzzleSize = new Vector3(480, 480, 0)/Width;
         Debug.Log("Add cells");
