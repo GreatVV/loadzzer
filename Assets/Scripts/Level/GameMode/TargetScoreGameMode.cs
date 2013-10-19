@@ -39,4 +39,9 @@ public class TargetScoreGameMode : GameMode
     {
         SpendTurn();
     }
+
+    public override string ToString()
+    {
+        return string.Format("You should get {0} points", TargetScore);
+    }
 }

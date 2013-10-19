@@ -33,8 +33,8 @@ public class Level
 
     public Vector3 ChuzzleSize = new Vector3(80, 80);
     public int NumberOfColors = 6;
-    
-    protected List<Cell> Cells = new List<Cell>();
+
+    public List<Cell> Cells = new List<Cell>();
     public List<Chuzzle> Chuzzles = new List<Chuzzle>();
 
     public List<Cell> ActiveCells = new List<Cell>();

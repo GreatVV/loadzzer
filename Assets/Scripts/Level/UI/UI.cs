@@ -7,13 +7,12 @@ public class UI : MonoBehaviour
     public Gamefield Gamefield;
 
     public GuiGameplay GuiGameplay;
-
     public GuiGameOverPopup GameOverPopup;
     public GuiWinPanel WinPanel;
-
-    public LevelList LevelList;
-
+    public GuiLevelList GuiLevelList;
+    public GuiBuyLivesPopup BuyLivesPopup;
     public GuiInAppPopup InAppPopup;
+    public GuiPausePopup PausePopup;
 
     #region Event Handlers
 
@@ -22,12 +21,28 @@ public class UI : MonoBehaviour
         RemoveEventHandlers();
     }
 
+    public void TryStartLevel(SerializedLevel level=null)
+    {
+        DisableAllPanels();
+
+        bool canStartLevel = Player.Instance.Lifes.HasLife;
+        if (canStartLevel)
+        {
+            GuiGameplay.Show();
+            Gamefield.gameObject.SetActive(true);
+            Gamefield.StartGame(level);
+        }
+        else
+        {
+            //TODO show buy life popup;
+            BuyLivesPopup.Show();
+        }
+
+    }
 
     public void OnStartClick()
     {
-        DisableAllPanels();
-        GuiGameplay.gameObject.SetActive(true);
-        Gamefield.StartGame();
+        TryStartLevel();
     }
 
     public void OnWinRestartClick()
@@ -49,7 +64,7 @@ public class UI : MonoBehaviour
 
     public void Restart()
     {
-        Gamefield.StartGame(Gamefield.LastLoadedLevel);
+        TryStartLevel(Gamefield.LastLoadedLevel);
     }
 
     private void AddEventHandlers()
@@ -70,33 +85,22 @@ public class UI : MonoBehaviour
         NGUIDebug.Log(condition);
     }
 
-
-    public void LoadLevel(GameObject levelGameObject)
-    {
-        //Debug.Log("Start Load Level: "+levelGameObject.name);
-        var levelToLoad = LevelList.LoadedLevels.FirstOrDefault(x => x.Name == levelGameObject.name);
-        //Debug.Log("Choose to load: " + levelToLoad);
-        Gamefield.StartGame(levelToLoad);
-        //Debug.Log("Game created");
-        DisableAllPanels();
-        //Debug.Log("Panel disabled");
-        GuiGameplay.gameObject.SetActive(true);
-    }
-
-
     private void DisableAllPanels()
     {
-        LevelList.Grid.transform.parent.gameObject.SetActive(false);
+        Gamefield.gameObject.SetActive(false);
+        GuiLevelList.Close();
         GuiGameplay.Close();
         GameOverPopup.Close();
         WinPanel.gameObject.SetActive(false);
         InAppPopup.Close();
+        BuyLivesPopup.Close();
+        PausePopup.Close();
     }
 
     public void ShowMap()
     {
         DisableAllPanels();
-        LevelList.Grid.transform.parent.gameObject.SetActive(true);
+        GuiLevelList.Show();
     }
 
     public void ShowWinPopup()
@@ -121,7 +125,8 @@ public class UI : MonoBehaviour
             Gamefield.GameMode.AddTurns(5);
             Gamefield.GameMode.IsGameOver = false;
             Gamefield.IsPlaying = true;
-            GuiGameplay.gameObject.SetActive(true);
+            GuiGameplay.Show();
+            Gamefield.gameObject.SetActive(true);
         }
         else
         {
@@ -133,6 +138,19 @@ public class UI : MonoBehaviour
     {
         DisableAllPanels();
         GuiGameplay.Show();
+        Gamefield.gameObject.SetActive(true);
         Restart();
+    }
+
+    public void ShowInAppPopup(Window showOnClose = null)
+    {
+        DisableAllPanels();
+        InAppPopup.Show(showOnClose);
+    }
+
+    public void ShowPausePopup()
+    {
+        Gamefield.IsPlaying = false;
+        PausePopup.Show();
     }
 }

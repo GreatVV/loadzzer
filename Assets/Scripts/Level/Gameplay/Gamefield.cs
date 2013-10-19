@@ -244,6 +244,7 @@ public class Gamefield : MonoBehaviour
 
     private void OnGameOver()
     {
+        Player.Instance.Lifes.SpentLife();
         IsPlaying = false;
     }
 

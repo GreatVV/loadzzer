@@ -49,6 +49,7 @@ public class StageManager
 
     public void Init(List<Stage> stages)
     {
+        Camera.transform.position = new Vector3(0, 0, -10);
         if (stages == null || stages.Count == 0)
         {
             if (CurrentStage != null)
@@ -58,7 +59,6 @@ public class StageManager
                 CurrentStage = null;
             }
             Stages.Clear();
-            Camera.transform.position = new Vector3(0,0,-10);
             Gamefield.Level.UpdateActive();
             return;
         }

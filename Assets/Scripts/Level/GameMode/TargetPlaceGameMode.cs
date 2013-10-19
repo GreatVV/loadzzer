@@ -25,6 +25,7 @@ public class TargetPlaceGameMode : GameMode
         {
             return;
         }
+       
 
         var place =
             CurrentPlaceCoordinates.FirstOrDefault(
@@ -52,9 +53,10 @@ public class TargetPlaceGameMode : GameMode
         Gamefield.TileDestroyed += OnTileDestroyed;
 
         PlaceCoordinates.Clear();
-        var placeCell = Gamefield.Level.ActiveCells.Where(x => x.HasPlace);
-        Debug.Log("Now of cells: "+placeCell.Count());
-        foreach (var cell in placeCell)
+        var placeCell = Gamefield.Level.Cells.Where(x => x.HasPlace);
+        var enumerable = placeCell as Cell[] ?? placeCell.ToArray();
+        Debug.Log("Now of cells: "+enumerable.Count());
+        foreach (var cell in enumerable)
         {
             PlaceCoordinates.Add(new IntVector2(cell.x, cell.y));
         }
@@ -69,6 +71,6 @@ public class TargetPlaceGameMode : GameMode
 
     public override string ToString()
     {
-        return "Target place";
+        return string.Format("You should clear all {0} cells", PlaceCoordinates.Count);
     }
 }

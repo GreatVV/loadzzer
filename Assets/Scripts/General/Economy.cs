@@ -34,7 +34,7 @@ public class Economy : MonoBehaviour
 
     public bool Spent(int amount)
     {
-        if (amount < CurrentMoney)
+        if (amount <= CurrentMoney)
         {
             CurrentMoney -= amount;
             return true;

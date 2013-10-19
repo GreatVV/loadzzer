@@ -35,6 +35,14 @@ public class JSONObject : Nullable
     public float n; // double is not supported in Flash :(
     public bool b;
 
+    public int integer
+    {
+        get
+        {
+            return (int)n;
+        }
+    }
+
     public static JSONObject NullJo
     {
         get { return new JSONObject(Type.NULL); }

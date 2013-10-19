@@ -22,15 +22,7 @@ public class GuiGameplay : Window
     {
         AddEventHandlers(gamefield);
 
-        if (gamefield.GameMode is TargetScoreGameMode)
-        {
-            TargetScoreLabel.text = string.Format("Game mode: Target Score. Target score: {0}",
-                (gamefield.GameMode as TargetScoreGameMode).TargetScore);
-        }
-        else
-        {
-            TargetScoreLabel.text = string.Format("Game mode: {0}", gamefield.GameMode);
-        }
+        TargetScoreLabel.text = string.Format("Target: {0}", gamefield.GameMode);
 
         OnTurnsChanged(gamefield.GameMode.Turns);
     }
@@ -43,6 +35,11 @@ public class GuiGameplay : Window
     public void OnRestartClick()
     {
         UI.Instance.Restart();
+    }
+
+    void OnPauseClick()
+    {
+        UI.Instance.ShowPausePopup();
     }
 
     private void OnTurnsChanged(int turns)

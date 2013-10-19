@@ -34,7 +34,6 @@ public abstract class GameMode
 
     public event Action GameOver;
     public event Action Win;
-    public event Action NoTurns;
     public event Action<int> TurnsChanged;
 
     public void InvokeWin()
@@ -72,11 +71,6 @@ public abstract class GameMode
         InvokeTurnsChanged();
         if (Turns == 0)
         {
-            if (NoTurns != null)
-            {
-                NoTurns();
-            }
-            
             IsGameOver = true;
         }
     }

@@ -18,7 +18,7 @@
 	<DebugType>full</DebugType>
 	<Optimize>false</Optimize>
 	<OutputPath>Temp\bin\Debug\</OutputPath>
-	<DefineConstants>DEBUG;TRACE;UNITY_STANDALONE_OSX;ENABLE_MICROPHONE;ENABLE_TEXTUREID_MAP;ENABLE_AUDIO_FMOD;UNITY_STANDALONE;ENABLE_MONO;ENABLE_TERRAIN;ENABLE_SUBSTANCE;ENABLE_GENERICS;ENABLE_MOVIES;ENABLE_WWW;ENABLE_IMAGEEFFECTS;ENABLE_WEBCAM;RENDER_SOFTWARE_CURSOR;ENABLE_NETWORK;ENABLE_PHYSICS;ENABLE_CACHING;ENABLE_CLOTH;ENABLE_GAMECENTER;ENABLE_SHADOWS;ENABLE_AUDIO;ENABLE_DUCK_TYPING;ENABLE_SINGLE_INSTANCE_BUILD_SETTING;UNITY_4_2_1;UNITY_4_2;ENABLE_PROFILER;UNITY_EDITOR;UNITY_EDITOR_WIN</DefineConstants>
+	<DefineConstants>DEBUG;TRACE;UNITY_STANDALONE_OSX;ENABLE_MICROPHONE;ENABLE_TEXTUREID_MAP;ENABLE_AUDIO_FMOD;UNITY_STANDALONE;ENABLE_MONO;ENABLE_TERRAIN;ENABLE_SUBSTANCE;ENABLE_GENERICS;ENABLE_MOVIES;ENABLE_WWW;ENABLE_IMAGEEFFECTS;ENABLE_WEBCAM;RENDER_SOFTWARE_CURSOR;ENABLE_NETWORK;ENABLE_PHYSICS;ENABLE_CACHING;ENABLE_CLOTH;ENABLE_GAMECENTER;ENABLE_SHADOWS;ENABLE_AUDIO;ENABLE_DUCK_TYPING;ENABLE_SINGLE_INSTANCE_BUILD_SETTING;UNITY_4_2_2;UNITY_4_2;ENABLE_PROFILER;UNITY_EDITOR;UNITY_EDITOR_WIN</DefineConstants>
 	<ErrorReport>prompt</ErrorReport>
 	<WarningLevel>4</WarningLevel>
 	<NoWarn>0169</NoWarn>
@@ -56,7 +56,15 @@
      <Compile Include="Assets\Facebook\Scripts\IOSFacebook.cs" />
      <Compile Include="Assets\Facebook\Scripts\IOSFacebookLoader.cs" />
      <Compile Include="Assets\Facebook\Scripts\NativeDialogModes.cs" />
+     <Compile Include="Assets\GUI\Map\Scripts\GuiBuyLivesPopup.cs" />
+     <Compile Include="Assets\GUI\Map\Scripts\GuiGameOverPopup.cs" />
+     <Compile Include="Assets\GUI\Map\Scripts\GuiGameplay.cs" />
+     <Compile Include="Assets\GUI\Map\Scripts\GuiInAppPopup.cs" />
+     <Compile Include="Assets\GUI\Map\Scripts\GuiLevelList.cs" />
+     <Compile Include="Assets\GUI\Map\Scripts\GuiPausePopup.cs" />
      <Compile Include="Assets\GUI\Map\Scripts\GuiWinPanel.cs" />
+     <Compile Include="Assets\GUI\Map\Scripts\Utils\MapId.cs" />
+     <Compile Include="Assets\GUI\Map\Scripts\Window.cs" />
      <Compile Include="Assets\NGUI\Scripts\Interaction\LanguageSelection.cs" />
      <Compile Include="Assets\NGUI\Scripts\Interaction\UIButton.cs" />
      <Compile Include="Assets\NGUI\Scripts\Interaction\UIButtonActivate.cs" />
@@ -146,8 +154,13 @@
      <Compile Include="Assets\NGUI\Scripts\UI\UITiledSprite.cs" />
      <Compile Include="Assets\NGUI\Scripts\UI\UITooltip.cs" />
      <Compile Include="Assets\NGUI\Scripts\UI\UIViewport.cs" />
+     <Compile Include="Assets\Scripts\General\Economy.cs" />
      <Compile Include="Assets\Scripts\General\JSONObject.cs" />
+     <Compile Include="Assets\Scripts\General\LevelInfo.cs" />
+     <Compile Include="Assets\Scripts\General\LifeSystem.cs" />
      <Compile Include="Assets\Scripts\General\Nullable.cs" />
+     <Compile Include="Assets\Scripts\General\Player.cs" />
+     <Compile Include="Assets\Scripts\General\Profile.cs" />
      <Compile Include="Assets\Scripts\Level\GameMode\GameMode.cs" />
      <Compile Include="Assets\Scripts\Level\GameMode\GameModeFactory.cs" />
      <Compile Include="Assets\Scripts\Level\GameMode\TargetChuzzleGameMode.cs" />
@@ -174,7 +187,6 @@
      <Compile Include="Assets\Scripts\Level\Utility\IntVector2.cs" />
      <Compile Include="Assets\Scripts\Level\Utility\Pair.cs" />
      <Compile Include="Assets\Scripts\Level\Utility\SpecialCreationUtility.cs" />
-     <Compile Include="Assets\Scripts\Map\LevelList.cs" />
      <Compile Include="Assets\TK2DROOT\tk2d\Code\Camera\tk2dCamera.cs" />
      <Compile Include="Assets\TK2DROOT\tk2d\Code\Camera\tk2dCameraAnchor.cs" />
      <Compile Include="Assets\TK2DROOT\tk2d\Code\Camera\tk2dCameraResolutionOverride.cs" />
