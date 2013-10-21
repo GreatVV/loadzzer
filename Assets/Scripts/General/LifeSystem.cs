@@ -1,9 +1,20 @@
 ﻿using System;
+using UnityEngine;
 
-[Serializable]
-public class LifeSystem
+public class LifeSystem : MonoBehaviour
 {
     public int CurrentLifes;
+
+    public DateTime? LifeSpentDate = null;
+
+    public int RegenarationTime;
+
+    public int MaxLifes;
+
+    public bool IsRegenerating
+    {
+        get { return CurrentLifes < MaxLifes; }
+    }
 
     public int Lifes
     {
@@ -11,6 +22,10 @@ public class LifeSystem
         private set
         {
             CurrentLifes = value;
+            if (CurrentLifes == MaxLifes)
+            {
+                LifeSpentDate = null;
+            }
             InvokeLifesChanged();
         }
     }
@@ -40,6 +55,10 @@ public class LifeSystem
     {
         if (amount <= Lifes)
         {
+            if (!LifeSpentDate.HasValue)
+            {
+                LifeSpentDate = DateTime.UtcNow;
+            }
             Lifes -= amount;
             return true;
         }
@@ -55,11 +74,28 @@ public class LifeSystem
     {
         var jsonObject = new JSONObject(JSONObject.Type.OBJECT);
         jsonObject.AddField("Lifes", Lifes);
+        //todo serialize
         return jsonObject;
     }
 
     public static LifeSystem Unserialize(JSONObject jsonObject)
     {
         return new LifeSystem {Lifes = jsonObject.GetField("Lifes").integer};
+    }
+
+    public void Update()
+    {
+        if (IsRegenerating)
+        {
+            if (!LifeSpentDate.HasValue)
+            {
+                LifeSpentDate = DateTime.FromFileTime(0);
+            }
+            if (DateTime.UtcNow > LifeSpentDate + TimeSpan.FromSeconds(RegenarationTime))
+            {
+                AddLife();
+                LifeSpentDate += TimeSpan.FromSeconds(RegenarationTime);
+            }
+        }
     }
 }

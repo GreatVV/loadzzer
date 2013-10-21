@@ -61,6 +61,8 @@
      <Compile Include="Assets\GUI\Map\Scripts\GuiGameplay.cs" />
      <Compile Include="Assets\GUI\Map\Scripts\GuiInAppPopup.cs" />
      <Compile Include="Assets\GUI\Map\Scripts\GuiLevelList.cs" />
+     <Compile Include="Assets\GUI\Map\Scripts\GuiLifes.cs" />
+     <Compile Include="Assets\GUI\Map\Scripts\GuiMoneyOnLevelList.cs" />
      <Compile Include="Assets\GUI\Map\Scripts\GuiPausePopup.cs" />
      <Compile Include="Assets\GUI\Map\Scripts\GuiWinPanel.cs" />
      <Compile Include="Assets\GUI\Map\Scripts\Utils\MapId.cs" />

@@ -1,8 +1,32 @@
-﻿public class GuiBuyLivesPopup : Window
+﻿using UnityEngine;
+
+public class GuiBuyLivesPopup : Window
 {
     public UILabel LifeLabel;
+    public GameObject AddLifeButton;
 
     #region Event Handlers
+
+    public void OnAddLifeClick()
+    {
+        if (Player.Instance.Lifes.IsRegenerating)
+        {
+            if (Economy.Instance.Spent(100))
+            {
+                Player.Instance.Lifes.AddLife();
+                UI.Instance.ShowMap();
+            }
+            else
+            {
+                UI.Instance.ShowInAppPopup(this);
+            }
+        }
+    }
+
+    private void OnCloseButton()
+    {
+        Close();
+    }
 
     private void OnDisable()
     {
@@ -12,25 +36,19 @@
     private void OnEnable()
     {
         AddEventHandlers();
+        AddLifeButton.SetActive(Player.Instance.Lifes.IsRegenerating);
         OnLifesChanged(Player.Instance.Lifes.Lifes);
     }
 
     private void OnLifesChanged(int lifes)
     {
-        LifeLabel.text = string.Format("Lifes: {0}", lifes);
-    }
-
-    public void OnAddLifeClick()
-    {
-        if (Economy.Instance.Spent(100))
+        if (!Player.Instance.Lifes.IsRegenerating)
         {
-            Player.Instance.Lifes.AddLife();
-            UI.Instance.ShowMap();
+            LifeLabel.text = string.Format("Lifes: {0},\n and it's a maximum", lifes);
         }
         else
         {
-            UI.Instance.ShowInAppPopup(this);
-                
+            LifeLabel.text = string.Format("Lifes: {0}", lifes);
         }
     }
 

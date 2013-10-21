@@ -18,11 +18,13 @@
     private void OnMapClick()
     {
         UI.Instance.ShowMap();
+        Player.Instance.Lifes.SpentLife();
     }
 
     private void OnRestartClick()
     {
         UI.Instance.Restart();
+        Player.Instance.Lifes.SpentLife();
     }
 
     #endregion

@@ -64,4 +64,9 @@
     {
         Economy.Instance.MoneyChanged -= OnMoneyChanged;
     }
+
+    private void OnCloseButton()
+    {
+        Close();
+    }
 }
