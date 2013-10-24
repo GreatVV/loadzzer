@@ -36,11 +36,13 @@ public class GameModeDescription
         }
 
 
-        var desc = new GameModeDescription();
-        desc.Mode = jsonObject.GetField("Mode").str;
-        desc.Turns = (int)jsonObject.GetField("Turns").n;
-        desc.TargetScore = jsonObject.HasField("TargetScore") ? (int)jsonObject.GetField("TargetScore").n : 0;
-        desc.Amount = jsonObject.HasField("Amount") ? (int)jsonObject.GetField("Amount").n : 0;
+        var desc = new GameModeDescription
+        {
+            Mode = jsonObject.GetField("Mode").str,
+            Turns = (int) jsonObject.GetField("Turns").n,
+            TargetScore = jsonObject.HasField("TargetScore") ? (int) jsonObject.GetField("TargetScore").n : 0,
+            Amount = jsonObject.HasField("Amount") ? (int) jsonObject.GetField("Amount").n : 0
+        };
         return desc;
     }
 }

@@ -251,6 +251,15 @@ public class Gamefield : MonoBehaviour
     private void OnWin()
     {
         IsPlaying = false;
+
+        var levelInfo = Player.Instance.GetLevelInfo(Level.Serialized.Name);
+        if (PointSystem.CurrentPoints > levelInfo.BestScore)
+        {
+            levelInfo.BestScore = PointSystem.CurrentPoints;
+        }
+
+        levelInfo.IsCompleted = true;
+        levelInfo.NumberOfAttempts++;
     }
 
     private void RemoveEventHandlers()

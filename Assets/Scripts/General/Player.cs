@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using UnityEngine;
 
 public class Player : MonoBehaviour
@@ -13,12 +14,12 @@ public class Player : MonoBehaviour
         Instance = this;
     }
 
-    public LevelInfo GetLevelInfo(int levelNumber)
+    public LevelInfo GetLevelInfo(string levelName)
     {
-        var levelInfo = Levels.First(x => x.LevelNumber == levelNumber);
+        var levelInfo = Levels.FirstOrDefault(x => x.Name == levelName);
         if (levelInfo == null)
         {
-            levelInfo = new LevelInfo {LevelNumber = levelNumber};
+            levelInfo = new LevelInfo {Name = levelName};
             Levels.Add(levelInfo);
         }
         return levelInfo;

@@ -13,6 +13,7 @@ public class UI : MonoBehaviour
     public GuiBuyLivesPopup BuyLivesPopup;
     public GuiInAppPopup InAppPopup;
     public GuiPausePopup PausePopup;
+    public GuiStartLevelPopup StartLevelPopup;
 
     #region Event Handlers
 
@@ -92,10 +93,11 @@ public class UI : MonoBehaviour
         GuiLevelList.Close();
         GuiGameplay.Close();
         GameOverPopup.Close();
-        WinPanel.gameObject.SetActive(false);
+        WinPanel.Close();
         InAppPopup.Close();
         BuyLivesPopup.Close();
         PausePopup.Close();
+        StartLevelPopup.Close();
     }
 
     public void ShowMap()
@@ -107,9 +109,7 @@ public class UI : MonoBehaviour
     public void ShowWinPopup()
     {
         DisableAllPanels();
-        WinPanel.gameObject.SetActive(true);
-        Debug.Log("Turn left:" + Gamefield.GameMode.Turns);
-        WinPanel.SetTurnsLeft(Gamefield.GameMode.Turns);
+        WinPanel.Show(Gamefield.GameMode.Turns, Gamefield.PointSystem.CurrentPoints, Player.Instance.GetLevelInfo(Gamefield.Level.Serialized.Name).BestScore);
     }
 
     public void ShowGameoverPopup()
@@ -156,5 +156,10 @@ public class UI : MonoBehaviour
     {
         Gamefield.IsPlaying = false;
         PausePopup.Show();
+    }
+
+    public void ShowStartLevelPopup(SerializedLevel levelToLoad)
+    {
+        StartLevelPopup.Show(levelToLoad);
     }
 }

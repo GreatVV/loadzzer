@@ -1,38 +1,50 @@
-﻿using System.Collections;
+﻿#region
+
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+#endregion
+
 public class GuiLevelList : Window
 {
-    public string LevelUrl = "https://www.dropbox.com/s/h2ejykp67vdb784/loadzerbalance.txt?dl=1";
-    public JSONObject levels;
-    public List<SerializedLevel> LoadedLevels;
     public GameObject Grid;
     public GameObject LevelLabelPrefab;
-
-    public UILabel Loading;
+    public string LevelUrl = "https://www.dropbox.com/s/h2ejykp67vdb784/loadzerbalance.txt?dl=1";
 
     public TextAsset Levels;
+    public List<SerializedLevel> LoadedLevels;
+    public UILabel Loading;
+    public JSONObject levels;
 
     #region Event Handlers
 
     private void OnEnable()
     {
-        
-//#if UNITY_ANDROID
-     var jsonObject = new JSONObject(Levels.text);
-     var levelArray = jsonObject.GetField("levelArray").list;
-     foreach (var level in levelArray)
-     {
-         LoadedLevels.Add(SerializedLevel.FromJson(level));
-     }
-     PopulateToGrid();
-//#else               */
-  //      Loading.text = "Loading";
-    //    NGUITools.ClearChildren(Grid);
-    //    StartCoroutine(DownloadLevel(LevelUrl, levels));
-        //#endif
+#if UNITY_ANDROID
+        var jsonObject = new JSONObject(Levels.text);
+        var levelArray = jsonObject.GetField("levelArray").list;
+        foreach (var level in levelArray)
+        {
+            LoadedLevels.Add(SerializedLevel.FromJson(level));
+        }
+        PopulateToGrid();
+#else  
+        Loading.text = "Loading";
+        NGUITools.ClearChildren(Grid);
+        StartCoroutine(DownloadLevel(LevelUrl, levels));
+#endif
+    }
+
+    public void OnLevelClick(GameObject sender)
+    {
+        var mapId = sender.GetComponent<MapId>();
+        if (mapId.Index < LoadedLevels.Count && mapId.Index >= 0)
+        {
+            //UI.Instance.TryStartLevel(LoadedLevels[mapId.Index]);
+            UI.Instance.ShowStartLevelPopup(LoadedLevels[mapId.Index]);
+        }
     }
 
     #endregion
@@ -79,15 +91,6 @@ public class GuiLevelList : Window
         //Debug.Log("Start Load Level: "+levelGameObject.name);
         var levelToLoad = LoadedLevels.FirstOrDefault(x => x.Name == levelGameObject.name);
         //Debug.Log("Choose to load: " + levelToLoad);
-        UI.Instance.TryStartLevel(levelToLoad);
-    }
-
-    public void OnLevelClick(GameObject sender)
-    {
-        var mapId = sender.GetComponent<MapId>();
-        if (mapId.Index < LoadedLevels.Count && mapId.Index >= 0)
-        {
-            UI.Instance.TryStartLevel(LoadedLevels[mapId.Index]);
-        }
+        UI.Instance.ShowStartLevelPopup(levelToLoad);
     }
 }

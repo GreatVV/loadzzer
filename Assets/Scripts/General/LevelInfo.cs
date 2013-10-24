@@ -4,8 +4,7 @@
 public class LevelInfo
 {
     public bool IsCompleted;
-
-    public int LevelNumber;
+    public string Name;
     public int BestScore;
     public int NumberOfAttempts;
 
@@ -13,7 +12,7 @@ public class LevelInfo
     {
         var jsonObject = new JSONObject(JSONObject.Type.OBJECT);
 
-        jsonObject.AddField("LevelNumber", LevelNumber);
+        jsonObject.AddField("Name", Name);
         jsonObject.AddField("BestScore", BestScore);
         jsonObject.AddField("NumberOfAttempts", NumberOfAttempts);
         jsonObject.AddField("IsCompleted", IsCompleted);
@@ -27,7 +26,7 @@ public class LevelInfo
         {
             BestScore = (int) jsonObject.GetField("BestScore").n,
             NumberOfAttempts = (int) jsonObject.GetField("NumberOfAttempts").n,
-            LevelNumber = (int)jsonObject.GetField("LevelNumber").n,
+            Name = jsonObject.GetField("Name").str,
             IsCompleted = jsonObject.GetField("IsCompleted").b,
         };
     }

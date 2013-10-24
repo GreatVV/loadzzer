@@ -1,4 +1,6 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -6,11 +8,13 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
 
+#endregion
+
 [Serializable]
 public class CellSprite
 {
-    public CellTypes Type;
     public GameObject CellPrefab;
+    public CellTypes Type;
 }
 
 [Serializable]
@@ -19,28 +23,28 @@ public class Level
     #region Set in editor
 
     public CellSprite[] CellPrefabs;
-    public GameObject PlacePrefab;
-    public GameObject CounterPrefab;
 
     public GameObject[] ChuzzlePrefabs;
+    public GameObject CounterPrefab;
 
     public GameObject Gamefield;
+    public GameObject PlacePrefab;
 
     #endregion
-
-    public int Width = 6;
-    public int Height = 6;
-
-    public Vector3 ChuzzleSize = new Vector3(80, 80);
-    public int NumberOfColors = 6;
-
-    public List<Cell> Cells = new List<Cell>();
-    public List<Chuzzle> Chuzzles = new List<Chuzzle>();
 
     public List<Cell> ActiveCells = new List<Cell>();
     public List<Chuzzle> ActiveChuzzles = new List<Chuzzle>();
 
     public List<GameObject> CellSprites = new List<GameObject>();
+    public List<Cell> Cells = new List<Cell>();
+    public Vector3 ChuzzleSize = new Vector3(80, 80);
+    public List<Chuzzle> Chuzzles = new List<Chuzzle>();
+    public int CurrentMaxY;
+    public int CurrentMinY;
+    public int Height = 6;
+    public int NumberOfColors = 6;
+    public SerializedLevel Serialized;
+    public int Width = 6;
 
     public void InitRandom()
     {
@@ -54,7 +58,6 @@ public class Level
                 }
             }
         }
-
     }
 
     public Chuzzle At(int x, int y)
@@ -83,6 +86,8 @@ public class Level
 
     public void InitFromFile(SerializedLevel level)
     {
+        Serialized = level;
+
         Cells.Clear();
 
         Width = level.Width;
@@ -234,11 +239,7 @@ public class Level
             Object.Destroy(cellSprite.gameObject);
         }
         CellSprites.Clear();
-        
     }
-
-    public int CurrentMinY;
-    public int CurrentMaxY;
 
     public void ChoseFor(int minY, int maxY)
     {
