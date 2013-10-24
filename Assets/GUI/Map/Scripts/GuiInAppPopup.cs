@@ -1,4 +1,6 @@
-﻿public class GuiInAppPopup : Window
+﻿using UnityEngine;
+
+public class GuiInAppPopup : Window
 {
     public UILabel MoneyLabel;
 
@@ -45,6 +47,23 @@
     {
         AddEventHandlers();
         OnMoneyChanged(Economy.Instance.CurrentMoney);
+        transform.localPosition = new Vector3(0, -800, -5);
+        iTween.MoveTo(gameObject, new Vector3(0, 0, -0.01f), 0.5f);
+    }          
+  
+    protected override bool OnClose()
+    {
+        Debug.Log("onclose");
+        iTween.MoveTo(gameObject,
+                    iTween.Hash("x", 0, "y", 2, "z", -0.01f, "time", 0.5f,
+                        "oncomplete", "OnCloseAnimationComplete", "oncompletetarget", gameObject, "oncompleteparams", 0));
+
+        return false;
+    }
+
+    public void OnCloseAnimationComplete()
+    {
+        Disable();
     }
 
     private void OnMoneyChanged(int money)

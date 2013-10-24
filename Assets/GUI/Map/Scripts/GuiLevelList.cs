@@ -19,9 +19,9 @@ public class GuiLevelList : Window
 
     private void OnEnable()
     {
-        /*
-#if UNITY_ANDROID
-     var jsonObject = new JSONObject(Levels);
+        
+//#if UNITY_ANDROID
+     var jsonObject = new JSONObject(Levels.text);
      var levelArray = jsonObject.GetField("levelArray").list;
      foreach (var level in levelArray)
      {
@@ -29,9 +29,9 @@ public class GuiLevelList : Window
      }
      PopulateToGrid();
 //#else               */
-        Loading.text = "Loading";
-        NGUITools.ClearChildren(Grid);
-        StartCoroutine(DownloadLevel(LevelUrl, levels));
+  //      Loading.text = "Loading";
+    //    NGUITools.ClearChildren(Grid);
+    //    StartCoroutine(DownloadLevel(LevelUrl, levels));
         //#endif
     }
 

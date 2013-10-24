@@ -14,7 +14,7 @@ public class GuiBuyLivesPopup : Window
             if (Economy.Instance.Spent(100))
             {
                 Player.Instance.Lifes.AddLife();
-                UI.Instance.ShowMap();
+                //UI.Instance.ShowMap();
             }
             else
             {
@@ -38,6 +38,23 @@ public class GuiBuyLivesPopup : Window
         AddEventHandlers();
         AddLifeButton.SetActive(Player.Instance.Lifes.IsRegenerating);
         OnLifesChanged(Player.Instance.Lifes.Lifes);
+        transform.localPosition = new Vector3(0, -800, -5);
+        iTween.MoveTo(gameObject, new Vector3(0, 0, -0.01f), 0.5f);
+    }
+
+    protected override bool OnClose()
+    {
+        Debug.Log("onclose");
+        iTween.MoveTo(gameObject,
+                    iTween.Hash("x", 0, "y", 2, "z", -0.01f, "time", 0.5f,
+                        "oncomplete", "OnCloseAnimationComplete", "oncompletetarget", gameObject, "oncompleteparams", 0));
+
+        return false;
+    }
+
+    public void OnCloseAnimationComplete()
+    {
+        Disable();
     }
 
     private void OnLifesChanged(int lifes)
@@ -50,6 +67,7 @@ public class GuiBuyLivesPopup : Window
         {
             LifeLabel.text = string.Format("Lifes: {0}", lifes);
         }
+        AddLifeButton.SetActive(Player.Instance.Lifes.IsRegenerating);
     }
 
     #endregion

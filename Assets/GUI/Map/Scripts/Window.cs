@@ -17,8 +17,16 @@ public class Window : MonoBehaviour
 
     public void Close()
     {
+        var needDisable = OnClose();
+        if (needDisable)
+        {
+            Disable();
+        }
+    }
+
+    protected void Disable()
+    {
         gameObject.SetActive(false);
-        OnClose();
         if (ShowAfter != null)
         {
             ShowAfter.Show();
@@ -26,7 +34,8 @@ public class Window : MonoBehaviour
         }
     }
 
-    protected virtual void OnClose()
+    protected virtual bool OnClose()
     {
+        return true;
     }
 }

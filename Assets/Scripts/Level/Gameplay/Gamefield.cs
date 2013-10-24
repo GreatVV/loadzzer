@@ -263,7 +263,6 @@ public class Gamefield : MonoBehaviour
     {
         if (LastLoadedLevel == null || !IsPlaying)
         {
-            Debug.Log("No level loaded");
             return;
         }
 

@@ -23,11 +23,12 @@ public class UI : MonoBehaviour
 
     public void TryStartLevel(SerializedLevel level=null)
     {
-        DisableAllPanels();
+      //  DisableAllPanels();
 
         bool canStartLevel = Player.Instance.Lifes.HasLife;
         if (canStartLevel)
         {
+            DisableAllPanels();
             GuiGameplay.Show();
             Gamefield.gameObject.SetActive(true);
             Gamefield.StartGame(level);
@@ -63,7 +64,7 @@ public class UI : MonoBehaviour
     }
 
     public void Restart()
-    {
+    {   
         TryStartLevel(Gamefield.LastLoadedLevel);
     }
 
@@ -144,7 +145,10 @@ public class UI : MonoBehaviour
 
     public void ShowInAppPopup(Window showOnClose = null)
     {
-        DisableAllPanels();
+        if (showOnClose != null)
+        {
+            showOnClose.Close();
+        }
         InAppPopup.Show(showOnClose);
     }
 
