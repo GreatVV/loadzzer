@@ -1,5 +1,7 @@
 ﻿public class GuiGameOverPopup : Window
 {
+    public static Phrase MoneyString = new Phrase("У вас {0} монет", "GameOverPopup_Money");
+
     public UILabel MoneyLabel;
 
     #region Event Handlers
@@ -11,7 +13,7 @@
 
     private void OnEnable()
     {
-        MoneyLabel.text = string.Format("Money: {0}", Economy.Instance.CurrentMoney);
+        MoneyLabel.text = LocalizationStrings.GetString(MoneyString, Economy.Instance.CurrentMoney);
     }
 
     public void OnGameOverRestartClick()

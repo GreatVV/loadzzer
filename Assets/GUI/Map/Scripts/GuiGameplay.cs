@@ -1,7 +1,9 @@
-﻿using UnityEngine;
-
-public class GuiGameplay : Window
+﻿public class GuiGameplay : Window
 {
+    public static Phrase PointsString = new Phrase("Очки: {0}", "Gameplay_Points");
+    public static Phrase TargetString = new Phrase("Цель: {0}", "Gameplay_Target");
+    public static Phrase TurnsString = new Phrase("Ходов: {0}", "Gameplay_Turns");
+
     public UILabel PointsLabel;
     public UILabel TargetScoreLabel;
     public UILabel TurnsLabel;
@@ -22,14 +24,15 @@ public class GuiGameplay : Window
     {
         AddEventHandlers(gamefield);
 
-        TargetScoreLabel.text = string.Format("Target: {0}", gamefield.GameMode);
+        TargetScoreLabel.text = LocalizationStrings.GetString(TargetString, GameModeToString.GetString(gamefield.GameMode));
 
         OnTurnsChanged(gamefield.GameMode.Turns);
+        OnPointsChanged(gamefield.PointSystem.CurrentPoints);
     }
 
     private void OnPointsChanged(int points)
     {
-        PointsLabel.text = string.Format("Points: {0}", points);
+        PointsLabel.text = LocalizationStrings.GetString(PointsString, points);
     }
 
     public void OnRestartClick()
@@ -37,14 +40,14 @@ public class GuiGameplay : Window
         UI.Instance.Restart();
     }
 
-    void OnPauseClick()
+    private void OnPauseClick()
     {
         UI.Instance.ShowPausePopup();
     }
 
     private void OnTurnsChanged(int turns)
     {
-        TurnsLabel.text = string.Format("Turns: {0}", turns);
+        TurnsLabel.text = LocalizationStrings.GetString(TurnsString, turns);
     }
 
     public void OnWin()

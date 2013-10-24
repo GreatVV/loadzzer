@@ -6,6 +6,9 @@ using UnityEngine;
 
 public class GuiWinPanel : Window
 {
+    public static Phrase TurnsLeftString = new Phrase("Ходов осталось: {0}", "WinPopup_TurnsLeft");
+    public static Phrase ScoreString = new Phrase("Счет: {0}", "WinPopup_Score");
+    public static Phrase BestScoreString = new Phrase("Лучший: {0}", "WinPopup_BestScore");
     public UILabel BestScore;
     public UILabel Score;
     public UILabel TurnsLeft;
@@ -42,9 +45,9 @@ public class GuiWinPanel : Window
 
     public void Show(int numberOfTurnsLeft, int score, int bestScore)
     {
-        TurnsLeft.text = string.Format("Turns left: {0}", numberOfTurnsLeft);
-        Score.text = string.Format("Score: {0}", score);
-        BestScore.text = string.Format("Best score: {0}", bestScore);
+        TurnsLeft.text = LocalizationStrings.GetString(TurnsLeftString, numberOfTurnsLeft);
+        Score.text = LocalizationStrings.GetString(ScoreString, score);
+        BestScore.text = LocalizationStrings.GetString(BestScoreString, bestScore);
         Show();
     }
 }

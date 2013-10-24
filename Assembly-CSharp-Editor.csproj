@@ -225,6 +225,7 @@
      <None Include="Assets\Plugins\Android\facebook\res\values-he\strings.xml" />
      <None Include="Assets\Plugins\Android\facebook\res\drawable\com_facebook_top_button.xml" />
      <None Include="Assets\NGUI\Resources\Shaders\Unlit - Dynamic Font (SoftClip).shader" />
+     <None Include="Assets\GUI\Map\Fonts\impact.fnt" />
      <None Include="Assets\Plugins\Android\facebook\res\drawable\com_facebook_loginbutton_silver.xml" />
      <None Include="Assets\Plugins\Android\facebook\res\layout\com_facebook_placepickerfragment_list_row.xml" />
      <None Include="Assets\Plugins\Android\facebook\res\values\colors.xml" />

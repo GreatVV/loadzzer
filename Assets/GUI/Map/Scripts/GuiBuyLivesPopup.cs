@@ -1,9 +1,17 @@
-﻿using UnityEngine;
+﻿#region
+
+using UnityEngine;
+
+#endregion
 
 public class GuiBuyLivesPopup : Window
 {
-    public UILabel LifeLabel;
+    public static Phrase MaxLifeString = new Phrase("У вас {0} жизней.\n И это максимум",
+        "BuyLivePopup_MaxLifes");
+
+    public static Phrase LifeString = new Phrase("У вас {0} жизней.", "BuyLivePopup_Lifes");
     public GameObject AddLifeButton;
+    public UILabel LifeLabel;
 
     #region Event Handlers
 
@@ -46,8 +54,8 @@ public class GuiBuyLivesPopup : Window
     {
         Debug.Log("onclose");
         iTween.MoveTo(gameObject,
-                    iTween.Hash("x", 0, "y", 2, "z", -0.01f, "time", 0.5f,
-                        "oncomplete", "OnCloseAnimationComplete", "oncompletetarget", gameObject, "oncompleteparams", 0));
+            iTween.Hash("x", 0, "y", 2, "z", -0.01f, "time", 0.5f,
+                "oncomplete", "OnCloseAnimationComplete", "oncompletetarget", gameObject, "oncompleteparams", 0));
 
         return false;
     }
@@ -61,11 +69,11 @@ public class GuiBuyLivesPopup : Window
     {
         if (!Player.Instance.Lifes.IsRegenerating)
         {
-            LifeLabel.text = string.Format("Lifes: {0},\n and it's a maximum", lifes);
+            LifeLabel.text = LocalizationStrings.GetString(MaxLifeString, lifes);
         }
         else
         {
-            LifeLabel.text = string.Format("Lifes: {0}", lifes);
+            LifeLabel.text = LocalizationStrings.GetString(LifeString, lifes);
         }
         AddLifeButton.SetActive(Player.Instance.Lifes.IsRegenerating);
     }

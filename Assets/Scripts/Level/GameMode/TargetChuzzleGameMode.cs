@@ -72,6 +72,6 @@ public class TargetChuzzleGameMode : GameMode
 
     public override string ToString()
     {
-        return string.Format("You should destroy tile {0} times", TargetAmount);
+        return string.Format("You should destroy tile {0} times for {1} turns", TargetAmount, Turns);
     }
 }

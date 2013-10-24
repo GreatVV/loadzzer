@@ -66,6 +66,7 @@
      <Compile Include="Assets\GUI\Map\Scripts\GuiPausePopup.cs" />
      <Compile Include="Assets\GUI\Map\Scripts\GuiStartLevelPopup.cs" />
      <Compile Include="Assets\GUI\Map\Scripts\GuiWinPanel.cs" />
+     <Compile Include="Assets\GUI\Map\Scripts\Utils\GameModeToString.cs" />
      <Compile Include="Assets\GUI\Map\Scripts\Utils\MapId.cs" />
      <Compile Include="Assets\GUI\Map\Scripts\Window.cs" />
      <Compile Include="Assets\NGUI\Scripts\Interaction\LanguageSelection.cs" />
@@ -163,6 +164,7 @@
      <Compile Include="Assets\Scripts\General\JSONObject.cs" />
      <Compile Include="Assets\Scripts\General\LevelInfo.cs" />
      <Compile Include="Assets\Scripts\General\LifeSystem.cs" />
+     <Compile Include="Assets\Scripts\General\LocalizationStrings.cs" />
      <Compile Include="Assets\Scripts\General\Nullable.cs" />
      <Compile Include="Assets\Scripts\General\Player.cs" />
      <Compile Include="Assets\Scripts\General\Profile.cs" />
@@ -318,6 +320,7 @@
      <None Include="Assets\Plugins\Android\facebook\res\values-he\strings.xml" />
      <None Include="Assets\Plugins\Android\facebook\res\drawable\com_facebook_top_button.xml" />
      <None Include="Assets\NGUI\Resources\Shaders\Unlit - Dynamic Font (SoftClip).shader" />
+     <None Include="Assets\GUI\Map\Fonts\impact.fnt" />
      <None Include="Assets\Plugins\Android\facebook\res\drawable\com_facebook_loginbutton_silver.xml" />
      <None Include="Assets\Plugins\Android\facebook\res\layout\com_facebook_placepickerfragment_list_row.xml" />
      <None Include="Assets\Plugins\Android\facebook\res\values\colors.xml" />
