@@ -48,8 +48,7 @@ public class StageManager
     public GameObject Camera;
 
     public void Init(List<Stage> stages)
-    {
-        Camera.transform.position = new Vector3(0, 0, -10);
+    {   
         if (stages == null || stages.Count == 0)
         {
             if (CurrentStage != null)
@@ -60,6 +59,7 @@ public class StageManager
             }
             Stages.Clear();
             Gamefield.Level.UpdateActive();
+            CenterCameraOnField.Instance.CenterCameraOnChuzzles(Gamefield.Level.ActiveChuzzles);
             return;
         }
 
@@ -93,11 +93,8 @@ public class StageManager
         Gamefield.PointSystem.PointChanged += CurrentStage.OnPointsChanged;
 
         Gamefield.Level.ChoseFor(CurrentStage.MinY, CurrentStage.MaxY);
-
-        var targetPosition = GamefieldUtility.ConvertXYToPosition(0, CurrentStage.MinY, Gamefield.Level.ChuzzleSize);
-
-        iTween.MoveTo(Camera,
-                   iTween.Hash("x", targetPosition.x, "y", targetPosition.y-30, "z", -10, "time", 5f));
+        
+        CenterCameraOnField.Instance.CenterCameraOnChuzzles(Gamefield.Level.ActiveChuzzles);
 
     }
 }

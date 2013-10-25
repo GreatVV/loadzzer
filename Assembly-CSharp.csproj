@@ -189,6 +189,7 @@
      <Compile Include="Assets\Scripts\Level\Gameplay\TeleportableEntity.cs" />
      <Compile Include="Assets\Scripts\Level\UI\AutoBackgroundChanger.cs" />
      <Compile Include="Assets\Scripts\Level\UI\UI.cs" />
+     <Compile Include="Assets\Scripts\Level\Utility\CenterCameraOnField.cs" />
      <Compile Include="Assets\Scripts\Level\Utility\Extensions.cs" />
      <Compile Include="Assets\Scripts\Level\Utility\GamefieldUtility.cs" />
      <Compile Include="Assets\Scripts\Level\Utility\IntVector2.cs" />

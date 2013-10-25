@@ -222,6 +222,7 @@ public class Gamefield : MonoBehaviour
         {
             Level.InitFromFile(level);
             StageManager.Init(level.Stages);
+            //Camera.transform.position = new Vector3(0, 0, -10);
         }
 
         NewTilesInColumns = new int[Level.Width];
@@ -270,7 +271,7 @@ public class Gamefield : MonoBehaviour
 
     private void Update()
     {
-        if (LastLoadedLevel == null || !IsPlaying)
+        if (LastLoadedLevel == null || !IsPlaying || CenterCameraOnField.Instance.IsTweening)
         {
             return;
         }
