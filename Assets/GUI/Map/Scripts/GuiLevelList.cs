@@ -22,7 +22,7 @@ public class GuiLevelList : Window
 
     private void OnEnable()
     {
-#if UNITY_ANDROID
+/*#if UNITY_ANDROID
         var jsonObject = new JSONObject(Levels.text);
         var levelArray = jsonObject.GetField("levelArray").list;
         foreach (var level in levelArray)
@@ -30,11 +30,11 @@ public class GuiLevelList : Window
             LoadedLevels.Add(SerializedLevel.FromJson(level));
         }
         PopulateToGrid();
-#else  
+#else */ 
         Loading.text = "Loading";
         NGUITools.ClearChildren(Grid);
         StartCoroutine(DownloadLevel(LevelUrl, levels));
-#endif
+//#endif
     }
 
     public void OnLevelClick(GameObject sender)

@@ -100,6 +100,10 @@ public class Level
 
         //BUG change 480 for other resolutiion
         ChuzzleSize = new Vector3(480, 480, 0)/Width;
+        if (ChuzzleSize.x > 80)
+        {
+            ChuzzleSize = new Vector3(80,80,0);
+        }
         Debug.Log("Add cells");
         foreach (var newCell in level.SpecialCells)
         {

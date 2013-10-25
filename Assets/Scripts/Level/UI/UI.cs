@@ -14,6 +14,7 @@ public class UI : MonoBehaviour
     public GuiInAppPopup InAppPopup;
     public GuiPausePopup PausePopup;
     public GuiStartLevelPopup StartLevelPopup;
+    public GuiTaskPopup TaskPopup;
 
     #region Event Handlers
 
@@ -98,6 +99,7 @@ public class UI : MonoBehaviour
         BuyLivesPopup.Close();
         PausePopup.Close();
         StartLevelPopup.Close();
+        TaskPopup.Close();
     }
 
     public void ShowMap()

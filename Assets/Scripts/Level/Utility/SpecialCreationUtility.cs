@@ -87,6 +87,8 @@ public class SpecialCreationUtility
                 GameObject;
         color.transform.parent = powerUpChuzzle.transform;
         color.transform.localPosition = Vector3.zero;
+        Gamefield.Level.ScaleSprite(color.GetComponent<tk2dSprite>());
+        
         Object.Destroy(color.gameObject.GetComponent<Chuzzle>());
         Object.Destroy(color.gameObject.GetComponent<BoxCollider>());
         color.GetComponent<tk2dSprite>().SortingOrder = -1;

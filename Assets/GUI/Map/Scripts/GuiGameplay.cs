@@ -25,7 +25,7 @@
         AddEventHandlers(gamefield);
 
         TargetScoreLabel.text = LocalizationStrings.GetString(TargetString, GameModeToString.GetString(gamefield.GameMode));
-
+        UI.Instance.TaskPopup.Show(gamefield.GameMode);
         OnTurnsChanged(gamefield.GameMode.Turns);
         OnPointsChanged(gamefield.PointSystem.CurrentPoints);
     }
