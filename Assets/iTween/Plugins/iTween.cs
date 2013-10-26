@@ -6531,7 +6531,7 @@ public class iTween : MonoBehaviour{
 	/// A <see cref="Hashtable"/>
 	/// </returns>
 	public static Hashtable Hash(params object[] args){
-		Hashtable hashTable = new Hashtable(args.Length/2);
+		var hashTable = new Hashtable(args.Length/2);
 		if (args.Length %2 != 0) {
 			Debug.LogError("Tween Error: Hash requires an even number of arguments!"); 
 			return null;
@@ -7061,12 +7061,24 @@ public class iTween : MonoBehaviour{
 			}
 			
 			//throw an error if a string wasn't passed for callback:
-			if (tweenArguments[callbackType].GetType() == typeof(System.String)) {
-				target.SendMessage((string)tweenArguments[callbackType],(object)tweenArguments[callbackType+"params"],SendMessageOptions.DontRequireReceiver);
-			}else{
-				Debug.LogError("iTween Error: Callback method references must be passed as a String!");
-				Destroy (this);
-			}
+		    if (tweenArguments[callbackType] is string)
+		    {   
+		        target.SendMessage((string) tweenArguments[callbackType], (object) tweenArguments[callbackType + "params"],
+		            SendMessageOptions.RequireReceiver);
+		    }
+		    else
+		    {
+		        if (tweenArguments[callbackType] is Action<object>)
+		        {
+                   // Debug.Log("iTween. Callback is action");
+                    (tweenArguments[callbackType] as Action<object>)((object)tweenArguments[callbackType + "params"]);
+		        }
+		        else
+		        {
+		            Debug.LogError("iTween Error: Callback method references must be passed as a String!");
+		            Destroy(this);
+		        }
+		    }
 		}
 	}
 	

@@ -127,7 +127,6 @@ public class UI : MonoBehaviour
         {
             Gamefield.GameMode.AddTurns(5);
             Gamefield.GameMode.IsGameOver = false;
-            Gamefield.IsPlaying = true;
             GuiGameplay.Show();
             Gamefield.gameObject.SetActive(true);
         }
@@ -155,8 +154,7 @@ public class UI : MonoBehaviour
     }
 
     public void ShowPausePopup()
-    {
-        Gamefield.IsPlaying = false;
+    {   
         PausePopup.Show();
     }
 

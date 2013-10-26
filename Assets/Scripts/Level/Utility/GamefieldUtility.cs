@@ -154,7 +154,7 @@ public class GamefieldUtility
                     if (additionalChuzzle.Type == list.Last().Type) list.Add(additionalChuzzle);
                 }
             }
-            Debug.Log("Vertical Tip Type 1 has been found");
+         //   Debug.Log("Vertical Tip Type 1 has been found");
             return list;
         }
 
@@ -183,7 +183,7 @@ public class GamefieldUtility
                     if (additionalChuzzle.Type == list.Last().Type) list.Add(additionalChuzzle);
                 }
             }
-            Debug.Log("Horizontal Tip Type 1 has been found");
+          //  Debug.Log("Horizontal Tip Type 1 has been found");
 
             return list;
         }
@@ -228,7 +228,7 @@ public class GamefieldUtility
                     if (additionalChuzzle.Type == list.Last().Type) list.Add(additionalChuzzle);
                 }
             }
-            Debug.Log("Horizontal Tip Type 2 has been found");
+         //   Debug.Log("Horizontal Tip Type 2 has been found");
             return list;
         }
       
@@ -271,7 +271,7 @@ public class GamefieldUtility
                     if (additionalChuzzle.Type == list.Last().Type) list.Add(additionalChuzzle);
                 }
             }
-            Debug.Log("Vertical Tip Type 2 has been found");
+        //    Debug.Log("Vertical Tip Type 2 has been found");
             return list;
         }
 

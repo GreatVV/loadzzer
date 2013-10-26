@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 [Serializable]
-public class Field
+public class Field : GamefieldState
 {
     #region Direction enum
 
@@ -18,8 +19,6 @@ public class Field
 
     #endregion
 
-    public LayerMask ChuzzleMask;
-
     private Vector3 _delta;
     private Vector3 _deltaTouch;
     private bool _directionChozen;
@@ -30,29 +29,29 @@ public class Field
     public Chuzzle CurrentChuzzle;
     public Direction CurrentDirection;
 
-    #region Events
-
-    public event Action DragDrop;
-
-    #endregion
-
-    #region Event Invokators
-
-    protected virtual void InvokeDragDrop()
+   
+    public Field(Gamefield gamefield) : base(gamefield)
     {
-        var handler = DragDrop;
-        if (handler != null)
-        {
-            Debug.Log("Drag dropped");
-            handler();
-        }
-    }
-
-    #endregion
+    }               
+ 
 
     // Update is called once per frame
     public void Update(IEnumerable<Chuzzle> draggableChuzzles)
     {
+        Gamefield.TimeFromTip += Time.deltaTime;
+        if (Gamefield.TimeFromTip > 1)
+        {
+            var list = GamefieldUtility.Tip(Gamefield.Level.ActiveChuzzles);
+            if (list.Any())
+            {
+                foreach (var chuzzle in list)
+                {
+                    chuzzle.Shine = true;
+                }
+            }
+            Gamefield.TimeFromTip = 0;
+        }
+
         #region Drag
 
         if (Input.GetMouseButtonDown(0) || (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began))
@@ -68,7 +67,7 @@ public class Field
 
             var ray = Camera.main.ScreenPointToRay(_dragOrigin);
             RaycastHit hit;
-            if (Physics.Raycast(ray, out hit, Single.MaxValue, ChuzzleMask))
+            if (Physics.Raycast(ray, out hit, Single.MaxValue, Gamefield.ChuzzleMask))
             {
                 CurrentChuzzle = hit.transform.gameObject.GetComponent<Chuzzle>();
             }
@@ -302,7 +301,29 @@ public class Field
     {
         if (SelectedChuzzles.Any())
         {
-            InvokeDragDrop();
+            //drop shining
+            foreach (var chuzzle in Gamefield.Level.ActiveChuzzles)
+            {
+                chuzzle.Shine = false;
+            }
+
+            //move all tiles to new real coordinates
+            foreach (var c in SelectedChuzzles)
+            {
+                CalculateRealCoordinatesFor(c);
+            }
+
+            foreach (var c in Gamefield.Level.Chuzzles)
+            {
+                c.MoveTo = c.Real;
+            }
+
+            var anyMove = MoveToTargetPosition(Gamefield.Level.Chuzzles);
+            if (!anyMove)
+            {
+                OnChuzzleCompletedTweens();
+            }
+
             Reset();
         }
     }
@@ -314,4 +335,92 @@ public class Field
         _directionChozen = false;
         _isVerticalDrag = false;
     }
+
+    public override void OnEnter()
+    {
+        
+    }
+
+    public override void OnExit()
+    {   
+    }
+
+    public override void Update()
+    {
+        Update(Gamefield.Level.ActiveChuzzles);
+    }
+
+    public override void LateUpdate()
+    {
+        LateUpdate(Gamefield.Level.ActiveCells);
+    }
+
+    public List<Chuzzle> AnimatedChuzzles = new List<Chuzzle>();
+
+    public void OnChuzzleCompletedTweens()
+    {
+        var combinations = GamefieldUtility.FindCombinations(Gamefield.Level.ActiveChuzzles);
+        if (combinations.Any())
+        {
+            Gamefield.GameMode.HumanTurn();
+            foreach (var c in Gamefield.Level.Chuzzles)
+            {
+                c.Current = c.MoveTo = c.Real;
+            }
+            Gamefield.SwitchStateTo(Gamefield.CheckSpecial);
+        }
+        else
+        {
+            foreach (var c in Gamefield.Level.Chuzzles)
+            {
+                c.MoveTo = c.Real = c.Current;
+            }
+            MoveToTargetPosition(Gamefield.Level.Chuzzles);
+        }   
+    }
+                                                            
+    public bool MoveToTargetPosition(List<Chuzzle> targetChuzzles)
+    {
+        var isAnyTween = false;
+        foreach (var c in targetChuzzles)
+        {
+            var targetPosition = new Vector3(c.MoveTo.x * c.Scale.x, c.MoveTo.y * c.Scale.y, 0);
+            if (Vector3.Distance(c.transform.localPosition, targetPosition) > 0.1f)
+            {
+                isAnyTween = true;
+                AnimatedChuzzles.Add(c);
+                iTween.MoveTo(c.gameObject,
+                    iTween.Hash("x", targetPosition.x, "y", targetPosition.y, "z", targetPosition.z, "time", 0.3f,
+                        "oncomplete", new Action<object>(OnTweenMoveAfterDrag), "oncompletetarget", Gamefield.gameObject, "oncompleteparams", c));
+            }
+            else
+            {
+                c.transform.localPosition = targetPosition;
+            }
+        }
+
+        return isAnyTween;
+    }
+
+    public void CalculateRealCoordinatesFor(Chuzzle chuzzle)
+    {
+        chuzzle.Real = Gamefield.Level.GetCellAt(Mathf.RoundToInt(chuzzle.transform.localPosition.x / chuzzle.Scale.x),
+            Mathf.RoundToInt(chuzzle.transform.localPosition.y / chuzzle.Scale.y), false);
+    }
+
+    private void OnTweenMoveAfterDrag(object chuzzleObject)
+    {
+        var chuzzle = chuzzleObject as Chuzzle;
+
+        if (AnimatedChuzzles.Contains(chuzzle))
+        {
+            AnimatedChuzzles.Remove(chuzzle);
+        }
+
+        if (!AnimatedChuzzles.Any())
+        {
+            OnChuzzleCompletedTweens();
+        }
+    }     
+
 }

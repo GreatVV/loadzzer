@@ -52,17 +52,21 @@ public abstract class GameMode
         }
     }
 
-    public void Check()
+    public bool Check()
     {
         if (IsGameOver)
         {
             InvokeGameOver();
+            return true;
         }
 
         if (IsWin)
         {
             InvokeWin();
+            return true;
         }
+
+        return false;
     }
 
     public void SpendTurn()
