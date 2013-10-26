@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using UnityEngine;
@@ -9,9 +10,14 @@ public class GamefieldUtility
 {
     #region Find Combination
 
-    public static List<List<Chuzzle>> FindCombinations(List<Chuzzle> chuzzles)
+    public static List<List<Chuzzle>> FindCombinations(List<Chuzzle> chuzzles, int combinationSize = 3)
     {
         var combinations = new List<List<Chuzzle>>();
+
+        foreach (var c in chuzzles)
+        {
+            c.IsCheckedForSearch = false;
+        }                                
 
         //find combination
         foreach (var c in chuzzles)
@@ -20,7 +26,7 @@ public class GamefieldUtility
 
             var combination = RecursiveFind(c, new List<Chuzzle>(), chuzzles);
 
-            if (combination.Count() >= 3)
+            if (combination.Count() >= combinationSize)
             {
                 combinations.Add(combination);
             }
@@ -34,7 +40,7 @@ public class GamefieldUtility
         return combinations;
     }
 
-    public static List<Chuzzle> RecursiveFind(Chuzzle chuzzle, List<Chuzzle> combination, List<Chuzzle> chuzzles)
+    public static List<Chuzzle> RecursiveFind(Chuzzle chuzzle, List<Chuzzle> combination, IEnumerable<Chuzzle> chuzzles)
     {
         if (chuzzle == null || combination.Contains(chuzzle) || chuzzle.IsCheckedForSearch)
         {
@@ -98,22 +104,22 @@ public class GamefieldUtility
         return combination;
     }
 
-    public static Chuzzle GetLeftFor(Chuzzle c, List<Chuzzle> chuzzles)
+    public static Chuzzle GetLeftFor(Chuzzle c, IEnumerable<Chuzzle> chuzzles)
     {
         return chuzzles.FirstOrDefault(x => x.Real == c.Real.Left);
     }
 
-    public static Chuzzle GetRightFor(Chuzzle c, List<Chuzzle> chuzzles)
+    public static Chuzzle GetRightFor(Chuzzle c, IEnumerable<Chuzzle> chuzzles)
     {
         return chuzzles.FirstOrDefault(x => x.Real == c.Real.Right);
     }
 
-    public static Chuzzle GetTopFor(Chuzzle c, List<Chuzzle> chuzzles)
+    public static Chuzzle GetTopFor(Chuzzle c, IEnumerable<Chuzzle> chuzzles)
     {
         return chuzzles.FirstOrDefault(x => x.Real == c.Real.Top);
     }
 
-    public static Chuzzle GetBottomFor(Chuzzle c, List<Chuzzle> chuzzles)
+    public static Chuzzle GetBottomFor(Chuzzle c, IEnumerable<Chuzzle> chuzzles)
     {
         return chuzzles.FirstOrDefault(x => x.Real == c.Real.Bottom);
     }
@@ -129,156 +135,185 @@ public class GamefieldUtility
     /// <returns>Список элементов которые составляют эту комбинацию</returns>
     public static List<Chuzzle> Tip(List<Chuzzle> chuzzles)
     {
-        var vercticalTip =
+        var bottom =
             chuzzles.FirstOrDefault(
-                x => VerticalCheck(x, chuzzles));
+                x => BetweenYCheck(x, chuzzles));
 
-        if (vercticalTip != null)
+        if (bottom != null && bottom.Current.Top.Type != CellTypes.Block)
         {
-            var list = new List<Chuzzle>
+            var top = chuzzles.First(ch => ch.Current == bottom.Current.Top.Top);
+
+            var bottomPart = RecursiveFind(bottom, new List<Chuzzle>(), chuzzles);
+            var middlePart = GetHorizontalLineChuzzles(bottom.Current.y+1, bottom.Type, chuzzles);    
+            var topPart = RecursiveFind(top, new List<Chuzzle>(), chuzzles);                                      
+          
+            var posibleCombination = new List<Chuzzle>{};
+            posibleCombination.AddRange(bottomPart);
+            posibleCombination.AddRange(middlePart);
+            posibleCombination.AddRange(topPart);
+            Debug.Log("Combination 1");
+            return posibleCombination;
+        }
+
+        var left = chuzzles.FirstOrDefault(x => BetweenXCheck(x, chuzzles));
+
+        if (left != null && left.Current.Left.Type != CellTypes.Block)
+        {
+            var right = chuzzles.First(ch => ch.Current == left.Current.Right.Right);
+
+            var leftPart = RecursiveFind(left, new List<Chuzzle>(), chuzzles);
+            var middlePart = GetVerticalLineChuzzles(left.Current.x+1, left.Type, chuzzles);
+            var rightPart = RecursiveFind(right, new List<Chuzzle>(), chuzzles);
+
+            var posibleCombination = new List<Chuzzle> { };
+            posibleCombination.AddRange(leftPart);
+            posibleCombination.AddRange(middlePart);
+            posibleCombination.AddRange(rightPart);
+            Debug.Log("Combination 2");
+            return posibleCombination;
+        }
+
+        var combinations = FindCombinations(chuzzles, 2);
+
+        foreach (var combination in combinations)
+        {
+            
+            var first = combination[0];
+            var second = combination[1];
+
+            //vertical combination
+            if (first.Current.x == second.Current.x)
             {
-                vercticalTip,
-                chuzzles.FirstOrDefault(ch => ch.Current.x == vercticalTip.Current.x && ch.Current.y == vercticalTip.Current.y + 2),
-                chuzzles.FirstOrDefault(ch => ch.Current.y == vercticalTip.Current.y + 1 && ch.Type == vercticalTip.Type)
-            };
-            var additionalChuzzle = GetLeftFor(list.Last(), chuzzles);
-            if (additionalChuzzle != null)
-            {
-                if (additionalChuzzle.Type == list.Last().Type) list.Add(additionalChuzzle);
+                //try left             
+                if ((first.Current.Left != null && first.Current.Left.Type != CellTypes.Block) ||
+                    (second.Current.Left != null && second.Current.Left.Type != CellTypes.Block))
+                {
+                    var leftPart = GetVerticalLineChuzzles(first.Current.x - 1, first.Type, chuzzles).ToList();
+                    if (leftPart.Any())
+                    {
+                        var possibleCombination = new List<Chuzzle>();
+                        possibleCombination.AddRange(combination);
+                        possibleCombination.AddRange(leftPart);
+                        Debug.Log("Combination 3");
+                        return possibleCombination;
+                    }
+                }
+
+                //try right
+                if ((first.Current.Right != null && first.Current.Right.Type != CellTypes.Block) ||
+                    (second.Current.Right != null && second.Current.Right.Type != CellTypes.Block))
+                {
+                    var rightPart = GetVerticalLineChuzzles(first.Current.x + 1, first.Type, chuzzles).ToList();
+                    if (rightPart.Any())
+                    {
+                        var possibleCombination = new List<Chuzzle>();
+                        possibleCombination.AddRange(combination);
+                        possibleCombination.AddRange(rightPart);
+                        Debug.Log("Combination 4");
+                        return possibleCombination;
+                    }
+                }
+
+                //try top    
+                if (second.Current.Top != null && second.Current.Top.Type != CellTypes.Block && chuzzles.Any(x=>x.Current == second.Current.Top))
+                {
+                    var topPart = GetHorizontalLineChuzzles(second.Current.Top.y, second.Type, chuzzles).ToList();
+                    if (topPart.Any())
+                    {
+                        var possibleCombination = new List<Chuzzle>();
+                        possibleCombination.AddRange(combination);
+                        possibleCombination.AddRange(topPart);
+                        Debug.Log("Combination 5");
+                        return possibleCombination;
+                    }
+                }
+
+                //try bottom    
+                if (first.Current.Bottom != null && first.Current.Bottom.Type != CellTypes.Block && chuzzles.Any(x => x.Current == first.Current.Bottom))
+                {
+                    var bottomPart = GetHorizontalLineChuzzles(first.Current.Bottom.y, first.Type, chuzzles).ToList();
+                    if (bottomPart.Any())
+                    {
+                        var possibleCombination = new List<Chuzzle>();
+                        possibleCombination.AddRange(combination);
+                        possibleCombination.AddRange(bottomPart);
+                        Debug.Log("Combination 6");
+                        return possibleCombination;
+                    }
+                }
             }
             else
             {
-                additionalChuzzle = GetRightFor(list.Last(), chuzzles);
-                if (additionalChuzzle != null)
+                //horizontal combinations
+
+                //try left             
+                if (first.Current.Left != null && first.Current.Left.Type != CellTypes.Block)
                 {
-                    if (additionalChuzzle.Type == list.Last().Type) list.Add(additionalChuzzle);
+                    var leftPart = GetVerticalLineChuzzles(first.Current.x - 1, first.Type, chuzzles).ToList();
+                    if (leftPart.Any())
+                    {
+                        var possibleCombination = new List<Chuzzle>();
+                        possibleCombination.AddRange(combination);
+                        possibleCombination.AddRange(leftPart);
+                        Debug.Log("Combination 7");
+                        return possibleCombination;
+                    }
+                }
+
+                //try right
+                if (second.Current.Right != null && second.Current.Right.Type != CellTypes.Block)
+                {
+                    var rightPart = GetVerticalLineChuzzles(second.Current.x + 1, second.Type, chuzzles).ToList();
+                    if (rightPart.Any())
+                    {
+                        var possibleCombination = new List<Chuzzle>();
+                        possibleCombination.AddRange(combination);
+                        possibleCombination.AddRange(rightPart);
+                        Debug.Log("Combination 8");
+                        return possibleCombination;
+                    }
+                }
+
+                //try top    
+                if (
+                    (first.Current.Top != null && first.Current.Top.Type != CellTypes.Block && chuzzles.Any(x => x.Current == first.Current.Top)) ||
+                    (second.Current.Top != null && second.Current.Top.Type != CellTypes.Block && chuzzles.Any(x => x.Current == second.Current.Top))
+                    )
+                {
+                    var topPart = GetHorizontalLineChuzzles(second.Current.y+1, second.Type, chuzzles).ToList();
+                    if (topPart.Any())
+                    {
+                        var possibleCombination = new List<Chuzzle>();
+                        possibleCombination.AddRange(combination);
+                        possibleCombination.AddRange(topPart);
+                        Debug.Log("Combination 9");
+                        return possibleCombination;
+                    }
+                }
+
+                //try bottom    
+                if (
+                    (first.Current.Bottom != null && first.Current.Bottom.Type != CellTypes.Block && chuzzles.Any(x => x.Current == first.Current.Bottom)) ||
+                    (second.Current.Bottom != null && second.Current.Bottom.Type != CellTypes.Block && chuzzles.Any(x => x.Current == second.Current.Bottom)) 
+                    )
+                {
+                    var bottomPart = GetHorizontalLineChuzzles(first.Current.y-1, first.Type, chuzzles).ToList();
+                    if (bottomPart.Any())
+                    {
+                        var possibleCombination = new List<Chuzzle>();
+                        possibleCombination.AddRange(combination);
+                        possibleCombination.AddRange(bottomPart);
+                        Debug.Log("Combination 10");
+                        return possibleCombination;
+                    }
                 }
             }
-         //   Debug.Log("Vertical Tip Type 1 has been found");
-            return list;
         }
-
-        var horizontalTip =
-            chuzzles.FirstOrDefault(
-                x => VerticalCheck(x, chuzzles));
-
-        if (horizontalTip != null)
-        {
-            var list = new List<Chuzzle>
-            {
-                horizontalTip,
-                chuzzles.FirstOrDefault(ch => ch.Current.y == horizontalTip.Current.y && ch.Current.x == horizontalTip.Current.x + 2),
-                chuzzles.FirstOrDefault(ch => ch.Current.x == horizontalTip.Current.x + 1 && ch.Type == horizontalTip.Type)
-            };
-            var additionalChuzzle = GetTopFor(list.Last(), chuzzles);
-            if (additionalChuzzle != null)
-            {
-                if (additionalChuzzle.Type == list.Last().Type) list.Add(additionalChuzzle);
-            }
-            else
-            {
-                additionalChuzzle = GetBottomFor(list.Last(), chuzzles);
-                if (additionalChuzzle != null)
-                {
-                    if (additionalChuzzle.Type == list.Last().Type) list.Add(additionalChuzzle);
-                }
-            }
-          //  Debug.Log("Horizontal Tip Type 1 has been found");
-
-            return list;
-        }
-
-        var anotherHorizontalTip = 
-            chuzzles.FirstOrDefault(
-                x => AnotherHorizontalCheck(x, chuzzles));
-
-        if (anotherHorizontalTip != null)
-        {
-            var list = new List<Chuzzle>
-            {
-                anotherHorizontalTip,
-                chuzzles.FirstOrDefault(ch => ch.Current.x == anotherHorizontalTip.Current.x + 1 && ch.Current.y == anotherHorizontalTip.Current.y),
-                chuzzles.FirstOrDefault(ch => (Math.Abs(ch.Current.y - anotherHorizontalTip.Current.y) == 1 || ch.Current.x == anotherHorizontalTip.Current.x - 1 || ch.Current.x == anotherHorizontalTip.Current.x + 2) && (ch.Type == anotherHorizontalTip.Type))
-            };
-
-            if (Math.Abs(list.First().Current.y - list.Last().Current.y) == 1) // первый случай
-            {
-                var additionalChuzzle = GetLeftFor(list.Last(), chuzzles);
-                if (additionalChuzzle != null)
-                {
-                    if (additionalChuzzle.Type == list.Last().Type) list.Add(additionalChuzzle);
-                }
-                additionalChuzzle = GetRightFor(list.Last(), chuzzles);
-                if (additionalChuzzle != null)
-                {
-                    if (additionalChuzzle.Type == list.Last().Type) list.Add(additionalChuzzle);
-                }
-                //if (Math.Abs(list.First().Current.x - list.Last().Current.x) == 1)
-            }
-            else // второй случай
-            {
-                var additionalChuzzle = GetBottomFor(list.Last(), chuzzles);
-                if (additionalChuzzle != null)
-                {
-                    if (additionalChuzzle.Type == list.Last().Type) list.Add(additionalChuzzle);
-                }
-                additionalChuzzle = GetTopFor(list.Last(), chuzzles);
-                if (additionalChuzzle != null)
-                {
-                    if (additionalChuzzle.Type == list.Last().Type) list.Add(additionalChuzzle);
-                }
-            }
-         //   Debug.Log("Horizontal Tip Type 2 has been found");
-            return list;
-        }
-      
-        var anotherVerticalTip =
-            chuzzles.FirstOrDefault(
-                x => AnotherVerticalCheck(x, chuzzles));
-
-        if (anotherVerticalTip != null)
-        {
-            var list = new List<Chuzzle>
-            {
-                anotherVerticalTip,
-                chuzzles.FirstOrDefault(ch => ch.Current.y == anotherVerticalTip.Current.y + 1 && ch.Current.x == anotherVerticalTip.Current.x),
-                chuzzles.FirstOrDefault(ch => (Math.Abs(ch.Current.x - anotherVerticalTip.Current.x) == 1 || ch.Current.y == anotherVerticalTip.Current.y - 1 || ch.Current.y == anotherVerticalTip.Current.y + 2) && (ch.Type == anotherVerticalTip.Type))
-            };
-
-            if (Math.Abs(list.First().Current.x - list.Last().Current.x) == 1) // первый случай
-            {
-                var additionalChuzzle = GetTopFor(list.Last(), chuzzles);
-                if (additionalChuzzle != null)
-                {
-                    if (additionalChuzzle.Type == list.Last().Type) list.Add(additionalChuzzle);
-                }
-                additionalChuzzle = GetBottomFor(list.Last(), chuzzles);
-                if (additionalChuzzle != null)
-                {
-                    if (additionalChuzzle.Type == list.Last().Type) list.Add(additionalChuzzle);
-                }
-            }
-            else // второй случай
-            {
-                var additionalChuzzle = GetRightFor(list.Last(), chuzzles);
-                if (additionalChuzzle != null)
-                {
-                    if (additionalChuzzle.Type == list.Last().Type) list.Add(additionalChuzzle);
-                }
-                additionalChuzzle = GetLeftFor(list.Last(), chuzzles);
-                if (additionalChuzzle != null)
-                {
-                    if (additionalChuzzle.Type == list.Last().Type) list.Add(additionalChuzzle);
-                }
-            }
-        //    Debug.Log("Vertical Tip Type 2 has been found");
-            return list;
-        }
-
+        Debug.Log("Combination NOOOOOOOOOO 11");
         return new List<Chuzzle>();
     }
 
-    public static bool VerticalCheck(Chuzzle chuzzle, List<Chuzzle> allChuzzles)
+    public static bool BetweenYCheck(Chuzzle chuzzle, List<Chuzzle> allChuzzles)
     {
         var firstChuzzle = chuzzle;
         var secondChuzzle =
@@ -294,7 +329,7 @@ public class GamefieldUtility
 
     }
 
-    public static bool HorizontalCheck(Chuzzle chuzzle, List<Chuzzle> allChuzzles)
+    public static bool BetweenXCheck(Chuzzle chuzzle, List<Chuzzle> allChuzzles)
     {
         var firstChuzzle = chuzzle;
         var secondChuzzle =
@@ -344,6 +379,56 @@ public class GamefieldUtility
                     ch.Current.x == firstChuzzle.Current.x + 2).Any(ch => ch.Type == firstChuzzle.Type);
 
         //return false;
+    }
+
+    #endregion
+
+    #region New Tips
+
+    public static IEnumerable<Chuzzle> GetHorizontalLineChuzzles(int y, ChuzzleType chuzzleType, IEnumerable<Chuzzle> chuzzles)
+    {
+        var enumerable = chuzzles as IList<Chuzzle> ?? chuzzles.ToList();
+        var firstChuzzle = enumerable.FirstOrDefault(x => x.Real.y == y && x.Type == chuzzleType);
+        if (firstChuzzle != null)
+        {
+            var secondChuzzle =
+                enumerable.FirstOrDefault(
+                    c =>
+                        c.Type == firstChuzzle.Type &&
+                        (c.Current == firstChuzzle.Current.Left || c.Current == firstChuzzle.Current.Right));
+            if (secondChuzzle != null)
+            {
+                return new List<Chuzzle>() { firstChuzzle, secondChuzzle };
+            }
+            return new List<Chuzzle>() { firstChuzzle };
+        }
+        return new List<Chuzzle>();
+    }
+
+    public static IEnumerable<Chuzzle> GetVerticalLineChuzzles(int x, ChuzzleType chuzzleType, IEnumerable<Chuzzle> chuzzles)
+    {   
+        var enumerable = chuzzles as IList<Chuzzle> ?? chuzzles.ToList();
+        var firstChuzzle = enumerable.FirstOrDefault(c => c.Real.x == x && c.Type == chuzzleType);
+        if (firstChuzzle != null)
+        {
+            var secondChuzzle =
+                enumerable.FirstOrDefault(
+                    c =>
+                        c.Type == firstChuzzle.Type &&
+                        (c.Current == firstChuzzle.Current.Top || c.Current == firstChuzzle.Current.Bottom));
+            if (secondChuzzle != null)
+            {
+                return new List<Chuzzle>() {firstChuzzle, secondChuzzle};
+            }
+            return new List<Chuzzle>() {firstChuzzle};
+
+        }
+        return new List<Chuzzle>();
+    }
+
+    public static void BetweenHorizontal(List<Chuzzle> chuzzles)
+    {
+        //var anyBetweenHorizontal = chuzzles.Any(x=> x.Type == chuzzles.FirstOrDefault())
     }
 
     #endregion
