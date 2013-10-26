@@ -160,18 +160,11 @@ public class Level
 
     public void ScaleSprite(tk2dBaseSprite sprite)
     {
-        //BUG can contain bug when sprite is single texture and there is no box collider attached to it
-        if (sprite.CurrentSprite.regionW != 0)
-        {
-            sprite.scale = new Vector3(ChuzzleSize.x/sprite.CurrentSprite.regionW,
-                ChuzzleSize.x/sprite.CurrentSprite.regionW, 1);
-        }
-        else
-        {
-            sprite.scale = new Vector3(ChuzzleSize.x/sprite.CurrentSprite.GetUntrimmedBounds().max.x,
-                ChuzzleSize.x/sprite.CurrentSprite.GetUntrimmedBounds().max.x, 1);
-        }
+        var size = ChuzzleSize;
+        GamefieldUtility.ScaleSprite(sprite, size);
     }
+
+   
 
     public Cell GetCellAt(int x, int y, bool createIfNotFound = true)
     {

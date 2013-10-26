@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 
 public class GamefieldUtility
@@ -133,13 +134,13 @@ public class GamefieldUtility
     /// </summary>
     /// <param name="chuzzles">Список элементов в котором надо найти комбинацию</param>
     /// <returns>Список элементов которые составляют эту комбинацию</returns>
-    public static List<Chuzzle> Tip(List<Chuzzle> chuzzles)
+    public static List<Chuzzle> Tip(List<Chuzzle> chuzzles, out IntVector2 isHorizontalMove, out Chuzzle chuzzleToMove)
     {
         var bottom =
             chuzzles.FirstOrDefault(
                 x => BetweenYCheck(x, chuzzles));
 
-        if (bottom != null && bottom.Current.Top.Type != CellTypes.Block)
+        if (bottom != null && bottom.Current.Top != null && bottom.Current.Top.Type != CellTypes.Block)
         {
             var top = chuzzles.First(ch => ch.Current == bottom.Current.Top.Top);
 
@@ -147,17 +148,20 @@ public class GamefieldUtility
             var middlePart = GetHorizontalLineChuzzles(bottom.Current.y+1, bottom.Type, chuzzles);    
             var topPart = RecursiveFind(top, new List<Chuzzle>(), chuzzles);                                      
           
-            var posibleCombination = new List<Chuzzle>{};
+            var posibleCombination = new List<Chuzzle> {};
             posibleCombination.AddRange(bottomPart);
             posibleCombination.AddRange(middlePart);
             posibleCombination.AddRange(topPart);
+            
             Debug.Log("Combination 1");
+            isHorizontalMove = new IntVector2(bottom.Current.x, bottom.Current.y+1);
+            chuzzleToMove = middlePart.First();
             return posibleCombination;
         }
 
         var left = chuzzles.FirstOrDefault(x => BetweenXCheck(x, chuzzles));
 
-        if (left != null && left.Current.Left.Type != CellTypes.Block)
+        if (left != null && left.Current.Left != null && left.Current.Left.Type != CellTypes.Block)
         {
             var right = chuzzles.First(ch => ch.Current == left.Current.Right.Right);
 
@@ -169,7 +173,10 @@ public class GamefieldUtility
             posibleCombination.AddRange(leftPart);
             posibleCombination.AddRange(middlePart);
             posibleCombination.AddRange(rightPart);
+
             Debug.Log("Combination 2");
+            isHorizontalMove = new IntVector2(left.Current.x + 1, left.Current.y);
+            chuzzleToMove = middlePart.First();
             return posibleCombination;
         }
 
@@ -194,7 +201,10 @@ public class GamefieldUtility
                         var possibleCombination = new List<Chuzzle>();
                         possibleCombination.AddRange(combination);
                         possibleCombination.AddRange(leftPart);
+
                         Debug.Log("Combination 3");
+                        isHorizontalMove = new IntVector2(first.Current.x - 1, first.Current.y);
+                        chuzzleToMove = leftPart.First();
                         return possibleCombination;
                     }
                 }
@@ -209,7 +219,10 @@ public class GamefieldUtility
                         var possibleCombination = new List<Chuzzle>();
                         possibleCombination.AddRange(combination);
                         possibleCombination.AddRange(rightPart);
+                        
                         Debug.Log("Combination 4");
+                        isHorizontalMove = new IntVector2(first.Current.x + 1, first.Current.y);
+                        chuzzleToMove = rightPart.First();
                         return possibleCombination;
                     }
                 }
@@ -223,7 +236,10 @@ public class GamefieldUtility
                         var possibleCombination = new List<Chuzzle>();
                         possibleCombination.AddRange(combination);
                         possibleCombination.AddRange(topPart);
+                        
                         Debug.Log("Combination 5");
+                        isHorizontalMove = new IntVector2(second.Current.x, second.Current.Top.y);
+                        chuzzleToMove = topPart.First();
                         return possibleCombination;
                     }
                 }
@@ -237,7 +253,10 @@ public class GamefieldUtility
                         var possibleCombination = new List<Chuzzle>();
                         possibleCombination.AddRange(combination);
                         possibleCombination.AddRange(bottomPart);
+                        
                         Debug.Log("Combination 6");
+                        isHorizontalMove = new IntVector2(second.Current.x, second.Current.Bottom.y);
+                        chuzzleToMove = bottomPart.First();
                         return possibleCombination;
                     }
                 }
@@ -255,7 +274,10 @@ public class GamefieldUtility
                         var possibleCombination = new List<Chuzzle>();
                         possibleCombination.AddRange(combination);
                         possibleCombination.AddRange(leftPart);
+
                         Debug.Log("Combination 7");
+                        isHorizontalMove = new IntVector2(first.Current.x-1, first.Current.y);
+                        chuzzleToMove = leftPart.First();
                         return possibleCombination;
                     }
                 }
@@ -269,7 +291,10 @@ public class GamefieldUtility
                         var possibleCombination = new List<Chuzzle>();
                         possibleCombination.AddRange(combination);
                         possibleCombination.AddRange(rightPart);
+
                         Debug.Log("Combination 8");
+                        isHorizontalMove = new IntVector2(second.Current.x + 1, second.Current.y);
+                        chuzzleToMove = rightPart.First();
                         return possibleCombination;
                     }
                 }
@@ -286,7 +311,10 @@ public class GamefieldUtility
                         var possibleCombination = new List<Chuzzle>();
                         possibleCombination.AddRange(combination);
                         possibleCombination.AddRange(topPart);
+                        
                         Debug.Log("Combination 9");
+                        isHorizontalMove = new IntVector2(second.Current.x, second.Current.y + 1);
+                        chuzzleToMove = topPart.First();
                         return possibleCombination;
                     }
                 }
@@ -303,13 +331,18 @@ public class GamefieldUtility
                         var possibleCombination = new List<Chuzzle>();
                         possibleCombination.AddRange(combination);
                         possibleCombination.AddRange(bottomPart);
+                        
                         Debug.Log("Combination 10");
+                        isHorizontalMove = new IntVector2(first.Current.x, first.Current.y - 1);
+                        chuzzleToMove = bottomPart.First();
                         return possibleCombination;
                     }
                 }
             }
         }
         Debug.Log("Combination NOOOOOOOOOO 11");
+        isHorizontalMove = new IntVector2();
+        chuzzleToMove = null;
         return new List<Chuzzle>();
     }
 
@@ -449,5 +482,60 @@ public class GamefieldUtility
         return new Vector3(x * scale.x, y * scale.y, 0);
     }
 
+
+    public static void ShowArrow(Chuzzle from, IntVector2 to, GameObject downArrowPrefab)
+    {
+        var down = Object.Instantiate(downArrowPrefab) as GameObject;
+        ScaleSprite(down.GetComponent<tk2dSprite>(), from.Scale);
+
+        if (from.Current.x == to.x)
+        {
+            //vertical
+            if (from.Current.y >= to.y)
+            {
+                //to down
+                //do nothing
+            }
+            else
+            {
+                //to up
+                //mirror vertical
+                down.GetComponent<tk2dSprite>().FlipY = true;
+            }
+        }
+        else
+        {
+            //horizontal
+            if (from.Current.x < to.x)
+            {
+                //to right
+                down.transform.rotation = Quaternion.Euler(0, 0, 90);
+            }
+            else
+            {
+                //to left
+                //to right
+                down.transform.rotation = Quaternion.Euler(0, 0, -90);
+            }
+        }
+
+        down.transform.parent = from.transform;
+        down.transform.localPosition = from.Scale/2f;
+    }
+
+    public static void ScaleSprite(tk2dBaseSprite sprite, Vector3 size)
+    {
+        if (sprite.CurrentSprite.regionW != 0)
+        {
+            sprite.scale = new Vector3(size.x / sprite.CurrentSprite.regionW,
+                size.x / sprite.CurrentSprite.regionW, 1);
+        }
+        else
+        {
+            //BUG can contain bug when sprite is single texture and there is no box collider attached to it
+            sprite.scale = new Vector3(size.x / sprite.CurrentSprite.GetUntrimmedBounds().max.x,
+                size.x / sprite.CurrentSprite.GetUntrimmedBounds().max.x, 1);
+        }
+    }
 }
 

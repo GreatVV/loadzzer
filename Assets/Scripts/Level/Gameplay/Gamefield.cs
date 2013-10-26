@@ -46,6 +46,7 @@ public class Gamefield : MonoBehaviour
     //public PauseState PauseState;
 
     public bool IsPause;
+    public GameObject DownArrow;
 
     #endregion
 

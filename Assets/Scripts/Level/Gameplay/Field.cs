@@ -39,16 +39,25 @@ public class Field : GamefieldState
     public void Update(IEnumerable<Chuzzle> draggableChuzzles)
     {
         Gamefield.TimeFromTip += Time.deltaTime;
-        if (Gamefield.TimeFromTip > 1)
+        if (Gamefield.TimeFromTip > 1 && !Gamefield.Level.ActiveChuzzles.Any(x=>x.Shine))
         {
-            var list = GamefieldUtility.Tip(Gamefield.Level.ActiveChuzzles);
-            if (list.Any())
+            IntVector2 targetPosition = null;
+            Chuzzle arrowChuzzle = null;
+            var possibleCombination = GamefieldUtility.Tip(Gamefield.Level.ActiveChuzzles,out targetPosition, out arrowChuzzle);
+            if (possibleCombination.Any())
             {
-                foreach (var chuzzle in list)
+                foreach (var chuzzle in possibleCombination)
                 {
                     chuzzle.Shine = true;
                 }
+                GamefieldUtility.ShowArrow(arrowChuzzle, targetPosition, Gamefield.DownArrow);
             }
+            else
+            {
+               // throw new NotImplementedException("No combinations");
+            }
+
+            
             Gamefield.TimeFromTip = 0;
         }
 
