@@ -27,7 +27,9 @@ public class Gamefield : MonoBehaviour
     public int[] NewTilesInColumns = new int[0];
     public Points PointSystem = new Points();
     public RemoveCombinationState RemoveState;
-    public SpecialCreationUtility SpecialCreation;
+
+    public List<Pair> PowerTypePrefabs = new List<Pair>();
+
     public StageManager StageManager = new StageManager();
     public float TimeFromTip = 0;
     public WinState WinState;
@@ -40,7 +42,10 @@ public class Gamefield : MonoBehaviour
     public event Action<Gamefield> GameStarted;
 
     public event Action<Chuzzle> TileDestroyed;
-    public PauseState PauseState;
+   
+    //public PauseState PauseState;
+
+    public bool IsPause;
 
     #endregion
 
@@ -91,13 +96,13 @@ public class Gamefield : MonoBehaviour
         GameOverState = new GameOverState(this);
         WinState = new WinState(this);
         FieldState = new Field(this);
-        PauseState = new PauseState(this);
+        //PauseState = new PauseState(this);
     }
 
 
     private void LateUpdate()
     {
-        if (CurrentState != null)
+        if (CurrentState != null && !IsPause)
         {
             CurrentState.LateUpdate();
         }
@@ -145,7 +150,7 @@ public class Gamefield : MonoBehaviour
 
     private void Update()
     {
-        if (CurrentState != null)
+        if (CurrentState != null && !IsPause)
         {
             CurrentState.Update();
         }

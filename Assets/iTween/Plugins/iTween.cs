@@ -1915,7 +1915,7 @@ public class iTween : MonoBehaviour{
 		
 		//additional property to ensure ConflictCheck can work correctly since Transforms are refrences:		
 		if(args.Contains("scale")){
-			if (args["scale"].GetType() == typeof(Transform)) {
+			if (args["scale"] is Transform) {
 				Transform transform = (Transform)args["scale"];
 				args["position"]=new Vector3(transform.position.x,transform.position.y,transform.position.z);
 				args["rotation"]=new Vector3(transform.eulerAngles.x,transform.eulerAngles.y,transform.eulerAngles.z);
@@ -7054,13 +7054,16 @@ public class iTween : MonoBehaviour{
 		if (tweenArguments.Contains(callbackType) && !tweenArguments.Contains("ischild")) {
 			//establish target:
 			GameObject target;
-			if (tweenArguments.Contains(callbackType+"target")) {
-				target=(GameObject)tweenArguments[callbackType+"target"];
-			}else{
-				target=gameObject;	
-			}
-			
-			//throw an error if a string wasn't passed for callback:
+		    if (tweenArguments.Contains(callbackType + "target"))
+		    {
+		        target = (GameObject) tweenArguments[callbackType + "target"];
+		    }
+		    else
+		    {
+		        target = gameObject;
+		    }
+
+		    //throw an error if a string wasn't passed for callback:
 		    if (tweenArguments[callbackType] is string)
 		    {   
 		        target.SendMessage((string) tweenArguments[callbackType], (object) tweenArguments[callbackType + "params"],

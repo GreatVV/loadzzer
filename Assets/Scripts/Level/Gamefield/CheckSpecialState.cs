@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Object = UnityEngine.Object;
+using Random = UnityEngine.Random;
 
 #endregion
 
@@ -92,31 +93,29 @@ public class CheckSpecialState : GamefieldState
 
     public bool CreateSpecialWithType(List<Chuzzle> comb, PowerType powerType)
     {
-        var ordered = comb.OrderBy(x => x.Current.y).ToList();
-        var targetTile = ordered.First();
-        var cellForNew = ordered.First().Current;
-        for (var i = 1; i < ordered.Count; i++)
+        var ordered = comb;
+
+        var targetTile = comb[Random.Range(0, ordered.Count)];
+        var cellForNew = targetTile.Current;
+        foreach (var chuzzle in ordered)
         {
-            var chuzzle = ordered[i];
-            chuzzle.MoveTo = cellForNew;
+            if (chuzzle != targetTile)
+            {
+                chuzzle.MoveTo = cellForNew;
+            }
         }
 
-        var powerUp = Gamefield.SpecialCreation.PowerTypePrefabs.First(x => x.type == powerType).prefab;
+        var powerUp =
+            Gamefield.PowerTypePrefabs.First(x => x.Type == powerType && x.ChuzzleType == targetTile.Type).Prefab;
         var powerUpChuzzle = Gamefield.Level.CreateChuzzle(targetTile.Current.x, targetTile.Current.y, powerUp);
         powerUpChuzzle.Type = targetTile.Type;
         powerUpChuzzle.PowerType = powerType;
 
-        var color =
-            Object.Instantiate(
-                Gamefield.Level.ChuzzlePrefabs.First(x => x.GetComponent<Chuzzle>().Type == targetTile.Type)) as
-                GameObject;
-        color.transform.parent = powerUpChuzzle.transform;
-        color.transform.localPosition = Vector3.zero;
-        Gamefield.Level.ScaleSprite(color.GetComponent<tk2dSprite>());
+        Debug.Log("Child number: " + powerUpChuzzle.transform.childCount);
+        var child = powerUpChuzzle.transform.GetChild(0).gameObject;
+        Object.Destroy(child.GetComponent<BoxCollider>());
+        Gamefield.Level.ScaleSprite(child.GetComponent<tk2dSprite>());
 
-        Object.Destroy(color.gameObject.GetComponent<Chuzzle>());
-        Object.Destroy(color.gameObject.GetComponent<BoxCollider>());
-        color.GetComponent<tk2dSprite>().SortingOrder = -1;
 
         Object.Destroy(targetTile.gameObject);
         Gamefield.Level.ActiveChuzzles.Remove(targetTile);
@@ -125,21 +124,22 @@ public class CheckSpecialState : GamefieldState
 
         foreach (var c in ordered)
         {
-            if (c.PowerType == PowerType.Usual)
-            {
-                Gamefield.RemoveChuzzle(c);
+            Gamefield.RemoveChuzzle(c);
 
-                var targetPosition = new Vector3(c.MoveTo.x*c.Scale.x, c.MoveTo.y*c.Scale.y, 0);
+            var targetPosition = new Vector3(c.MoveTo.x*c.Scale.x, c.MoveTo.y*c.Scale.y, 0);
 
-                SpecialTilesAnimated.Add(c);
+            SpecialTilesAnimated.Add(c);
 
-                iTween.MoveTo(c.gameObject,
-                    iTween.Hash("x", targetPosition.x, "y", targetPosition.y, "z", targetPosition.z, "time", 0.3f,
-                        "easetype",
-                        iTween.EaseType.easeInOutQuad, "oncompletetarget",
-                        Gamefield.gameObject, "oncomplete", new Action<object>(OnCreateLineTweenComplete),
-                        "oncompleteparams", c));
-            }
+            iTween.MoveTo(c.gameObject,
+                iTween.Hash(
+                    "x", targetPosition.x,
+                    "y", targetPosition.y,
+                    "z", targetPosition.z,
+                    "time", 0.3f,
+                    "easetype", iTween.EaseType.easeInOutQuad,
+                    "oncomplete", new Action<object>(OnCreateLineTweenComplete),
+                    "oncompleteparams", c
+                    ));
         }
 
         return true;

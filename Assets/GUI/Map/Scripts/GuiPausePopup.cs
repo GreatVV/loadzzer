@@ -22,7 +22,7 @@ public class GuiPausePopup : Window
             
         transform.localPosition = new Vector3(0, -800, 0);
         iTween.MoveTo(gameObject, new Vector3(0, 0, 0), 0.5f);
-        UI.Instance.Gamefield.SwitchStateTo(UI.Instance.Gamefield.PauseState);
+        UI.Instance.Gamefield.IsPause = true;
     }
 
     protected override bool OnClose()
@@ -38,7 +38,7 @@ public class GuiPausePopup : Window
     public void OnCloseAnimationComplete()
     {
         Disable();
-        UI.Instance.Gamefield.SwitchStateTo(UI.Instance.Gamefield.RemoveState);
+        UI.Instance.Gamefield.IsPause = false;
     }
 
     private void OnMapClick()

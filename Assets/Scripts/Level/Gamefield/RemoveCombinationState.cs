@@ -1,8 +1,12 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Object = UnityEngine.Object;
+
+#endregion
 
 [Serializable]
 public class RemoveCombinationState : GamefieldState
@@ -39,9 +43,9 @@ public class RemoveCombinationState : GamefieldState
 
         DeathAnimationChuzzles.Remove(chuzzle);
         Object.Destroy(chuzzle.gameObject);
-        
+
         if (DeathAnimationChuzzles.Count == 0)
-        {   
+        {
             Gamefield.SwitchStateTo(Gamefield.CreateNew);
         }
     }
@@ -91,13 +95,27 @@ public class RemoveCombinationState : GamefieldState
             Gamefield.Level.ScaleSprite(((GameObject) explosion).GetComponent<tk2dBaseSprite>());
             Object.Destroy(explosion, 1f);
 
-            DeathAnimationChuzzles.Add(chuzzle);
+            if (chuzzle.gameObject.transform.localScale != Vector3.zero)
+            {
+                if (!DeathAnimationChuzzles.Contains(chuzzle))
+                {
+                    DeathAnimationChuzzles.Add(chuzzle);
 
-            iTween.ScaleTo(chuzzle.gameObject,
-                iTween.Hash("x", 0, "y", 0, "z", 0, "time", 0.3f, "oncomplete", new Action<object>(OnCompleteDeath), "oncompletetarget",
-                    Gamefield.gameObject, "oncompleteparams", chuzzle));
+                    iTween.ScaleTo(chuzzle.gameObject,
+                        iTween.Hash(
+                            "x", 0,
+                            "y", 0,
+                            "z", 0,
+                            "time", 0.3f,
+                            "oncomplete", new Action<object>(OnCompleteDeath),
+                            "oncompleteparams", chuzzle));
+                }
+            }
+        }
 
-            
+        if (!DeathAnimationChuzzles.Any())
+        {
+            Gamefield.SwitchStateTo(Gamefield.CreateNew);
         }
     }
 }

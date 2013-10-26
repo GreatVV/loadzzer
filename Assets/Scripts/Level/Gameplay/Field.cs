@@ -136,25 +136,11 @@ public class Field : GamefieldState
         {
             if (_isVerticalDrag)
             {
-                if (_delta.y > 0)
-                {
-                    CurrentDirection = Direction.ToTop;
-                }
-                else
-                {
-                    CurrentDirection = Direction.ToBottom;
-                }
+                CurrentDirection = _delta.y > 0 ? Direction.ToTop : Direction.ToBottom;
             }
             else
             {
-                if (_delta.x > 0)
-                {
-                    CurrentDirection = Direction.ToLeft;
-                }
-                else
-                {
-                    CurrentDirection = Direction.ToRight;
-                }
+                CurrentDirection = _delta.x > 0 ? Direction.ToLeft : Direction.ToRight;
             }
         }
 
@@ -347,12 +333,18 @@ public class Field : GamefieldState
 
     public override void Update()
     {
-        Update(Gamefield.Level.ActiveChuzzles);
+        if (!AnimatedChuzzles.Any())
+        {
+            Update(Gamefield.Level.ActiveChuzzles);
+        }
     }
 
     public override void LateUpdate()
     {
-        LateUpdate(Gamefield.Level.ActiveCells);
+        if (!AnimatedChuzzles.Any())
+        {
+            LateUpdate(Gamefield.Level.ActiveCells);
+        }
     }
 
     public List<Chuzzle> AnimatedChuzzles = new List<Chuzzle>();

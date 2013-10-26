@@ -203,7 +203,6 @@
      <Compile Include="Assets\Scripts\Level\Utility\GamefieldUtility.cs" />
      <Compile Include="Assets\Scripts\Level\Utility\IntVector2.cs" />
      <Compile Include="Assets\Scripts\Level\Utility\Pair.cs" />
-     <Compile Include="Assets\Scripts\Level\Utility\SpecialCreationUtility.cs" />
      <Compile Include="Assets\TK2DROOT\tk2d\Code\Camera\tk2dCamera.cs" />
      <Compile Include="Assets\TK2DROOT\tk2d\Code\Camera\tk2dCameraAnchor.cs" />
      <Compile Include="Assets\TK2DROOT\tk2d\Code\Camera\tk2dCameraResolutionOverride.cs" />
