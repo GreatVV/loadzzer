@@ -13,7 +13,7 @@ public class Gamefield : MonoBehaviour
 
     public CheckSpecialState CheckSpecial = null;
     public CreateNewState CreateNew = null;
-    public GamefieldState CurrentState = null;
+    private GamefieldState _currentState = null;
     public GameOverState GameOverState = null;
     public WinState WinState = null;
     public Field FieldState = null;
@@ -88,9 +88,9 @@ public class Gamefield : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (CurrentState != null && !IsPause)
+        if (_currentState != null && !IsPause)
         {
-            CurrentState.LateUpdate();
+            _currentState.LateUpdate();
         }
     }
 
@@ -117,8 +117,8 @@ public class Gamefield : MonoBehaviour
     public void StartGame(SerializedLevel level = null)
     {
         LastLoadedLevel = level;
-        CurrentState = new InitState(this);
-        CurrentState.OnEnter();
+        _currentState = new InitState(this);
+        _currentState.OnEnter();
     }
 
     public void AddEventHandlers()
@@ -136,17 +136,17 @@ public class Gamefield : MonoBehaviour
 
     private void Update()
     {
-        if (CurrentState != null && !IsPause)
+        if (_currentState != null && !IsPause)
         {
-            CurrentState.Update();
+            _currentState.Update();
         }
     }
 
     public void SwitchStateTo(GamefieldState newState)
     {
-        CurrentState.OnExit();
-        CurrentState = newState;
-        Debug.Log("Switch to: " + CurrentState);
-        CurrentState.OnEnter();
+        _currentState.OnExit();
+        _currentState = newState;
+        Debug.Log("Switch to: " + _currentState);
+        _currentState.OnEnter();
     }
 }
