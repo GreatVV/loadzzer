@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class FacebookIntegration : MonoBehaviour
 {
+    #if UNITY_ANDROID || UNITY_EDITOR
     public string AccessToken;
     public bool FbInited;
 
@@ -109,6 +110,7 @@ public class FacebookIntegration : MonoBehaviour
             Debug.Log("Logged! " + FB.UserId);
             RequestProfile();
         }
-    }           
+    }    
+    #endif   
 }
       

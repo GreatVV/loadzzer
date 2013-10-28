@@ -1,4 +1,8 @@
-﻿using UnityEngine;
+﻿#region
+
+using UnityEngine;
+
+#endregion
 
 public class Chuzzle : MonoBehaviour
 {
@@ -24,6 +28,8 @@ public class Chuzzle : MonoBehaviour
     public float Alpha;
     private bool _frozen;
 
+    public GameObject Arrow;
+
     public bool Shine
     {
         get { return _shine; }
@@ -31,6 +37,10 @@ public class Chuzzle : MonoBehaviour
         {
             _shine = value;
             Alpha = 1;
+            if (!_shine && Arrow != null)
+            {
+                Destroy(Arrow);
+            }
         }
     }
 
@@ -52,11 +62,12 @@ public class Chuzzle : MonoBehaviour
 
     private void Update()
     {
+        /*
         if (Shine && !Frozen)
         {
             Alpha = Alpha + Time.deltaTime*3;
             Sprite.color = new Color(Sprite.color.r, Sprite.color.g, Sprite.color.b, Mathf.Sin(Alpha)/2f + 0.5f);
-        }
+        }                           */
     }
 
     public bool Frozen
@@ -65,7 +76,7 @@ public class Chuzzle : MonoBehaviour
         set
         {
             _frozen = value;
-            Sprite.color = new Color(Sprite.color.r, Sprite.color.g, Sprite.color.b, _frozen? 0.1f : 1f);
+            Sprite.color = new Color(Sprite.color.r, Sprite.color.g, Sprite.color.b, _frozen ? 0.1f : 1f);
         }
     }
 }

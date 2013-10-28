@@ -8,49 +8,39 @@ using UnityEngine;
 
 public class Gamefield : MonoBehaviour
 {
-    #region Set in editor
-
     public GameObject Explosion;
-    public GameObject PortalPrefab;
     public LayerMask ChuzzleMask;
 
-    #endregion
+    public CheckSpecialState CheckSpecial = null;
+    public CreateNewState CreateNew = null;
+    public GamefieldState CurrentState = null;
+    public GameOverState GameOverState = null;
+    public WinState WinState = null;
+    public Field FieldState = null;
+    public RemoveCombinationState RemoveState = null;
 
-    public CheckSpecialState CheckSpecial;
-    public CreateNewState CreateNew;
-    public GamefieldState CurrentState;
+    public int[] NewTilesInColumns = new int[0];
     public GameMode GameMode = GameModeFactory.CreateGameMode(GameModeDescription.CreateFromJson(null));
-    public GameOverState GameOverState;
+
     public SerializedLevel LastLoadedLevel = null;
     public Level Level = new Level();
 
-    public int[] NewTilesInColumns = new int[0];
     public Points PointSystem = new Points();
-    public RemoveCombinationState RemoveState;
 
     public List<Pair> PowerTypePrefabs = new List<Pair>();
 
     public StageManager StageManager = new StageManager();
     public float TimeFromTip = 0;
-    public WinState WinState;
-    public Field FieldState;
 
-    #region Events
+    public bool IsPause;
+    public GameObject DownArrow;
 
     public event Action<List<Chuzzle>> CombinationDestroyed;
 
     public event Action<Gamefield> GameStarted;
 
     public event Action<Chuzzle> TileDestroyed;
-   
-    //public PauseState PauseState;
 
-    public bool IsPause;
-    public GameObject DownArrow;
-
-    #endregion
-
-    #region Event Handlers
 
     private void OnGameOver()
     {
@@ -62,10 +52,6 @@ public class Gamefield : MonoBehaviour
     {
         SwitchStateTo(WinState);
     }
-
-    #endregion
-
-    #region Event Invokators
 
     public virtual void InvokeCombinationDestroyed(List<Chuzzle> combination)
     {
@@ -87,9 +73,8 @@ public class Gamefield : MonoBehaviour
         }
     }
 
-    #endregion       
 
-    public void Start()
+    public void Awake()
     {
         CheckSpecial = new CheckSpecialState(this);
         CreateNew = new CreateNewState(this);
@@ -161,7 +146,7 @@ public class Gamefield : MonoBehaviour
     {
         CurrentState.OnExit();
         CurrentState = newState;
-        Debug.Log("Switch to: "+CurrentState);
+        Debug.Log("Switch to: " + CurrentState);
         CurrentState.OnEnter();
-    }       
+    }
 }
