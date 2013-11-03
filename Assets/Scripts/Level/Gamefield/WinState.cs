@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEngine;
 
 [Serializable]
 public class WinState : GamefieldState
@@ -13,13 +14,18 @@ public class WinState : GamefieldState
     public override void OnEnter()
     {
         var levelInfo = Player.Instance.GetLevelInfo(Gamefield.Level.Serialized.Name);
-        if (Gamefield.PointSystem.CurrentPoints > levelInfo.BestScore)
+        var currentPoints = Gamefield.PointSystem.CurrentPoints;
+        var level = Gamefield.Level.Serialized;
+        if (currentPoints > levelInfo.BestScore)
         {
-            levelInfo.BestScore = Gamefield.PointSystem.CurrentPoints;
+            levelInfo.BestScore = currentPoints;
         }
 
         levelInfo.IsCompleted = true;
         levelInfo.NumberOfAttempts++;
+
+        
+        var numberOfStart = currentPoints <= level.Star2Score ? 1 : (currentPoints <= level.Star3Score ? 2 : 3);
     }
 
     public override void OnExit()

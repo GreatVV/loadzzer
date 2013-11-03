@@ -269,6 +269,9 @@
      <None Include="Assets\Plugins\Android\facebook\res\layout\com_facebook_picker_list_row.xml" />
      <None Include="Assets\TK2DROOT\tk2d\Shaders\AdditiveVertexColor.shader" />
      <None Include="Assets\Plugins\Android\facebook\res\layout\com_facebook_picker_title_bar.xml" />
+ <Reference Include="IFacebook">
+ <HintPath>Assets\Facebook\Scripts\IFacebook.dll</HintPath>
+ </Reference>
  <Reference Include="tk2dExternal">
  <HintPath>Assets\TK2DROOT\tk2d\Editor\tk2dExternal.dll</HintPath>
  </Reference>
@@ -292,9 +295,6 @@
  </Reference>
  <Reference Include="UnityEditor.Android.Extensions">
  <HintPath>C:\Program Files (x86)\Unity\Editor\Data\PlaybackEngines\AndroidPlayer\EditorExtensions\UnityEditor.Android.Extensions.dll</HintPath>
- </Reference>
- <Reference Include="IFacebook">
- <HintPath>Assets\Facebook\Scripts\IFacebook.dll</HintPath>
  </Reference>
   </ItemGroup>
   <ItemGroup>

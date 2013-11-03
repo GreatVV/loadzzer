@@ -167,6 +167,7 @@
      <Compile Include="Assets\Scripts\General\LifeSystem.cs" />
      <Compile Include="Assets\Scripts\General\LocalizationStrings.cs" />
      <Compile Include="Assets\Scripts\General\Nullable.cs" />
+     <Compile Include="Assets\Scripts\General\PayWall.cs" />
      <Compile Include="Assets\Scripts\General\Player.cs" />
      <Compile Include="Assets\Scripts\General\Profile.cs" />
      <Compile Include="Assets\Scripts\Level\GameMode\GameMode.cs" />

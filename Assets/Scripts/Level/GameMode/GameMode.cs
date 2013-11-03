@@ -73,7 +73,7 @@ public abstract class GameMode
     {
         Turns--;
         InvokeTurnsChanged();
-        if (Turns == 0)
+        if (Turns == 0 && !IsWin)
         {
             IsGameOver = true;
         }

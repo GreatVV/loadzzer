@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using UnityEngine;
 using Object = UnityEngine.Object;
+using Random = UnityEngine.Random;
 
 [Serializable]
 public class Field : GamefieldState
@@ -53,8 +55,9 @@ public class Field : GamefieldState
                 GamefieldUtility.ShowArrow(arrowChuzzle, targetPosition, Gamefield.DownArrow);
             }
             else
-            {
-               // throw new NotImplementedException("No combinations");
+            {  
+                RepaintRandom();
+                return;
             }
 
             
@@ -159,6 +162,18 @@ public class Field : GamefieldState
         #endregion
     }
 
+    private void RepaintRandom()
+    {
+        Debug.Log("Random repaint");
+        var randomChuzzle = Gamefield.Level.Chuzzles[Random.Range(0, Gamefield.Level.Chuzzles.Count)];
+
+        Gamefield.Level.CreateRandomChuzzle(randomChuzzle.Current.x, randomChuzzle.Current.y, true);
+
+        Object.Destroy(randomChuzzle.gameObject);
+        Gamefield.Level.ActiveChuzzles.Remove(randomChuzzle);
+        Gamefield.Level.Chuzzles.Remove(randomChuzzle);
+    }
+
     public void LateUpdate(List<Cell> activeCells)
     {
         if (SelectedChuzzles.Any() && _directionChozen)
@@ -172,6 +187,8 @@ public class Field : GamefieldState
                 var targetCell = GamefieldUtility.CellAt(activeCells, real.x, real.y);
                 if (targetCell == null || targetCell.Type == CellTypes.Block || targetCell.IsTemporary)
                 {
+                    //TODO create a copy of sprite at current position
+
                     // Debug.Log("Teleport from " + currentCell);
                     switch (CurrentDirection)
                     {
@@ -362,13 +379,14 @@ public class Field : GamefieldState
     {
         var combinations = GamefieldUtility.FindCombinations(Gamefield.Level.ActiveChuzzles);
         if (combinations.Any())
-        {
-            Gamefield.GameMode.HumanTurn();
+        {   
             foreach (var c in Gamefield.Level.Chuzzles)
             {
                 c.Current = c.MoveTo = c.Real;
             }
             Gamefield.SwitchStateTo(Gamefield.CheckSpecial);
+
+            Gamefield.GameMode.HumanTurn();
         }
         else
         {
