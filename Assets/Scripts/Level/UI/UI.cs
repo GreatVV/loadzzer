@@ -111,7 +111,7 @@ public class UI : MonoBehaviour
     public void ShowWinPopup()
     {
         DisableAllPanels();
-        WinPanel.Show(Gamefield.GameMode.Turns, Gamefield.PointSystem.CurrentPoints, Player.Instance.GetLevelInfo(Gamefield.Level.Serialized.Name).BestScore);
+        WinPanel.Show(Gamefield.GameMode.Turns, Gamefield.PointSystem.CurrentPoints, Player.Instance.GetLevelInfo(Gamefield.Level.Serialized.Name).BestScore, Player.Instance.GetLevelInfo(Gamefield.Level.Serialized.Name), Gamefield.Level.Serialized);
     }
 
     public void ShowGameoverPopup()

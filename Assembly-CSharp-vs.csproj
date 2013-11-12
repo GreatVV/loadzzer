@@ -69,6 +69,7 @@
      <Compile Include="Assets\GUI\Map\Scripts\GuiWinPanel.cs" />
      <Compile Include="Assets\GUI\Map\Scripts\Utils\GameModeToString.cs" />
      <Compile Include="Assets\GUI\Map\Scripts\Utils\MapId.cs" />
+     <Compile Include="Assets\GUI\Map\Scripts\Utils\PopupStar.cs" />
      <Compile Include="Assets\GUI\Map\Scripts\Window.cs" />
      <Compile Include="Assets\NGUI\Scripts\Interaction\LanguageSelection.cs" />
      <Compile Include="Assets\NGUI\Scripts\Interaction\UIButton.cs" />

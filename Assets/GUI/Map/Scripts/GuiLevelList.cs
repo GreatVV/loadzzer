@@ -1,5 +1,6 @@
 ﻿#region
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,11 +19,32 @@ public class GuiLevelList : Window
     public UILabel Loading;
     public JSONObject levels;
 
+    public bool IsLevelsLoaded;
+    public static event Action<bool> LevelsLoaded;
+
+    protected virtual void InvokeLevelsLoaded(bool isSuccessful)
+    {
+        IsLevelsLoaded = true;
+        var handler = LevelsLoaded;
+        if (handler != null) handler(isSuccessful);
+    }
+
     #region Event Handlers
 
     private void OnEnable()
     {
-/*#if UNITY_ANDROID
+        IsLevelsLoaded = false;
+#if UNITY_ANDROID
+       LoadDefaultLevels();
+#else
+        Loading.text = "Loading";
+        NGUITools.ClearChildren(Grid);
+        StartCoroutine(DownloadLevel(LevelUrl, levels));
+#endif
+    }
+
+    public void LoadDefaultLevels()
+    {
         var jsonObject = new JSONObject(Levels.text);
         var levelArray = jsonObject.GetField("levelArray").list;
         foreach (var level in levelArray)
@@ -30,11 +52,7 @@ public class GuiLevelList : Window
             LoadedLevels.Add(SerializedLevel.FromJson(level));
         }
         PopulateToGrid();
-#else */ 
-        Loading.text = "Loading";
-        NGUITools.ClearChildren(Grid);
-        StartCoroutine(DownloadLevel(LevelUrl, levels));
-//#endif
+        InvokeLevelsLoaded(true);
     }
 
     public void OnLevelClick(GameObject sender)
@@ -56,14 +74,22 @@ public class GuiLevelList : Window
         if (www.isDone && www.text != "")
         {
             jsonObject = new JSONObject(www.text);
-            LoadedLevels.Clear();
-            var levelArray = jsonObject.GetField("levelArray").list;
-            foreach (var level in levelArray)
+            try
             {
-                LoadedLevels.Add(SerializedLevel.FromJson(level));
+                LoadedLevels.Clear();
+                var levelArray = jsonObject.GetField("levelArray").list;
+                foreach (var level in levelArray)
+                {
+                    LoadedLevels.Add(SerializedLevel.FromJson(level));
+                }
+                Debug.Log("Number of loaded levels: " + LoadedLevels.Count);
+                PopulateToGrid();
+                InvokeLevelsLoaded(true);
             }
-            Debug.Log("Number of loaded levels: " + LoadedLevels.Count);
-            PopulateToGrid();
+            catch
+            {
+                LoadDefaultLevels();
+            }
         }
 
         //NGUIDebug.Log("Levels Loaded:" + jsonObject);

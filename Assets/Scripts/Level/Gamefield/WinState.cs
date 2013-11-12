@@ -25,7 +25,7 @@ public class WinState : GamefieldState
         levelInfo.NumberOfAttempts++;
 
         
-        var numberOfStart = currentPoints <= level.Star2Score ? 1 : (currentPoints <= level.Star3Score ? 2 : 3);
+        var numberOfStars = currentPoints <= level.Star2Score ? 1 : (currentPoints <= level.Star3Score ? 2 : 3);
     }
 
     public override void OnExit()

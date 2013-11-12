@@ -120,4 +120,10 @@ public class SerializedLevel
     {
         return string.Format("Name: {0} Width:{1} Height: {2}", Name, Width, Height);
     }
+
+    public int NumberOfStarForScore(int score)
+    {
+        return score <= Star2Score ? 1 : (score <= Star3Score ? 2 : 3);
+    }
+
 }

@@ -13,6 +13,10 @@ public class GuiWinPanel : Window
     public UILabel Score;
     public UILabel TurnsLeft;
 
+    public PopupStar FirstStar;
+    public PopupStar SecondStar;
+    public PopupStar ThirdStar;
+
     #region Event Handlers
 
     private void OnMapClick()
@@ -43,11 +47,69 @@ public class GuiWinPanel : Window
 
     #endregion
 
-    public void Show(int numberOfTurnsLeft, int score, int bestScore)
+    public int TempScore;
+    public int TargetScore;
+
+    public LevelInfo LevelInfo;
+    public SerializedLevel Level;
+
+    public void Show(int numberOfTurnsLeft, int score, int bestScore, LevelInfo levelInfo, SerializedLevel level)
     {
+        TempScore = 0;
+        TargetScore = score;
+
+        LevelInfo = levelInfo;
+        Level = level;
+
         TurnsLeft.text = LocalizationStrings.GetString(TurnsLeftString, numberOfTurnsLeft);
-        Score.text = LocalizationStrings.GetString(ScoreString, score);
+        Score.text = LocalizationStrings.GetString(ScoreString, 0);
         BestScore.text = LocalizationStrings.GetString(BestScoreString, bestScore);
+
+        FirstStar.Show(false);
+        SecondStar.Show(false);
+        ThirdStar.Show(false);
+
         Show();
+    }
+
+    private void Update()
+    {
+        if (TempScore < TargetScore)
+        {
+            TempScore += 10;
+            TempScore = Mathf.Clamp(TempScore, 0, TargetScore);
+            Score.text = LocalizationStrings.GetString(ScoreString, TempScore);
+
+            if (TempScore > Level.Star1Score && !FirstStar.IsActive)
+            {
+                ShowStar(1);
+            }
+
+            if (TempScore > Level.Star2Score && !SecondStar.IsActive)
+            {
+                ShowStar(2);
+            }
+
+            if (TempScore > Level.Star3Score && !ThirdStar.IsActive)
+            {
+                ShowStar(3);
+            }
+        }
+    }
+
+    private void ShowStar(int starNumber)
+    {
+        switch (starNumber)
+        {
+            case 1:
+                FirstStar.Show(true, true);
+                break;
+            case 2:
+                SecondStar.Show(true, true);
+                break;
+            case 3:
+                ThirdStar.Show(true, true);
+                break;
+        }
     }
 }
